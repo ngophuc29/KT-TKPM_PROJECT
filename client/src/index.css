@@ -34,10 +34,10 @@ body {
   font-family: "Poppins", sans-serif;
   font-size: 1.6rem;
   line-height: 1.5;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  /* display: flex; */
+  /* place-items: center; */
+  /* min-width: 320px; */
+  /* min-height: 100vh; */
 }
 
 h1 {
