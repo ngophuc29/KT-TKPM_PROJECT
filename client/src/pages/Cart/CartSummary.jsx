@@ -28,7 +28,7 @@ const CartSummary = ({ subtotal, shipping, tax, total }) => {
                     Enter your destination to get a shipping estimate.
                 </div>
 
-            <div
+            <div 
                 style={{
                     display: "flex",
                     justifyContent: "space-between",
