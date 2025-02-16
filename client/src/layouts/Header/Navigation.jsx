@@ -135,7 +135,9 @@ const Navigation = () => {
                             onClick={() => setShowSearch(true)}
                         />
                     )}
-                    <FiShoppingCart size={24}   style={{ cursor: "pointer" }} />
+                    <FiShoppingCart size={24} style={{ cursor: "pointer" }}
+                        onClick={() => navigate('/cart')}
+                    />
 
                     {/* <BiUser size={24} color="#007bff" style={{ cursor: "pointer" }} /> */}
 
