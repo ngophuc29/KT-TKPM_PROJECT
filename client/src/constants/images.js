@@ -1,9 +1,7 @@
-import React from 'react'
+import Banner from "../assets/images/banner.png";
 
-const images = () => {
-  return (
-    <div>images</div>
-  )
-}
+const IMAGES = {
+  Banner,
+};
 
-export default images
+export default IMAGES;

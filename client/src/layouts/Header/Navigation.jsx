@@ -5,7 +5,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import { BiUser } from "react-icons/bi";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Logo from "../../assets/images/logo.png";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navigation = () => {
     const [showSearch, setShowSearch] = useState(false);
@@ -41,17 +41,19 @@ const Navigation = () => {
                 justifyContent: "space-between",
             }}>
                 {/* Logo */}
-                <img
-                    src={Logo}
-                    alt="Logo"
-                    style={{
-                        width: "50px",
-                        height: "50px",
-                        
-                        objectFit: "contain",
-                        backgroundColor: "#fff",cursor: "pointer"
-                    }}
-                />
+                <Link to="/">
+                    <img
+                        src={Logo}
+                        alt="Logo"
+                        style={{
+                            width: "50px",
+                            height: "50px",
+                            
+                            objectFit: "contain",
+                            backgroundColor: "#fff",cursor: "pointer"
+                        }}
+                    />
+                </Link>
 
                 {/* Conditional Rendering */}
                 {!showSearch ? (
