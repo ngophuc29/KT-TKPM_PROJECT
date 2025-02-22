@@ -27,7 +27,7 @@ const CartSummary = ({ subtotal, shipping, tax, total }) => {
                 <div style={{ fontSize: "14px", color: "#666" }}>
                     Enter your destination to get a shipping estimate.
                 </div>
-
+  
             <div 
                 style={{
                     display: "flex",
