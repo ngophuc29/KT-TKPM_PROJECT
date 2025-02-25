@@ -97,12 +97,12 @@ ProductSection.propTypes = {
   title: PropTypes.string.isRequired,
   products: PropTypes.arrayOf(
     PropTypes.shape({
-      inStock: PropTypes.bool.isRequired,
-      imageSrc: PropTypes.string.isRequired,
+      stock: PropTypes.number.isRequired,
+      image: PropTypes.string.isRequired,
       rating: PropTypes.number.isRequired,
       description: PropTypes.string.isRequired,
-      originalPrice: PropTypes.number.isRequired,
-      discountedPrice: PropTypes.number.isRequired,
+      price: PropTypes.number.isRequired,
+      discount: PropTypes.number.isRequired,
     })
   ).isRequired,
   seeAllLink: PropTypes.string.isRequired,
