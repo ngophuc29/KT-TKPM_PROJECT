@@ -5,6 +5,7 @@ import InstagramPost from "../../components/ProductDisplay/InstagramPost";
 import IMAGES from "../../constants/images";
 import TestimonialCard from "../../components/ProductDisplay/TestimonialCard";
 import ProductFeatures from "../../components/ProductDisplay/ProductFeatures";
+import Icon from "../../constants/icons";
 
 const ProductDisplay = () => {
   const newProducts = [
@@ -39,6 +40,15 @@ const ProductDisplay = () => {
       inStock: true,
       imageSrc:
         "https://cdn.builder.io/api/v1/image/assets/TEMP/96fa115c1944ab3fb8d3ee946d81dc0e1da2458d10897f3ccce15543339ab3d9?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
+      rating: 4,
+      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
+      originalPrice: "499.00",
+      discountedPrice: "499.00",
+    },
+    {
+      inStock: true,
+      imageSrc:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
       rating: 4,
       description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
       originalPrice: "499.00",
@@ -321,7 +331,7 @@ const ProductDisplay = () => {
       />
 
       <div className="container my-5">
-        <div className="row justify-content-center">
+        <div className="row ">
           <div className="col-auto">
             <div className="d-flex flex-column align-items-center">
               <span>MSI GS Series</span>
@@ -352,7 +362,7 @@ const ProductDisplay = () => {
       />
 
       <div className="container my-5">
-        <div className="row justify-content-center">
+        <div className="row">
           <div className="col-auto">
             <div className="d-flex flex-column align-items-center">
               <span>MSI Infinite Series</span>
@@ -405,12 +415,13 @@ const ProductDisplay = () => {
         </div>
       </div>
 
-        <TestimonialCard />
+      <TestimonialCard />
 
-        <ProductFeatures />
-      <div className="position-fixed bottom-0 end-0 m-4">
-        <button className="btn btn-primary rounded-circle" style={{ width: "60px", height: "60px" }}>
-          <i className="bi bi-arrow-up"></i>
+      <ProductFeatures />
+
+      <div className="position-fixed bottom-0 end-0 mx-2 my-4">
+        <button className="btn btn-primary rounded-circle" style={{ width: "50px", height: "50px" }}>
+          <img src={Icon.Message} alt="" className="img-fluid" />
         </button>
       </div>
     </div>

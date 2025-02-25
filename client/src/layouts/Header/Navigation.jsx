@@ -67,7 +67,7 @@ const Navigation = () => {
                         }}
                     >
                         {categories.map((category, index) => (
-                            <div
+                            <Link to="/catalog"
                                 key={index}
                                 style={{
                                     fontSize: "14px",
@@ -79,7 +79,7 @@ const Navigation = () => {
                                 onMouseOut={(e) => (e.target.style.color = "#000")}
                             >
                                 {category}
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (
