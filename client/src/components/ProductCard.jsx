@@ -1,8 +1,12 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 
-const ProductCard = ({ inStock, imageSrc, rating, description, originalPrice, discountedPrice }) => {
+const ProductCard = ({ stock, image, rating, description, price, discount }) => {
   const [hover, setHover] = useState(false);
+
+  // Calculate final price
+  const finalPrice = price - (price * discount) / 100;
+
   return (
     <div
       className={`card h-100 border-0 ${hover ? "shadow" : ""}`}
@@ -15,10 +19,10 @@ const ProductCard = ({ inStock, imageSrc, rating, description, originalPrice, di
       onMouseOver={() => setHover(true)}
       onMouseOut={() => setHover(false)}
     >
-      <div className={`badge position-absolute top-0 start-0 m-2 ${inStock ? "bg-success" : "bg-warning"}`}>
-        {inStock ? "In Stock" : "Check Availability"}
+      <div className={`badge position-absolute top-0 start-0 m-2 ${stock ? "bg-success" : "bg-warning"}`}>
+        {stock > 0 ? "In Stock" : "Check Availability"}
       </div>
-      <img src={imageSrc} className="img-fluid mx-auto mb-3" style={{ maxWidth: "150px", height: "auto" }} />
+      <img src={image} className="img-fluid mx-auto mb-3" style={{ maxWidth: "150px", height: "auto" }} />
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-2">
           <img
@@ -43,8 +47,8 @@ const ProductCard = ({ inStock, imageSrc, rating, description, originalPrice, di
           {description}
         </p>
         <div>
-          <span className="text-muted text-decoration-line-through">${originalPrice}</span>
-          <span className="ms-2 fw-bold">${discountedPrice}</span>
+          <span className="text-muted text-decoration-line-through">${price}</span>
+          <span className="ms-2 fw-bold">${finalPrice.toFixed(2)}</span>
         </div>
       </div>
     </div>
@@ -52,12 +56,12 @@ const ProductCard = ({ inStock, imageSrc, rating, description, originalPrice, di
 };
 
 ProductCard.propTypes = {
-  inStock: PropTypes.bool.isRequired,
-  imageSrc: PropTypes.string.isRequired,
+  stock: PropTypes.number.isRequired,
+  image: PropTypes.string.isRequired,
   rating: PropTypes.number.isRequired,
   description: PropTypes.string.isRequired,
-  originalPrice: PropTypes.number.isRequired,
-  discountedPrice: PropTypes.number.isRequired,
+  price: PropTypes.number.isRequired,
+  discount: PropTypes.number.isRequired,
 };
 
 export default ProductCard;

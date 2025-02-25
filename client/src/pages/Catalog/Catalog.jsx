@@ -7,50 +7,50 @@ import SortingControls from "../../components/Catalog/SortingControls";
 const Catalog = () => {
   const products = [
     {
-        inStock: true,
-        imageSrc:
-          "https://cdn.builder.io/api/v1/image/assets/TEMP/6110020049c709a850ef149e9595b5ea1e2201fe45de8e5923d13bf56d6cb079?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-        rating: 4,
-        description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-        originalPrice: "499.00",
-        discountedPrice: "499.00",
-      },
-      {
-        inStock: false,
-        imageSrc:
-          "https://cdn.builder.io/api/v1/image/assets/TEMP/3efd8012a7b2c942d479de532c7895977a5481b40d8da289f3e36e2ce3fe7ac8?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-        rating: 4,
-        description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-        originalPrice: "499.00",
-        discountedPrice: "499.00",
-      },
-      {
-        inStock: true,
-        imageSrc:
-          "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-        rating: 4,
-        description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-        originalPrice: "499.00",
-        discountedPrice: "499.00",
-      },
-      {
-        inStock: true,
-        imageSrc:
-          "https://cdn.builder.io/api/v1/image/assets/TEMP/96fa115c1944ab3fb8d3ee946d81dc0e1da2458d10897f3ccce15543339ab3d9?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-        rating: 4,
-        description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-        originalPrice: "499.00",
-        discountedPrice: "499.00",
-      },
-      {
-        inStock: true,
-        imageSrc:
-          "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-        rating: 4,
-        description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-        originalPrice: "499.00",
-        discountedPrice: "499.00",
-      },
+      stock: true,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/6110020049c709a850ef149e9595b5ea1e2201fe45de8e5923d13bf56d6cb079?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
+      rating: 4,
+      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
+      price: "499.00",
+      discount: "499.00",
+    },
+    {
+      stock: false,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/3efd8012a7b2c942d479de532c7895977a5481b40d8da289f3e36e2ce3fe7ac8?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
+      rating: 4,
+      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
+      price: "499.00",
+      discount: "499.00",
+    },
+    {
+      stock: true,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
+      rating: 4,
+      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
+      price: "499.00",
+      discount: "499.00",
+    },
+    {
+      stock: true,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/96fa115c1944ab3fb8d3ee946d81dc0e1da2458d10897f3ccce15543339ab3d9?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
+      rating: 4,
+      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
+      price: "499.00",
+      discount: "499.00",
+    },
+    {
+      stock: true,
+      image:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
+      rating: 4,
+      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
+      price: "499.00",
+      discount: "499.00",
+    },
   ];
 
   return (
@@ -75,9 +75,7 @@ const Catalog = () => {
 
             <div className="bg-light p-3 text-center mt-4 rounded">
               <h5 className="fw-bold mb-3">Brands</h5>
-              <button className="btn btn-outline-secondary w-100">
-                All Brands
-              </button>
+              <button className="btn btn-outline-secondary w-100">All Brands</button>
               <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/8eb535f7e707114e5ee989fcd93176aeeaf18454db55fea8c09b99dd5ce0ab90?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
                 alt="Brand logos"
@@ -92,9 +90,7 @@ const Catalog = () => {
 
             <div className="bg-light p-3 text-center mt-4 rounded">
               <h5 className="fw-bold mb-3">My Wish List</h5>
-              <p className="small text-muted">
-                You have no items in your wish list.
-              </p>
+              <p className="small text-muted">You have no items in your wish list.</p>
             </div>
 
             <img
@@ -130,28 +126,23 @@ const Catalog = () => {
 
             <article className="mt-5 small text-muted">
               <p className="mb-3">
-                MSI has unveiled the Prestige Series line of business-class and
-                gaming notebooks. Tuned for color accuracy, the Prestige Series
-                also leverages True Color Technology, which allows users to
-                adjust the display profile to best fit their computing needs.
+                MSI has unveiled the Prestige Series line of business-class and gaming notebooks. Tuned for color
+                accuracy, the Prestige Series also leverages True Color Technology, which allows users to adjust the
+                display profile to best fit their computing needs.
               </p>
               <p className="mb-3">
-                There are six different screen profiles, which are tuned for
-                gaming, reducing eye fatigue, sRGB color accuracy, increasing
-                clarity for words and lines, reducing harmful blue light, and
-                optimizing contrast for watching movies.
+                There are six different screen profiles, which are tuned for gaming, reducing eye fatigue, sRGB color
+                accuracy, increasing clarity for words and lines, reducing harmful blue light, and optimizing contrast
+                for watching movies.
               </p>
               <p className="mb-3">
-                Given the various display profiles and discrete graphics chip,
-                the Prestige Series notebooks can be used for various design
-                work as well as for office tasks given that the screen can be
-                adjusted for better clarity, color accuracy, or for eye strain
-                reduction. Users working with video or 3D rendering will
+                Given the various display profiles and discrete graphics chip, the Prestige Series notebooks can be used
+                for various design work as well as for office tasks given that the screen can be adjusted for better
+                clarity, color accuracy, or for eye strain reduction. Users working with video or 3D rendering will
               </p>
               <p className="mb-3">
-                strain. This is helpful when working on the computer for
-                extended periods of time. Additionally, in their down time,
-                brightness.
+                strain. This is helpful when working on the computer for extended periods of time. Additionally, in
+                their down time, brightness.
               </p>
             </article>
 
