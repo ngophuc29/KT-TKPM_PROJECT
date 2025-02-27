@@ -4,8 +4,8 @@ import Signup from "@/pages/Signup/Signup";
 import Cart from "../pages/Cart/Cart";
 import CheckoutPage from "../pages/CheckOut/CheckoutPage";
 import Catalog from "../pages/Catalog/Catalog";
- 
 import ProductDetailsAll from "../components/ProductDetails/ProductDetailsAll";
+import ContactUs from "../pages/ContactUs/ContactUs";
 const publicRoutes = [
   { path: "/home", component: Home },
   { path: "/login", component: Login },
@@ -14,7 +14,7 @@ const publicRoutes = [
   { path: "/checkout", component: CheckoutPage },
   { path: "/details", component: ProductDetailsAll },
   { path: "/catalog", component: Catalog },
-  
+  { path: "/contactUs", component: ContactUs },
 
 
 

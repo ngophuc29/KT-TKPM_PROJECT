@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const footerLinks = {
@@ -122,15 +123,19 @@ const Footer = () => {
       >
         {Object.entries(footerLinks).map(([title, links]) => (
           <div key={title} style={{ flex: "1", minWidth: "200px" }}>
-            <h3
+           <Link to="/ContactUs">
+           <h3
               style={{
                 fontSize: "18px",
                 fontWeight: "600",
                 marginBottom: "10px",
               }}
+              
             >
               {title}
             </h3>
+           </Link>
+          
             {links.map((link, index) => (
               <a
                 key={index}
