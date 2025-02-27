@@ -10,6 +10,6 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000, // Đặt cổng phát triển
+    port: 2000, // Đặt cổng phát triển
   },
 });
