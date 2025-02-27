@@ -15,7 +15,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const fetchNewProducts = async () => {
       try {
-        const URL = `${import.meta.env.VITE_APP_BACKEND_URL}/api/products-new`;
+        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products-new`;
         const response = await axios.get(URL, { withCredentials: true });
 
         setNewProducts(response?.data?.data);
