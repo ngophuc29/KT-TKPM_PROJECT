@@ -19,10 +19,10 @@ const productSchema = new mongoose.Schema(
 );
 
 
-productSchema.methods.addReview = function(newRating) {
-  this.reviews += 1;
-  this.rating = (this.rating * (this.reviews - 1) + newRating) / this.reviews;
-};
+// productSchema.methods.addReview = function(newRating) {
+//   this.reviews += 1;
+//   this.rating = (this.rating * (this.reviews - 1) + newRating) / this.reviews;
+// };
 
 const ProductModel = mongoose.model("Product", productSchema);
 
