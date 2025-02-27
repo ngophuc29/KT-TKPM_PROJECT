@@ -14,7 +14,7 @@ app.use(express.json());
 
 // Cấu hình các service
 const services = {
-  products: "http://product-catalog-service:4004",
+  products: "http://localhost:4004",
 };
 
 // Proxy cho tất cả request đến API Gateway
