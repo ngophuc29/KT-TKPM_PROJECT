@@ -7,6 +7,7 @@ import Catalog from "../pages/Catalog/Catalog";
 import ProductDetailsAll from "../components/ProductDetails/ProductDetailsAll";
 import ContactUs from "../pages/ContactUs/ContactUs";
 import UserAccount from "../pages/UserAccount/UserAccount";
+import AboutUs from "../pages/AboutUs/AboutUs";
 const publicRoutes = [
   { path: "/home", component: Home },
   { path: "/login", component: Login },
@@ -17,6 +18,7 @@ const publicRoutes = [
   { path: "/catalog", component: Catalog },
   { path: "/contactUs", component: ContactUs },
   { path: "/userAccount", component: UserAccount },
+  { path: "/aboutUs", component: AboutUs },
 
 
 
