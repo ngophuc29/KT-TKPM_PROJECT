@@ -5,7 +5,7 @@ import Chart from './RecentSales'
 
 const OverviewContent = () => {
   return (
-      <div>
+      <div className="  mt-9 ">
           {/* chart */}
           
           {/* recentsales */}

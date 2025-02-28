@@ -3,7 +3,7 @@ import CardItem from './CardItem'
 
 const Card = () => {
   return (
-    <div className="lg:flex lg:items-center lg:justify-between ">
+    <div className="lg:flex lg:items-center lg:justify-between mt-9 ">
 
       <CardItem
         title="Total Revenue"
