@@ -1,46 +1,47 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import FooterLinkItem from "./FooterLinkItem"; // Đảm bảo đường dẫn chính xác
 
 const Footer = () => {
+  // Các nhóm link khác...
   const footerLinks = {
     Information: [
-      "About Us",
-      "About Zip",
-      "Privacy Policy",
-      "Search",
-      "Terms",
-      "Orders and Returns",
-      "Contact Us",
-      "Advanced Search",
-      "Newsletter Subscription",
+      { name: "About Us", link: "/about-us" },
+      { name: "About Zip", link: "/about-zip" },
+      { name: "Privacy Policy", link: "/privacy-policy" },
+      { name: "Search", link: "/search" },
+      { name: "Terms", link: "/terms" },
+      { name: "Orders and Returns", link: "/orders-returns" },
+      { name: "Contact Us", link: "/contact-us" },
+      { name: "Advanced Search", link: "/advanced-search" },
+      { name: "Newsletter Subscription", link: "/newsletter" },
     ],
     "PC Parts": [
-      "CPUs",
-      "Add On Cards",
-      "Hard Drives (Internal)",
-      "Graphic Cards",
-      "Keyboards / Mice",
-      "Cases / Power Supplies / Cooling",
-      "RAM (Memory)",
-      "Software",
-      "Speakers / Headsets",
-      "Motherboards",
+      { name: "CPUs", link: "/cpus" },
+      { name: "Add On Cards", link: "/add-on-cards" },
+      { name: "Hard Drives (Internal)", link: "/hard-drives" },
+      { name: "Graphic Cards", link: "/graphic-cards" },
+      { name: "Keyboards / Mice", link: "/keyboards-mice" },
+      { name: "Cases / Power Supplies / Cooling", link: "/cases-power-supplies-cooling" },
+      { name: "RAM (Memory)", link: "/ram-memory" },
+      { name: "Software", link: "/software" },
+      { name: "Speakers / Headsets", link: "/speakers-headsets" },
+      { name: "Motherboards", link: "/motherboards" },
     ],
     "Desktop PCs": [
-      "Custom PCs",
-      "Servers",
-      "MSI All-In-One PCs",
-      "HP/Compaq PCs",
-      "ASUS PCs",
-      "Tecs PCs",
+      { name: "Custom PCs", link: "/custom-pcs" },
+      { name: "Servers", link: "/servers" },
+      { name: "MSI All-In-One PCs", link: "/msi-all-in-one-pcs" },
+      { name: "HP/Compaq PCs", link: "/hp-compaq-pcs" },
+      { name: "ASUS PCs", link: "/asus-pcs" },
+      { name: "Tecs PCs", link: "/tecs-pcs" },
     ],
     Laptops: [
-      "Everyday Use Notebooks",
-      "MSI Workstation Series",
-      "MSI Prestige Series",
-      "Tablets and Pads",
-      "Netbooks",
-      "Infinity Gaming Notebooks",
+      { name: "Everyday Use Notebooks", link: "/everyday-notebooks" },
+      { name: "MSI Workstation Series", link: "/msi-workstation" },
+      { name: "MSI Prestige Series", link: "/msi-prestige" },
+      { name: "Tablets and Pads", link: "/tablets-pads" },
+      { name: "Netbooks", link: "/netbooks" },
+      { name: "Infinity Gaming Notebooks", link: "/infinity-gaming" },
     ],
   };
 
@@ -121,35 +122,20 @@ const Footer = () => {
           marginBottom: "30px",
         }}
       >
-        {Object.entries(footerLinks).map(([title, links]) => (
-          <div key={title} style={{ flex: "1", minWidth: "200px" }}>
-           <Link to="/ContactUs">
-           <h3
+        {Object.entries(footerLinks).map(([groupTitle, links]) => (
+          <div key={groupTitle} style={{ flex: "1", minWidth: "200px" }}>
+            <h3
               style={{
                 fontSize: "18px",
                 fontWeight: "600",
                 marginBottom: "10px",
               }}
-              
             >
-              {title}
+              {groupTitle}
             </h3>
-           </Link>
-          
-            {links.map((link, index) => (
-              <a
-                key={index}
-                href="#"
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  display: "block",
-                  fontSize: "14px",
-                  marginBottom: "8px",
-                }}
-              >
-                {link}
-              </a>
+            {/* Các mục khác... */}
+            {links.map((item, index) => (
+              <FooterLinkItem key={index} name={item.name} link={item.link} />
             ))}
           </div>
         ))}

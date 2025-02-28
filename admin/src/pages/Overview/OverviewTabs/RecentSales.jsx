@@ -8,7 +8,7 @@ export default function RecentSales() {
     ];
 
     return (
-        <div className="bg-black text-white p-6 rounded-2xl max-w-md">
+        <div className=" p-6 rounded-xl max-w-md shadow-lg">
             <h2 className="text-lg font-semibold">Recent Sales</h2>
             <p className="text-sm text-gray-400">You made 265 sales this month.</p>
             <div className="mt-4 space-y-4">
