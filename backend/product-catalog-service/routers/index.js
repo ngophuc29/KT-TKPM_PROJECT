@@ -21,7 +21,7 @@ router.get("/products-new", getProductNew);
 router.get("/products-brand/:brand", getProductBrand);
 
 // Get products by category api
-router.get("/products-category", getProductCategory);
+router.get("/products-category/:category", getProductCategory);
 // Route lấy chi tiết sản phẩm theo ID
 router.get("/product/:id", getProductById);
 // Route cập nhật sản phẩm theo ID

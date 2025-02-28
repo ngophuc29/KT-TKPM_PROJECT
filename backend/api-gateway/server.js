@@ -20,11 +20,11 @@ const services = {
 // Proxy cho tất cả request đến API Gateway
 Object.keys(services).forEach((route) => {
   app.use(
-    `/api/${route}`,
+    `/api/`,
     createProxyMiddleware({
       target: services[route],
       changeOrigin: true,
-      pathRewrite: { [`^/api/${route}`]: "" },
+      pathRewrite: { [`^/api/`]: "" },
     })
   );
 });
