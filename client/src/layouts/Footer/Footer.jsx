@@ -5,13 +5,13 @@ const Footer = () => {
   // Các nhóm link khác...
   const footerLinks = {
     Information: [
-      { name: "About Us", link: "/about-us" },
+      { name: "About Us", link: "/AboutUs" },
       { name: "About Zip", link: "/about-zip" },
       { name: "Privacy Policy", link: "/privacy-policy" },
       { name: "Search", link: "/search" },
       { name: "Terms", link: "/terms" },
       { name: "Orders and Returns", link: "/orders-returns" },
-      { name: "Contact Us", link: "/contact-us" },
+      { name: "Contact Us", link: "/ContactUs" },
       { name: "Advanced Search", link: "/advanced-search" },
       { name: "Newsletter Subscription", link: "/newsletter" },
     ],
