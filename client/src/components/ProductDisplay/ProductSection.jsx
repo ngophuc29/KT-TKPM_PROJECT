@@ -42,7 +42,7 @@ const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
           </div>
         )}
         <div className={`${brandImage ? "col-md-10 position-relative" : "col"}`}>
-          <div className="d-flex" ref={scrollRef} style={{ overflow: "hidden" }}>
+          <div className="d-flex" ref={scrollRef} style={{ overflow: "auto", scrollbarWidth: "none" }}>
             {products.map((product, index) => (
               <div className="flex-shrink-0 py-2" key={index} style={{ width: "250px" }}>
                 <ProductCard {...product} />
