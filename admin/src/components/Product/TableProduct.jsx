@@ -1,4 +1,5 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   flexRender,
   getCoreRowModel,
@@ -24,67 +25,19 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useGlobalContext } from "@/context/GlobalProvider";
 
-// Dữ liệu sản phẩm (chỉ giữ lại các trường cần hiển thị)
-const data = [
-  {
-    id: "67c14b14b5acc01e66344dfc",
-    name: "CyberPowerPC Xtreme VR",
-    brand: "CyberPowerPC",
-    price: 1599,
-    stock: 5,
-    rating: 4.5,
-  },
-  {
-    id: "67c14b14b5acc01e66344dfd",
-    name: "Alienware Aurora R15",
-    brand: "Alienware",
-    price: 2999,
-    stock: 0,
-    rating: 5,
-  },
-  {
-    id: "67c14b14b5acc01e66344dfe",
-    name: "MSI Aegis RS 12",
-    brand: "MSI",
-    price: 2499,
-    stock: 8,
-    rating: 4.8,
-  },
-  {
-    id: "67c14b14b5acc01e66344dff",
-    name: "NZXT Streaming PC",
-    brand: "NZXT",
-    price: 1899,
-    stock: 6,
-    rating: 4.6,
-  },
-  {
-    id: "67c14b14b5acc01e66344e00",
-    name: "Corsair Vengeance i7400",
-    brand: "Corsair",
-    price: 1799,
-    stock: 4,
-    rating: 4.7,
-  },
-  {
-    id: "67c14bffb5acc01e66344e18",
-    name: "ASUS ROG Strix G16",
-    brand: "ASUS",
-    price: 1399,
-    stock: 12,
-    rating: 4.5,
-  },
-];
+// API base URL (điều chỉnh theo dự án của bạn)
+const API_BASE = "http://localhost:4004";
 
-// Định nghĩa cột, giữ lại checkbox và menu actions như cũ,
-// sau đó thêm các cột hiển thị thông tin sản phẩm
-// eslint-disable-next-line react-refresh/only-export-components
+// Định nghĩa các cột hiển thị
 export const columns = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
-        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
@@ -100,8 +53,17 @@ export const columns = [
     enableHiding: false,
   },
   {
+    accessorKey: "image",
+    header: "Ảnh",
+    cell: ({ row }) => {
+      const image = row.getValue("image");
+      return image ? <img src={image} alt="Product" width={50} height={50} /> : "❌";
+    },
+    enableSorting: false,
+  },
+  {
     accessorKey: "name",
-    header: "Name",
+    header: "Tên",
     cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
@@ -110,10 +72,15 @@ export const columns = [
     cell: ({ row }) => <div>{row.getValue("brand")}</div>,
   },
   {
+    accessorKey: "category",
+    header: "Danh mục",
+    cell: ({ row }) => <div>{row.getValue("category")}</div>,
+  },
+  {
     accessorKey: "price",
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Price
+        Giá
         <ArrowUpDown />
       </Button>
     ),
@@ -132,9 +99,14 @@ export const columns = [
     cell: ({ row }) => <div className="text-center">{row.getValue("stock")}</div>,
   },
   {
-    accessorKey: "rating",
-    header: () => <div className="text-center">Rating</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("rating")}</div>,
+    accessorKey: "color",
+    header: "Màu sắc",
+    cell: ({ row }) => <div>{row.getValue("color")}</div>,
+  },
+  {
+    accessorKey: "discount",
+    header: "Discount",
+    cell: ({ row }) => <div>{row.getValue("discount")}%</div>,
   },
   {
     id: "actions",
@@ -151,11 +123,15 @@ export const columns = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(product.id)}>
-              Copy product ID
+            <DropdownMenuItem
+              onClick={() => handleUpdate(product)}
+            >
+              Update
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View details</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(product._id)}>
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -164,14 +140,87 @@ export const columns = [
 ];
 
 export function TableProduct() {
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+
+  // Lấy các hàm từ global context để truyền dữ liệu cần cập nhật và mở form
+  const { setOpenForm, setProductToUpdate } = useGlobalContext();
+
+  // Hàm gọi API để lấy danh sách sản phẩm
+  const fetchProducts = () => {
+    axios
+      .get(`${API_BASE}/products`)
+      .then((res) => {
+        setData(res.data.data || []);
+      })
+      .catch(() => setError("Lỗi khi lấy sản phẩm!"))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Hàm xử lý xóa sản phẩm
+  const handleDelete = (productId) => {
+    if (window.confirm("Bạn có chắc muốn xóa sản phẩm này không?")) {
+      axios
+        .delete(`${API_BASE}/product/${productId}`)
+        .then(() => {
+          alert("Xóa sản phẩm thành công!");
+          fetchProducts();
+        })
+        .catch(() => alert("Lỗi khi xóa sản phẩm!"));
+    }
+  };
+
+  // Hàm xử lý update: truyền dữ liệu sản phẩm cần update qua global context và mở form
+  const handleUpdate = (product) => {
+    setProductToUpdate(product);
+    setOpenForm(true);
+  };
+
+  // Cập nhật cột actions để sử dụng handleUpdate và handleDelete
+  const columnsWithActions = columns.map((col) => {
+    if (col.id === "actions") {
+      return {
+        ...col,
+        cell: ({ row }) => {
+          const product = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleUpdate(product)}>
+                  Update
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleDelete(product._id)}>
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      };
+    }
+    return col;
+  });
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columnsWithActions,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -188,16 +237,20 @@ export function TableProduct() {
     },
   });
 
-  const { setOpenForm } = useGlobalContext();
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="w-full">
+      {/* Header: Bộ lọc và nút thêm */}
       <div className="flex items-center py-4">
         <div className="flex items-center space-x-2">
           <Input
             placeholder="Filter by name..."
             value={table.getColumn("name")?.getFilterValue() ?? ""}
-            onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+            onChange={(event) =>
+              table.getColumn("name")?.setFilterValue(event.target.value)
+            }
             className="max-w-sm"
           />
           <Button variant="outline" className="ml-auto" onClick={() => setOpenForm(true)}>
@@ -227,6 +280,7 @@ export function TableProduct() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      {/* Bảng hiển thị sản phẩm */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -234,7 +288,9 @@ export function TableProduct() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -245,13 +301,15 @@ export function TableProduct() {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={columnsWithActions.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -259,10 +317,11 @@ export function TableProduct() {
           </TableBody>
         </Table>
       </div>
+      {/* Phân trang */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-          selected.
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="space-x-2">
           <Button
@@ -273,7 +332,12 @@ export function TableProduct() {
           >
             Previous
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
             Next
           </Button>
         </div>
