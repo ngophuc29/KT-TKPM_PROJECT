@@ -14,7 +14,7 @@ async function updateImage(req, res) {
             allowed_formats: ["png", "jpg", "jpeg", "svg", "jfif", "webp", "ico"],
         });
 
-        console.log("Upload success:", uploadImage);
+        // console.log("Upload success:", uploadImage);
 
         res.status(200).json({
             message: "Image uploaded successfully",

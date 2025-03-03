@@ -6,13 +6,15 @@ const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
 
 export default function GlobalProvider({ children }) {
-  const [openForm, setOpenForm] = useState(true);
+  const [openForm, setOpenForm] = useState(false);
+  const [productToUpdate, setProductToUpdate] = useState(null);
+
 
   return (
     <GlobalContext.Provider
       value={{
         openForm,
-        setOpenForm,
+        setOpenForm, productToUpdate, setProductToUpdate
       }}
     >
       {children}
