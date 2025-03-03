@@ -1,7 +1,6 @@
- 
-import DatePicker from "@/pages/Overview/datepicker";
+ import DatePicker from "@/pages/Overview/DatePicker";
 import Main from "./Main";
-export default function overview() {
+export default function Overview() {
   return (
     <>
     <div className="lg:flex lg:items-center lg:justify-between p-4 mx-11">
