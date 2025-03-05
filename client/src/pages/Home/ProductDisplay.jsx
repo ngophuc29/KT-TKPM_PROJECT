@@ -34,7 +34,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const fetchProductData = async (category, setState) => {
       try {
-        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products-category?category=${category}`;
+        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products-category/${category}`;
         const response = await axios.get(URL, { withCredentials: true });
         setState(response?.data?.data);
       } catch (error) {
