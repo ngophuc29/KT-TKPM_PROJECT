@@ -4,12 +4,24 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
+const allowedOrigins = ["http://localhost:2000"];
+
+console.log("Allowed Origins:", allowedOrigins);
+
+// Cấu hình CORS
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS policy does not allow this origin."));
+      }
+    },
     credentials: true,
   })
 );
+
 app.use(express.json());
 
 // Cấu hình các service
@@ -19,12 +31,13 @@ const services = {
 
 // Proxy cho tất cả request đến API Gateway
 Object.keys(services).forEach((route) => {
+  console.log(`Forwarding /api/${route} to ${services[route]}`);
   app.use(
-    `/api/`,
+    `/api/${route}`,
     createProxyMiddleware({
       target: services[route],
       changeOrigin: true,
-      pathRewrite: { [`^/api/`]: "" },
+      pathRewrite: { [`^/api/${route}`]: "" },
     })
   );
 });
