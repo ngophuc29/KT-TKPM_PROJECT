@@ -11,6 +11,10 @@ import axios from "axios";
 
 const ProductDisplay = () => {
   const [newProducts, setNewProducts] = useState([]);
+  const [customBuilds, setCustomBuilds] = useState([]);
+  const [desktops, setDesktops] = useState([]);
+  const [gamingMonitors, setGamingMonitors] = useState([]);
+  const [MSILaptops, setMSILaptops] = useState([]);
 
   useEffect(() => {
     const fetchNewProducts = async () => {
@@ -27,206 +31,22 @@ const ProductDisplay = () => {
     fetchNewProducts();
   }, []);
 
-  // const newProducts = [
-  //   {
-  //     stock: true,
-  //     image:
-  //       "https://cdn.builder.io/api/v1/image/assets/TEMP/6110020049c709a850ef149e9595b5ea1e2201fe45de8e5923d13bf56d6cb079?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-  //     rating: 4,
-  //     description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-  //     price: "499.00",
-  //     discount: "499.00",
-  //   },
-  //   {
-  //     stock: false,
-  //     image:
-  //       "https://cdn.builder.io/api/v1/image/assets/TEMP/3efd8012a7b2c942d479de532c7895977a5481b40d8da289f3e36e2ce3fe7ac8?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-  //     rating: 4,
-  //     description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-  //     price: "499.00",
-  //     discount: "499.00",
-  //   },
-  //   {
-  //     stock: true,
-  //     image:
-  //       "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-  //     rating: 4,
-  //     description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-  //     price: "499.00",
-  //     discount: "499.00",
-  //   },
-  //   {
-  //     stock: true,
-  //     image:
-  //       "https://cdn.builder.io/api/v1/image/assets/TEMP/96fa115c1944ab3fb8d3ee946d81dc0e1da2458d10897f3ccce15543339ab3d9?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-  //     rating: 4,
-  //     description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-  //     price: "499.00",
-  //     discount: "499.00",
-  //   },
-  //   {
-  //     stock: true,
-  //     image:
-  //       "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-  //     rating: 4,
-  //     description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-  //     price: "499.00",
-  //     discount: "499.00",
-  //   },
-  //   {
-  //     stock: true,
-  //     image:
-  //       "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-  //     rating: 4,
-  //     description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-  //     price: "499.00",
-  //     discount: "499.00",
-  //   },
-  // ];
+  useEffect(() => {
+    const fetchProductData = async (category, setState) => {
+      try {
+        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products-category?category=${category}`;
+        const response = await axios.get(URL, { withCredentials: true });
+        setState(response?.data?.data);
+      } catch (error) {
+        console.log(`Error fetching ${category} products: `, error);
+      }
+    };
 
-  const customBuilds = [
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6ac4ccf2c8bda179a5f811509bfee7ac7e1100794b861cdfbe6d9f4c0c6feffe?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/c793bf4b2ce4b138c2be2e514ec99a396f01f804eeb3bb898270ec1ac70ef966?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/728b57bdb4d8d205acb713e84a562629a535ddcd36eb1fafafbc8a2e02d8a619?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b60fbc0d603c043600d5e7d2720602260d15679a22a1de5b02551b88785a0179?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/e0438cedc992409f831859af09f5153401c9a3ec41fefb96a1c89e566d110fcc?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-  ];
-
-  const desktops = [
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/c4144ade423bd24171ac7e891992c314ef1ce1b0917a5c7f776c3738df12d391?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/f85384aed2666c5455835cc2d8ec2f2434ab73fb5b896dcfaa07ce479d99f090?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/5e97a3813105017fd90e08ba1a6a9574c3220c105e4f42ba14d0dd27d4f538a2?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/5e97a3813105017fd90e08ba1a6a9574c3220c105e4f42ba14d0dd27d4f538a2?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/5e97a3813105017fd90e08ba1a6a9574c3220c105e4f42ba14d0dd27d4f538a2?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-  ];
-
-  const gamingMonitors = [
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/29884c706ecef3e4aae22e3a5268221c96093c6934a81ef50fcb130d9c0b5e73?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/248f4c6d6e2bc1c54722556155e0d474c082c74d96055ca2f64fb3c1d170244b?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/53a890b932fb67765aa65398039cbfa6103337544344a742dddb3c3eec32e852?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/a6d7f667505b8ad341b47ba091192b0c7e0dd5129e648c1a233b688da7938c24?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/248f4c6d6e2bc1c54722556155e0d474c082c74d96055ca2f64fb3c1d170244b?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-  ];
+    fetchProductData("Custome Builds", setCustomBuilds);
+    fetchProductData("Desktops", setDesktops);
+    fetchProductData("Gaming Monitors", setGamingMonitors);
+    fetchProductData("MSI Laptops", setMSILaptops);
+  }, []);
 
   const brands = [
     {
@@ -342,43 +162,12 @@ const ProductDisplay = () => {
         </div>
       </div>
 
-      {/* <ProductSection
+      <ProductSection
         title="Custom Builds"
         products={customBuilds}
         seeAllLink="See All Products"
-        brandImage="https://cdn.builder.io/api/v1/image/assets/TEMP/d5ca1418446505730363d7a68545e24fdc05a9f2449f0968f6df7cc49149a823?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-      /> */}
-
-      <div className="container my-5">
-        <div className="row ">
-          <div className="col-auto">
-            <div className="d-flex flex-column align-items-center">
-              <span>MSI GS Series</span>
-              <img
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/07d0ccfc53c806d775db0bc48600cf9a29ef6a464ed854b2abc7786995d30839?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-                alt="MSI GS Series"
-                className="img-fluid"
-              />
-            </div>
-          </div>
-          <div className="col-auto">
-            <span>MSI GT Series</span>
-          </div>
-          <div className="col-auto">
-            <span>MSI GL Series</span>
-          </div>
-          <div className="col-auto">
-            <span>MSI GE Series</span>
-          </div>
-        </div>
-      </div>
-
-      {/* <ProductSection
-        title="Desktops"
-        products={desktops}
-        seeAllLink="See All Products"
-        brandImage="https://cdn.builder.io/api/v1/image/assets/TEMP/9996d18c8ec883ff1da11bd2cd879b82b086e8153114a401faa4b766dec905c0?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-      /> */}
+        brandImage={IMAGES.CustomeBuilds}
+      />
 
       <div className="container my-5">
         <div className="row">
@@ -404,12 +193,45 @@ const ProductDisplay = () => {
         </div>
       </div>
 
-      {/* <ProductSection
+      <ProductSection
+        title="MSI Laptops"
+        products={MSILaptops}
+        seeAllLink="See All Products"
+        brandImage={IMAGES.MSILaptops}
+      />
+
+      <div className="container my-5">
+        <div className="row ">
+          <div className="col-auto">
+            <div className="d-flex flex-column align-items-center">
+              <span>MSI GS Series</span>
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/07d0ccfc53c806d775db0bc48600cf9a29ef6a464ed854b2abc7786995d30839?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
+                alt="MSI GS Series"
+                className="img-fluid"
+              />
+            </div>
+          </div>
+          <div className="col-auto">
+            <span>MSI GT Series</span>
+          </div>
+          <div className="col-auto">
+            <span>MSI GL Series</span>
+          </div>
+          <div className="col-auto">
+            <span>MSI GE Series</span>
+          </div>
+        </div>
+      </div>
+
+      <ProductSection title="Desktops" products={desktops} seeAllLink="See All Products" brandImage={IMAGES.Desktops} />
+
+      <ProductSection
         title="Gaming Monitors"
         products={gamingMonitors}
         seeAllLink="See All Products"
-        brandImage="https://cdn.builder.io/api/v1/image/assets/TEMP/d8ff6621435aeac8d1c8f4b49d8ff5d5dbb83142d7288a74d87bca5e456cae0c?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-      /> */}
+        brandImage={IMAGES.GamingMonitors}
+      />
 
       <BrandSection brands={brands} />
 
