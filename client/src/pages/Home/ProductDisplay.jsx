@@ -5,7 +5,7 @@ import InstagramPost from "../../components/ProductDisplay/InstagramPost";
 import IMAGES from "../../constants/images";
 import TestimonialCard from "../../components/ProductDisplay/TestimonialCard";
 import ProductFeatures from "../../components/ProductDisplay/ProductFeatures";
-import Icon from "../../constants/icons";
+import ICONS from "../../constants/icons";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -262,7 +262,7 @@ const ProductDisplay = () => {
 
       <div className="position-fixed bottom-0 end-0 mx-2 my-4">
         <button className="btn btn-primary rounded-circle" style={{ width: "50px", height: "50px" }}>
-          <img src={Icon.Message} alt="" className="img-fluid" />
+          <img src={ICONS.Message} alt="" className="img-fluid" />
         </button>
       </div>
     </div>

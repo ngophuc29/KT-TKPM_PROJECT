@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import ProductCard from "../../components/ProductCard";
 import { useRef } from "react";
-import Icon from "../../constants/icons";
+import ICONS from "../../constants/icons";
 
 const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
   const scrollRef = useRef(null);
@@ -56,7 +56,7 @@ const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
                 onClick={scrollLeft}
                 style={{ zIndex: 2, marginLeft: "8px", outline: "none", background: "none" }}
               >
-                <img src={Icon.Previous} alt="" />
+                <img src={ICONS.Previous} alt="" />
               </button>
 
               <button
@@ -64,7 +64,7 @@ const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
                 onClick={scrollRight}
                 style={{ zIndex: 2, marginRight: "8px", outline: "none", background: "none" }}
               >
-                <img src={Icon.Next} alt="" />
+                <img src={ICONS.Next} alt="" />
               </button>
             </>
           )}
@@ -77,7 +77,7 @@ const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
             onClick={scrollLeft}
             style={{ zIndex: 2, marginLeft: "8px", outline: "none", background: "none" }}
           >
-            <img src={Icon.Previous} alt="" />
+            <img src={ICONS.Previous} alt="" />
           </button>
 
           <button
@@ -85,7 +85,7 @@ const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
             onClick={scrollRight}
             style={{ zIndex: 2, marginRight: "8px", outline: "none", background: "none" }}
           >
-            <img src={Icon.Next} alt="" />
+            <img src={ICONS.Next} alt="" />
           </button>
         </>
       )}
