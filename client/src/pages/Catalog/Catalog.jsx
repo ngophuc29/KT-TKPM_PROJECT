@@ -1,81 +1,78 @@
+import { useEffect, useState } from "react";
 import ProductCard from "../../components/ProductCard";
 import FilterSection from "../../components/Catalog/FilterSection";
 import BreadcrumbNav from "../../components/Catalog/BreadcrumbNav";
 import Pagination from "../../components/Catalog/Pagination";
 import SortingControls from "../../components/Catalog/SortingControls";
+import axios from "axios";
+import IMAGES from "../../constants/images";
 
 const Catalog = () => {
-  const products = [
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/6110020049c709a850ef149e9595b5ea1e2201fe45de8e5923d13bf56d6cb079?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: false,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/3efd8012a7b2c942d479de532c7895977a5481b40d8da289f3e36e2ce3fe7ac8?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/96fa115c1944ab3fb8d3ee946d81dc0e1da2458d10897f3ccce15543339ab3d9?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-    {
-      stock: true,
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/395f982e7d6cca20d747dfe0927d442d6de2c1493f96955533d7689e0cc41386?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a",
-      rating: 4,
-      description: "EX DISPLAY : MSI Pro 16 Flex-036AU 15.6 MULTITOUCH All-In-On...",
-      price: "499.00",
-      discount: "499.00",
-    },
-  ];
+  const [appliedFilters, setAppliedFilters] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 20;
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products`;
+        const response = await axios.get(URL, { withCredentials: true });
+
+        setProducts(response?.data?.data);
+        console.log("Products: ", response?.data?.data);
+      } catch (error) {
+        console.log("Error fetching products: ", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const handleClearAll = () => {
+    setAppliedFilters([]);
+  };
+
+  const handleRemoveFilter = (filter) => {
+    setAppliedFilters((prevFilters) => prevFilters.filter((f) => f !== filter));
+  };
+
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
-    <div className="container-fluid py-5">
+    <div className="container-fluid py-5 pt-0">
       <div className="container">
-        <header className="text-center mb-5">
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/8f7eda2d580e4859685aeba8172aa7fcd82a523efdabed75e937630f486c6375?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-            alt="Header banner"
-            className="img-fluid mb-4"
-          />
+        <div className="mb-5">
+          <img src={IMAGES.BannerCatalog} alt="Header banner" className="img-fluid mb-4" />
           <BreadcrumbNav />
-          <h1 className="h3 fw-semibold">MSI PS Series (20)</h1>
-        </header>
+          <h1 className="h3 display-3">MSI PS Series (20)</h1>
+        </div>
 
         <SortingControls />
 
         <div className="row">
           {/* Sidebar Filters */}
           <div className="col-12 col-md-3 mb-4">
-            <FilterSection />
+            <FilterSection setAppliedFilters={setAppliedFilters} />
 
-            <div className="bg-light p-3 text-center mt-4 rounded">
-              <h5 className="fw-bold mb-3">Brands</h5>
-              <button className="btn btn-outline-secondary w-100">All Brands</button>
+            <div className=" p-3 text-center mt-4 rounded" style={{ backgroundColor: "#F5F7FF" }}>
+              <p className="fw-bold mb-3">Brands</p>
+              <button
+                className="btn btn-outline-primary w-100 fw-bold"
+                style={{
+                  height: "37px",
+                  borderColor: "#CACDD8",
+                  borderWidth: 2,
+                  fontSize: "15px",
+                  borderRadius: "999px",
+                  color: "#A2A6B0",
+                }}
+              >
+                All Brands
+              </button>
               <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/8eb535f7e707114e5ee989fcd93176aeeaf18454db55fea8c09b99dd5ce0ab90?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
                 alt="Brand logos"
@@ -83,13 +80,13 @@ const Catalog = () => {
               />
             </div>
 
-            <div className="bg-light p-3 text-center mt-4 rounded">
-              <h5 className="fw-bold mb-3">Compare Products</h5>
+            <div className="p-3 text-center mt-4 rounded" style={{ backgroundColor: "#F5F7FF" }}>
+              <p className="fw-bold mb-3">Compare Products</p>
               <p className="small text-muted">You have no items to compare.</p>
             </div>
 
-            <div className="bg-light p-3 text-center mt-4 rounded">
-              <h5 className="fw-bold mb-3">My Wish List</h5>
+            <div className="p-3 text-center mt-4 rounded" style={{ backgroundColor: "#F5F7FF" }}>
+              <p className="fw-bold mb-3">My Wish List</p>
               <p className="small text-muted">You have no items in your wish list.</p>
             </div>
 
@@ -102,27 +99,36 @@ const Catalog = () => {
 
           {/* Main Content */}
           <div className="col-12 col-md-9">
-            <div className="mb-4">
-              <div className="d-flex gap-2 flex-wrap">
-                <button className="btn btn-outline-secondary">
-                  CUSTOM PCS <span className="text-muted">(24)</span>
+            <div className="d-flex gap-2 flex-wrap">
+              {appliedFilters.map((filter, index) => (
+                <button key={index} className="btn btn-outline-secondary">
+                  {filter} <span className="text-muted">(24)</span>
+                  <span onClick={() => handleRemoveFilter(filter)} style={{ cursor: "pointer", marginLeft: "5px" }}>
+                    x
+                  </span>
                 </button>
-                <button className="btn btn-outline-secondary">
-                  HP/COMPAQ PCS <span className="text-muted">(24)</span>
+              ))}
+              {appliedFilters.length > 0 && (
+                <button className="btn btn-outline-secondary" onClick={handleClearAll}>
+                  Clear All
                 </button>
-                <button className="btn btn-outline-secondary">Clear All</button>
-              </div>
+              )}
             </div>
 
             <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gy-4">
-              {products.map((product, index) => (
+              {currentProducts.map((product, index) => (
                 <div key={index} className="col p-0">
                   <ProductCard {...product} />
                 </div>
               ))}
             </div>
 
-            <Pagination />
+            <Pagination
+              productsPerPage={productsPerPage}
+              totalProducts={products.length}
+              paginate={paginate}
+              currentPage={currentPage}
+            />
 
             <article className="mt-5 small text-muted">
               <p className="mb-3">
