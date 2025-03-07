@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import ProductCard from "../../components/ProductCard";
 import { useRef } from "react";
 import ICONS from "../../constants/icons";
+import { NavLink } from "react-router-dom";
 
 const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
   const scrollRef = useRef(null);
@@ -22,9 +23,9 @@ const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
             <h2 className="">{title}</h2>
           </div>
           <div className="col text-end">
-            <a href={seeAllLink} className="text-decoration-underline">
-              {seeAllLink}
-            </a>
+            <NavLink to={`/catalog?category=${seeAllLink}`} className="text-decoration-underline">
+              See All Products
+            </NavLink>
           </div>
         </div>
       )}
@@ -35,9 +36,9 @@ const ProductSection = ({ title, products, seeAllLink, brandImage }) => {
 
             <div className="position-absolute d-flex flex-column top-0 justify-content-center align-items-center">
               <h2 className="text-center">{title}</h2>
-              <a href={seeAllLink} className="text-decoration-underline">
-                {seeAllLink}
-              </a>
+              <NavLink to={`/catalog?category=${seeAllLink}`} className="text-decoration-underline">
+                See All Products
+              </NavLink>
             </div>
           </div>
         )}
