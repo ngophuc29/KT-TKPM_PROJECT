@@ -3,6 +3,7 @@ import Next from "../assets/icons/next.svg";
 import Previous from "../assets/icons/previous.svg";
 import Zip from "../assets/icons/zip.svg";
 import Arrow from "../assets/icons/arrow.svg";
+import Cart from "../assets/icons/cart.svg";
 import Check from "../assets/icons/check.svg";
 import CallCheck from "../assets/icons/call-check.svg";
 import Delete from "../assets/icons/delete.svg";
@@ -15,6 +16,7 @@ const ICONS = {
   Previous,
   Zip,
   Arrow,
+  Cart,
   Delete,
   Check,
   CallCheck,

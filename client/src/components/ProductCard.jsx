@@ -1,26 +1,22 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 import ICONS from "../constants/icons";
+import { NavLink } from "react-router-dom";
 
-const ProductCard = ({ stock, image, rating, description, price, discount }) => {
+const ProductCard = ({ stock, image, rating, name, price, discount }) => {
   const [hover, setHover] = useState(false);
 
   // Calculate final price
   const finalPrice = price - (price * discount) / 100;
 
   return (
-    <div
-      className={`card px-5 py-1 h-100 border-0 ${hover ? "shadow" : ""}`}
-      style={{
-        zIndex: hover ? 1 : 0,
-        transition: "0.2s",
-        cursor: "pointer",
-        transform: hover ? "scale(1.05)" : "scale(1)",
-      }}
+    <NavLink
+      to={`/details`}
+      className={`card px-5 py-1 h-100 border-0 position-relative holographic-card`}
       onMouseOver={() => setHover(true)}
       onMouseOut={() => setHover(false)}
     >
-      <div className={`badge position-absolute top-0 start-0 m-2`}>
+      <div className="badge position-absolute top-0 start-0 m-2">
         {stock > 0 ? (
           <span className="d-flex align-items-center gap-2 fw-medium" style={{ color: "#78A962" }}>
             <img src={ICONS.Check} alt="" />
@@ -33,8 +29,13 @@ const ProductCard = ({ stock, image, rating, description, price, discount }) => 
           </span>
         )}
       </div>
+      {hover && stock > 0 && (
+        <button className="position-absolute top-0 end-0 m-2 btn m-0 p-0 border-0 hover">
+          <img src={ICONS.Cart} alt="" className="hover" />
+        </button>
+      )}
       <img src={image} className="img-fluid mx-auto mb-3 mt-5" style={{ maxWidth: "150px", height: "auto" }} />
-      <div className="card-body">
+      <div className="card-body d-flex flex-column">
         <div className="d-flex justify-content-between align-items-center mb-2">
           <img
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/c69911b8ada2410925a43ecf4446ac533bac25e2ad400b898670da368828a79d?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
@@ -55,15 +56,15 @@ const ProductCard = ({ stock, image, rating, description, price, discount }) => 
             maxHeight: "3em",
           }}
         >
-          {description}
+          {name}
         </p>
-        <div>
+        <div style={{ marginTop: "auto" }}>
           <span className="text-muted text-decoration-line-through">${price}</span>
           <br />
           <span className="fw-bold">${finalPrice.toFixed(2)}</span>
         </div>
       </div>
-    </div>
+    </NavLink>
   );
 };
 

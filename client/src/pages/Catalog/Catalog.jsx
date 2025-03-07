@@ -6,35 +6,76 @@ import Pagination from "../../components/Catalog/Pagination";
 import SortingControls from "../../components/Catalog/SortingControls";
 import axios from "axios";
 import IMAGES from "../../constants/images";
+import { useLocation } from "react-router-dom";
+import ICONS from "../../constants/icons";
 
 const Catalog = () => {
-  const [appliedFilters, setAppliedFilters] = useState([]);
+  const location = useLocation();
+  const initialCategory = new URLSearchParams(location.search).get("category");
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    category: initialCategory || "",
+    price: "",
+  });
   const [products, setProducts] = useState([]);
+  const [clearFilter, setClearFilter] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 20;
+  const [productsPerPage, setProductsPerPage] = useState(20);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products`;
-        const response = await axios.get(URL, { withCredentials: true });
+    if (!initialCategory) {
+      const fetchProducts = async () => {
+        try {
+          const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products`;
+          const response = await axios.get(URL, { withCredentials: true });
 
-        setProducts(response?.data?.data);
-        console.log("Products: ", response?.data?.data);
-      } catch (error) {
-        console.log("Error fetching products: ", error);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  const handleClearAll = () => {
-    setAppliedFilters([]);
-  };
+          setProducts(response?.data?.data);
+          console.log("Products: ", response?.data?.data);
+        } catch (error) {
+          console.log("Error fetching products: ", error);
+        }
+      };
+      fetchProducts();
+    }
+  }, [clearFilter, initialCategory]);
 
   const handleRemoveFilter = (filter) => {
-    setAppliedFilters((prevFilters) => prevFilters.filter((f) => f !== filter));
+    setAppliedFilters((prev) => ({
+      category: filter === prev.category ? "" : prev.category,
+      price: filter === prev.price ? "" : prev.price,
+    }));
   };
+
+  const ButtonFilter = ({ filter }) => (
+    <>
+      {filter && (
+        <div
+          className="d-flex align-items-center gap-1 fw-bold"
+          style={{
+            height: "38px",
+            fontSize: "13px",
+            borderColor: "#CACDD8",
+            borderWidth: 1,
+            borderStyle: "solid",
+            padding: "0 10px",
+          }}
+        >
+          {filter}
+          <span className="text-muted fw-light" style={{ color: "#A2A6B0" }}>
+            (24)
+          </span>
+          <button
+            className="hover d-flex align-items-center justify-content-center m-0 border-0"
+            onClick={() => handleRemoveFilter(filter)}
+            style={{ background: "transparent", cursor: "pointer", marginLeft: "5px" }}
+          >
+            <img src={ICONS.Delete} alt="Remove filter" />
+          </button>
+        </div>
+      )}
+    </>
+  );
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
@@ -42,21 +83,46 @@ const Catalog = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const handleCollapseFilters = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <div className="container-fluid py-5 pt-0">
-      <div className="container">
+      <div className="container" style={{ overflow: "hidden" }}>
         <div className="mb-5">
           <img src={IMAGES.BannerCatalog} alt="Header banner" className="img-fluid mb-4" />
           <BreadcrumbNav />
           <h1 className="h3 display-3">MSI PS Series (20)</h1>
         </div>
 
-        <SortingControls />
+        <div className="position-relative">
+          <SortingControls
+            productsPerPage={productsPerPage}
+            setProductsPerPage={setProductsPerPage}
+            totalProducts={products.length}
+            currentPage={currentPage}
+          />
+
+          <button
+            className="btn border-0 hover position-absolute left-0"
+            style={{ zIndex: 10, top: "50%", transform: "translateY(-50%)" }}
+            onClick={handleCollapseFilters}
+          >
+            <img src={ICONS.Filter} alt="" />
+          </button>
+        </div>
 
         <div className="row">
           {/* Sidebar Filters */}
-          <div className="col-12 col-md-3 mb-4">
-            <FilterSection setAppliedFilters={setAppliedFilters} />
+          <div className={`col-12 col-md-${isCollapsed ? 0 : 3} mb-4 collapse ${isCollapsed ? "" : "show"}`}>
+            <FilterSection
+              initialCategory={initialCategory}
+              setProducts={setProducts}
+              appliedFilters={appliedFilters}
+              setAppliedFilters={setAppliedFilters}
+              setClearFilter={setClearFilter}
+            />
 
             <div className=" p-3 text-center mt-4 rounded" style={{ backgroundColor: "#F5F7FF" }}>
               <p className="fw-bold mb-3">Brands</p>
@@ -98,24 +164,20 @@ const Catalog = () => {
           </div>
 
           {/* Main Content */}
-          <div className="col-12 col-md-9">
-            <div className="d-flex gap-2 flex-wrap">
-              {appliedFilters.map((filter, index) => (
-                <button key={index} className="btn btn-outline-secondary">
-                  {filter} <span className="text-muted">(24)</span>
-                  <span onClick={() => handleRemoveFilter(filter)} style={{ cursor: "pointer", marginLeft: "5px" }}>
-                    x
-                  </span>
-                </button>
-              ))}
-              {appliedFilters.length > 0 && (
-                <button className="btn btn-outline-secondary" onClick={handleClearAll}>
-                  Clear All
-                </button>
+          <div className={`col-12 col-md-${isCollapsed ? 12 : 9}`}>
+            <div className="d-flex flex-wrap">
+              <ButtonFilter filter={appliedFilters.category} />
+              {appliedFilters.price && appliedFilters.category ? (
+                <div className="d-flex align-items-center fw-bold">
+                  <span className="fs-1">→</span>
+                  <ButtonFilter filter={appliedFilters.price} />
+                </div>
+              ) : (
+                <ButtonFilter filter={appliedFilters.price} />
               )}
             </div>
 
-            <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 gy-4">
+            <div className={`row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-${isCollapsed ? 5 : 4} gy-4`}>
               {currentProducts.map((product, index) => (
                 <div key={index} className="col p-0">
                   <ProductCard {...product} />

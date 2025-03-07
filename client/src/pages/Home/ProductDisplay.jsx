@@ -163,9 +163,9 @@ const ProductDisplay = () => {
       </div>
 
       <ProductSection
-        title="Custom Builds"
+        title="Custome Builds"
         products={customBuilds}
-        seeAllLink="See All Products"
+        seeAllLink="Custome Builds"
         brandImage={IMAGES.CustomeBuilds}
       />
 
@@ -196,7 +196,7 @@ const ProductDisplay = () => {
       <ProductSection
         title="MSI Laptops"
         products={MSILaptops}
-        seeAllLink="See All Products"
+        seeAllLink="MSI Laptops"
         brandImage={IMAGES.MSILaptops}
       />
 
@@ -224,12 +224,12 @@ const ProductDisplay = () => {
         </div>
       </div>
 
-      <ProductSection title="Desktops" products={desktops} seeAllLink="See All Products" brandImage={IMAGES.Desktops} />
+      <ProductSection title="Desktops" products={desktops} seeAllLink="Desktops" brandImage={IMAGES.Desktops} />
 
       <ProductSection
         title="Gaming Monitors"
         products={gamingMonitors}
-        seeAllLink="See All Products"
+        seeAllLink="Gaming Monitors"
         brandImage={IMAGES.GamingMonitors}
       />
 
