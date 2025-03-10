@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import ProductDetailsHead from "./ProductDetailsHead";
-import ProductDetails from "./ProductDetails";
-import ProductSpecs from "./ProductSpecs";
-import OutplayCompetition from "./OutplayCompetition";
-import ImageDisplay from "./ImageDisplay";
-import Features from "../../pages/Home/Features";
-import FeaturesDetails from "./FeaturesDetails";
+import ProductDetailsHead from "../../components/ProductDetails/ProductDetailsHead";
+import ProductDetails from "../../components/ProductDetails/ProductDetails";
+import ProductSpecs from "../../components/ProductDetails/ProductSpecs";
+import OutplayCompetition from "../../components/ProductDetails/OutplayCompetition";
+import ImageDisplay from "../../components/ProductDetails/ImageDisplay";
+import Features from "../Home/Features";
+import FeaturesDetails from "../../components/ProductDetails/FeaturesDetails";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 
