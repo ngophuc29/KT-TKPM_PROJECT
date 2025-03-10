@@ -3,7 +3,7 @@ import { useState } from "react";
 import ICONS from "../constants/icons";
 import { NavLink } from "react-router-dom";
 
-const ProductCard = ({ stock, image, rating, name, price, discount }) => {
+const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
   const [hover, setHover] = useState(false);
 
   // Calculate final price
@@ -11,7 +11,7 @@ const ProductCard = ({ stock, image, rating, name, price, discount }) => {
 
   return (
     <NavLink
-      to={`/details`}
+      to={`/details/${_id}`}
       className={`card px-5 py-1 h-100 border-0 position-relative holographic-card`}
       onMouseOver={() => setHover(true)}
       onMouseOut={() => setHover(false)}

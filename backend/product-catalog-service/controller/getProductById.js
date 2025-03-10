@@ -15,7 +15,7 @@ async function getProductById(req, res) {
             return res.status(404).json({ message: "❌ Không tìm thấy sản phẩm" });
         }
 
-        res.status(200).json(product);
+        res.status(200).json({ data: product });
     } catch (error) {
         console.error("🚨 Lỗi lấy sản phẩm:", error);
         res.status(500).json({ message: "❌ Lỗi server khi lấy sản phẩm", error: error.message });

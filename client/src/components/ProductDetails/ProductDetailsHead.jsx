@@ -1,62 +1,58 @@
-import React from "react";
-import NavigationTabs from "./NavigationTabs";
-import PurchaseOptions from "./PurchaseOptions";
+function ProductDetailsHead({ activeTab, setActiveTab, price }) {
+  const styles = {
+    container: { fontSize: 14, fontFamily: "Poppins, sans-serif", textAlign: "center", margin: "8px 0" },
+    activeTab: { color: "#000", borderBottom: "2px solid #0156FF", cursor: "pointer" },
+    tab: { borderBottom: "2px solid transparent", cursor: "pointer" },
+    price: { fontSize: 14, color: "#000", fontWeight: 400 },
+    priceBold: { fontWeight: 600 },
+    quantityInput: { width: 50, height: 30, textAlign: "center", border: "1px solid #ddd", borderRadius: 5 },
+  };
 
-function ProductDetailsHead({ activeTab, setActiveTab }) {
-    const containerStyle = {
-        borderRadius: "0px",
-        fontSize: "14px",
-        fontFamily: "Poppins, sans-serif",
-        textAlign: "center",
-        display: "flex",
-        flexDirection: "column",
-        margin: "8px 0",
-        width: "100%",
-        maxWidth: "100%",
-        // padding:'0 13%'
-    };
+  const tabs = ["about", "details", "specs"];
 
-
-    const headerStyle = {
-        backgroundColor: "#ffffff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "26px 70px",
-    };
-
-    const contentWrapperStyle = {
-        display: "flex",
-        width: "100%",
-        maxWidth: "73%",
-        gap: "20px",
-        flexWrap: "wrap",
-        justifyContent: "space-between",
-    };
-
-    const productImageStyle = {
-        objectFit: "contain",
-        objectPosition: "center",
-        width: "100%",
-    };
-
-    return (
-        <div className="container" style={containerStyle}>
-            <div className="bg-white d-flex flex-column align-items-center justify-content-center" style={headerStyle}>
-                <div className="d-flex flex-wrap justify-content-between w-100" style={contentWrapperStyle}>
-                    <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                    <PurchaseOptions />
-                </div>
-            </div>
-            <img
-                style={productImageStyle}
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/3dd038b02be0dbb84b4a1ca001af306658a1cedd790bd63ecb34f1ac738844b4?placeholderIfAbsent=true&apiKey=82af7f18abca424f9dafe2b7f0433a3e"
-                alt="Product details"
-                loading="lazy"
+  return (
+    <div className="container" style={styles.container}>
+      <div className="bg-white d-flex flex-column align-items-center justify-content-center p-4">
+        <div className="d-flex flex-wrap justify-content-between w-100" style={{ maxWidth: "73%" }}>
+          <div className="d-flex justify-content-center gap-3 text-secondary fw-semibold cursor-pointer">
+            {tabs.map((tab) => (
+              <div
+                key={tab}
+                className={
+                  activeTab === tab
+                    ? "text-dark d-flex flex-column justify-content-center"
+                    : "d-flex flex-column justify-content-center"
+                }
+                style={activeTab === tab ? styles.activeTab : styles.tab}
+                onClick={() => setActiveTab(tab)}
+              >
+                <div>{tab.charAt(0).toUpperCase() + tab.slice(1)}</div>
+              </div>
+            ))}
+          </div>
+          <div className="d-flex align-items-center gap-3 py-2">
+            <span style={styles.price}>
+              On Sale from <span style={styles.priceBold}>${price}</span>
+            </span>
+            <input
+              type="number"
+              min="1"
+              defaultValue="1"
+              className="form-control text-center"
+              style={styles.quantityInput}
             />
+            <button className="btn btn-primary rounded-pill px-4">Add to Cart</button>
+            <button
+              className="btn btn-warning rounded-pill d-flex align-items-center justify-content-center"
+              style={{ width: 80, height: 40 }}
+            >
+              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" width="50" />
+            </button>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
 
 export default ProductDetailsHead;
