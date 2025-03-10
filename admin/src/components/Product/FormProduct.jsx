@@ -17,8 +17,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { ArrowLeft } from "lucide-react";
@@ -29,7 +28,7 @@ import axios from "axios";
 const API_BASE = "http://localhost:4004";
 const CLOUDINARY_UPLOAD_API = "http://localhost:4004/productsImage";
 
-// Schema dùng Zod
+// Schema dùng Zod (đã thêm field details và chuyển color thành mảng)
 const ProductSchema = z.object({
   name: z.string().min(1, { message: "Tên không được để trống." }),
   description: z.string().min(1, { message: "Mô tả không được để trống." }),
@@ -39,7 +38,8 @@ const ProductSchema = z.object({
     .number({ invalid_type_error: "Giá phải là số." })
     .positive({ message: "Giá phải lớn hơn 0." }),
   discount: z.coerce.number().nonnegative({ message: "Discount không được âm." }),
-  color: z.string().min(1, { message: "Màu sắc không được để trống." }),
+  details: z.string().optional(),
+  color: z.array(z.string()).min(1, { message: "Chọn ít nhất một màu." }),
   new: z.boolean(),
   stock: z.coerce.number().nonnegative({ message: "Số lượng tồn không được âm." }),
   rating: z.coerce
@@ -54,6 +54,8 @@ export default function ProductForm() {
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [imageBase64, setImageBase64] = useState(null);
+  // State cho màu tạm để thêm mới
+  const [tempColor, setTempColor] = useState("#000000");
 
   // Lấy dữ liệu update từ global context
   const { productToUpdate, setProductToUpdate, setOpenForm } = useGlobalContext();
@@ -67,7 +69,8 @@ export default function ProductForm() {
       category: "",
       price: 0,
       discount: 0,
-      color: "",
+      details: "",
+      color: [],
       new: true,
       stock: 0,
       rating: 0,
@@ -77,12 +80,65 @@ export default function ProductForm() {
   });
 
   // Khi có dữ liệu cần update, prefill form
+  // useEffect(() => {
+  //   if (productToUpdate) {
+  //     form.reset(productToUpdate);
+  //     setPreview(productToUpdate.image);
+  //   }
+  // }, [productToUpdate, form]);
   useEffect(() => {
     if (productToUpdate) {
-      form.reset(productToUpdate);
+      form.reset({
+        ...productToUpdate,
+        details: Array.isArray(productToUpdate.details) && productToUpdate.details.length > 0
+          ? productToUpdate.details.join("\n")
+          : "", // nếu rỗng thì để chuỗi rỗng
+      });
       setPreview(productToUpdate.image);
     }
   }, [productToUpdate, form]);
+
+  // const onSubmit = async (data) => {
+  //   setUploading(true);
+  //   let imageUrl = data.image;
+  //   if (imageBase64) {
+  //     try {
+  //       const response = await axios.post(CLOUDINARY_UPLOAD_API, { image: imageBase64 });
+  //       imageUrl = response.data.url;
+  //     } catch (error) {
+  //       alert("Lỗi khi upload ảnh!");
+  //       setUploading(false);
+  //       return;
+  //     }
+  //   }
+  //   const updatedProduct = { ...data, image: imageUrl };
+
+  //   try {
+  //     if (productToUpdate && productToUpdate._id) {
+  //       // Cập nhật sản phẩm
+  //       await axios.put(`${API_BASE}/product/${productToUpdate._id}`, updatedProduct);
+  //       alert("Cập nhật sản phẩm thành công!");
+  //     } else {
+  //       // Tạo mới sản phẩm
+  //       await axios.post(`${API_BASE}/create-product`, updatedProduct);
+  //       alert("Thêm sản phẩm thành công!");
+  //     }
+  //     toast.success("Form submitted successfully.");
+  //     form.reset();
+  //     setPreview(null);
+  //     setImageBase64(null);
+  //     setProductToUpdate(null);
+  //     setOpenForm(false);
+  //   } catch (error) {
+  //     if (productToUpdate && productToUpdate._id) {
+  //       alert("Lỗi khi cập nhật sản phẩm!");
+  //     } else {
+  //       alert("Lỗi khi thêm sản phẩm!");
+  //     }
+  //   } finally {
+  //     setUploading(false);
+  //   }
+  // };
 
   const onSubmit = async (data) => {
     setUploading(true);
@@ -97,7 +153,12 @@ export default function ProductForm() {
         return;
       }
     }
-    const updatedProduct = { ...data, image: imageUrl };
+    // Chuyển chuỗi details thành mảng
+    const detailsArray = data.details.trim()
+      ? data.details.split("\n").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+    const updatedProduct = { ...data, details: detailsArray, image: imageUrl };
 
     try {
       if (productToUpdate && productToUpdate._id) {
@@ -246,18 +307,72 @@ export default function ProductForm() {
                 </FormItem>
               )}
             />
+            {/*   Details */}
             <FormField
               control={form.control}
-              name="color"
+              name="details"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Màu sắc</FormLabel>
+                  <FormLabel>Chi tiết</FormLabel>
                   <FormControl>
-                    <Input placeholder="Màu sắc" {...field} />
+                    <textarea
+                      placeholder="Nhập các thông số chi tiết, mỗi dòng là 1 thông số"
+                      {...field}
+                      className="w-full p-2 border rounded"
+                      rows={4}
+                      style={{ color: "#000" }}  
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
+            />
+            {/* Field chỉnh sửa màu sắc dạng mảng */}
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => {
+                const currentColors = field.value || [];
+                return (
+                  <FormItem>
+                    <FormLabel>Màu sắc</FormLabel>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="color"
+                        value={tempColor}
+                        onChange={(e) => setTempColor(e.target.value)}
+                        className="w-12 h-12 p-0"
+                      />
+                      <Button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (!currentColors.includes(tempColor)) {
+                            const newColors = [...currentColors, tempColor];
+                            field.onChange(newColors);
+                          }
+                        }}
+                      >
+                        Thêm màu
+                      </Button>
+                    </div>
+                    <div className="mt-2 flex gap-2 flex-wrap">
+                      {currentColors.map((col, idx) => (
+                        <div
+                          key={idx}
+                          className="w-8 h-8 rounded-full border cursor-pointer"
+                          style={{ backgroundColor: col }}
+                          onClick={() => {
+                            const newColors = currentColors.filter((c) => c !== col);
+                            field.onChange(newColors);
+                          }}
+                          title="Nhấn để xóa màu"
+                        ></div>
+                      ))}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
             <FormField
               control={form.control}
