@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const allowedOrigins = ["http://localhost:2000"];
+const allowedOrigins = ["http://localhost:2000", "http://localhost:5173"];
 
 console.log("Allowed Origins:", allowedOrigins);
 
@@ -29,6 +29,7 @@ const services = {
   products: "http://localhost:4004",
   inventory: "http://localhost:4000",
   cart: "http://localhost:4005",
+  notification: "http://localhost:4001",
 };
 
 // Proxy cho tất cả request đến API Gateway
@@ -37,6 +38,7 @@ Object.keys(services).forEach((route) => {
   app.use(
     `/api/${route}`,
     createProxyMiddleware({
+      ws: true,
       target: services[route],
       changeOrigin: true,
       pathRewrite: { [`^/api/${route}`]: "" },

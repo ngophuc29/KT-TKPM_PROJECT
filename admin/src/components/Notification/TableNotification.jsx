@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal, PlusCircle } from "lucide-react";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,19 +26,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useGlobalContext } from "@/context/GlobalProvider";
 
 // API base URL (điều chỉnh theo dự án của bạn)
-const API_BASE = "http://localhost:4004";
+const API_BASE = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification`;
 
 // Định nghĩa các cột hiển thị
-// eslint-disable-next-line react-refresh/only-export-components
 export const columns = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
+        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
@@ -54,84 +50,54 @@ export const columns = [
     enableHiding: false,
   },
   {
-    accessorKey: "image",
-    header: "Ảnh",
-    cell: ({ row }) => {
-      const image = row.getValue("image");
-      return image ? <img src={image} alt="Product" width={50} height={50} /> : "❌";
-    },
-    enableSorting: false,
+    accessorKey: "title",
+    header: "Title",
+    cell: ({ row }) => <div>{row.getValue("title")}</div>,
   },
   {
-    accessorKey: "name",
-    header: "Tên",
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    accessorKey: "orderId",
+    header: "Order ID",
+    cell: ({ row }) => <div>{row.getValue("orderId")}</div>,
   },
   {
-    accessorKey: "brand",
-    header: "Brand",
-    cell: ({ row }) => <div>{row.getValue("brand")}</div>,
+    accessorKey: "orderStatus",
+    header: "Order Status",
+    cell: ({ row }) => <div>{row.getValue("orderStatus")}</div>,
   },
   {
-    accessorKey: "category",
-    header: "Danh mục",
-    cell: ({ row }) => <div>{row.getValue("category")}</div>,
+    accessorKey: "platform",
+    header: "Platform",
+    cell: ({ row }) => <div>{row.getValue("platform")}</div>,
   },
   {
-    accessorKey: "price",
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => <div>{row.getValue("status")}</div>,
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => <div>{row.getValue("type")}</div>,
+  },
+  {
+    accessorKey: "createdAt",
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-        Giá
+        Created At
         <ArrowUpDown />
       </Button>
     ),
     cell: ({ row }) => {
-      const price = row.getValue("price");
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(price);
-      return <div className="ml-4 text-left">{formatted}</div>;
+      const createdAt = row.getValue("createdAt");
+      const formatted = new Date(createdAt).toLocaleString();
+      return <div>{formatted}</div>;
     },
-  },
-  {
-    accessorKey: "stock",
-    header: () => <div className="text-center">Stock</div>,
-    cell: ({ row }) => <div className="text-center">{row.getValue("stock")}</div>,
-  },
-  {
-    accessorKey: "color",
-    header: "Màu sắc",
-    cell: ({ row }) => (
-      <div style={{ display: "flex", gap: "5px"  }}>
-        {Array.isArray(row.getValue("color")) &&
-          row.getValue("color").map((color, index) => (
-            <div
-              key={index}
-              style={{
-                width: "20px",
-                height: "20px",
-                background: color,
-                borderRadius: "50%",
-                border: "1px solid #000",
-              }}
-              title={color}
-            />
-          ))}
-      </div>
-    ),
-  },
-
-  {
-    accessorKey: "discount",
-    header: "Discount",
-    cell: ({ row }) => <div>{row.getValue("discount")}%</div>,
   },
   {
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const product = row.original;
+      const notification = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -142,15 +108,9 @@ export const columns = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => handleUpdate(product)}
-            >
-              Update
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleUpdate(notification)}>Update</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDelete(product._id)}>
-              Delete
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(notification._id)}>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -158,7 +118,7 @@ export const columns = [
   },
 ];
 
-export function TableProduct() {
+export function TableNotification({loadNotifications}) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -168,39 +128,40 @@ export function TableProduct() {
   const [rowSelection, setRowSelection] = useState({});
 
   // Lấy các hàm từ global context để truyền dữ liệu cần cập nhật và mở form
-  const { setOpenForm, setProductToUpdate } = useGlobalContext();
+  const { setOpenForm, setNotificationToUpdate } = useGlobalContext();
 
-  // Hàm gọi API để lấy danh sách sản phẩm
-  const fetchProducts = () => {
+  // Hàm gọi API để lấy danh sách thông báo
+  const fetchNotifications = () => {
     axios
-      .get(`${API_BASE}/products`)
+      .get(`${API_BASE}/notifications`)
       .then((res) => {
-        setData(res.data.data || []);
+        setData(res.data.notifications || []);
       })
-      .catch(() => setError("Lỗi khi lấy sản phẩm!"))
+      .catch(() => setError("Lỗi khi lấy thông báo!"))
       .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchNotifications();
+    console.log("Load notifications");
+  }, [loadNotifications]);
 
-  // Hàm xử lý xóa sản phẩm
-  const handleDelete = (productId) => {
-    if (window.confirm("Bạn có chắc muốn xóa sản phẩm này không?")) {
+  // Hàm xử lý xóa thông báo
+  const handleDelete = (notificationId) => {
+    if (window.confirm("Bạn có chắc muốn xóa thông báo này không?")) {
       axios
-        .delete(`${API_BASE}/product/${productId}`)
+        .delete(`${API_BASE}/notification/${notificationId}`)
         .then(() => {
-          alert("Xóa sản phẩm thành công!");
-          fetchProducts();
+          alert("Xóa thông báo thành công!");
+          fetchNotifications();
         })
-        .catch(() => alert("Lỗi khi xóa sản phẩm!"));
+        .catch(() => alert("Lỗi khi xóa thông báo!"));
     }
   };
 
-  // Hàm xử lý update: truyền dữ liệu sản phẩm cần update qua global context và mở form
-  const handleUpdate = (product) => {
-    setProductToUpdate(product);
+  // Hàm xử lý update: truyền dữ liệu thông báo cần update qua global context và mở form
+  const handleUpdate = (notification) => {
+    setNotificationToUpdate(notification);
     setOpenForm(true);
   };
 
@@ -210,7 +171,7 @@ export function TableProduct() {
       return {
         ...col,
         cell: ({ row }) => {
-          const product = row.original;
+          const notification = row.original;
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -221,13 +182,9 @@ export function TableProduct() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => handleUpdate(product)}>
-                  Update
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleUpdate(notification)}>Update</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleDelete(product._id)}>
-                  Delete
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleDelete(notification._id)}>Delete</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
@@ -265,16 +222,11 @@ export function TableProduct() {
       <div className="flex items-center py-4">
         <div className="flex items-center space-x-2">
           <Input
-            placeholder="Filter by name..."
-            value={table.getColumn("name")?.getFilterValue() ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
+            placeholder="Filter by title..."
+            value={table.getColumn("title")?.getFilterValue() ?? ""}
+            onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
             className="max-w-sm"
           />
-          <Button variant="outline" className="ml-auto" onClick={() => setOpenForm(true)}>
-            Add <PlusCircle />
-          </Button>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -299,7 +251,7 @@ export function TableProduct() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {/* Bảng hiển thị sản phẩm */}
+      {/* Bảng hiển thị thông báo */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -307,9 +259,7 @@ export function TableProduct() {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -320,9 +270,7 @@ export function TableProduct() {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))
@@ -339,8 +287,8 @@ export function TableProduct() {
       {/* Phân trang */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
+          selected.
         </div>
         <div className="space-x-2">
           <Button
@@ -351,12 +299,7 @@ export function TableProduct() {
           >
             Previous
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
+          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
             Next
           </Button>
         </div>
