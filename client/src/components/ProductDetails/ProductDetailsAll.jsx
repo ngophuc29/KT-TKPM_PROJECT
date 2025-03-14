@@ -6,14 +6,15 @@ import OutplayCompetition from "./OutplayCompetition";
 import ImageDisplay from "./ImageDisplay";
 import Features from "../../pages/Home/Features";
 import FeaturesDetails from "./FeaturesDetails";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import axios from "axios";
 
 const ProductDetailsAll = () => {
   const [activeTab, setActiveTab] = useState("about");
-  const id = useLocation().pathname.split("/")[2];
+  // const id = useLocation().pathname.split("/")[2];
+  const { id } = useParams();
   const [product, setProduct] = useState({});
-
+  
   useEffect(() => {
     const fetchNewProducts = async () => {
       try {
@@ -21,17 +22,22 @@ const ProductDetailsAll = () => {
         const response = await axios.get(URL, { withCredentials: true });
 
         setProduct(response?.data?.data);
+        console.log(product._id);
+        
       } catch (error) {
         console.log("Error fetching new products: ", error);
       }
     };
     fetchNewProducts();
+    console.log("Extracted id:", id);
   }, [id]);
 
   return (
     <>
       {/* Truyền activeTab và setActiveTab xuống ProductDetailsHead */}
-      <ProductDetailsHead activeTab={activeTab} setActiveTab={setActiveTab} price={product.price}/>
+      <ProductDetailsHead activeTab={activeTab} setActiveTab={setActiveTab} price={product.price} />
+      
+     
 
       {/* Breadcrumb */}
       <div className="container">
