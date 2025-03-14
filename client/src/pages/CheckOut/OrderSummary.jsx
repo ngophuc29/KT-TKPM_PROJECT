@@ -1,24 +1,20 @@
 import * as React from "react";
+import { useLocation } from "react-router-dom";
 
 const OrderSummary = () => {
-    const items = [
-        {
-            id: 1,
-            image: "http://b.io/ext_15-1",
-            name: "MSI MEG Trident X 10SD-1012AU Intel i7 10700K, 2070 SUPER",
-            quantity: 1,
-            price: 3799.00
-        },
-        {
-            id: 2,
-            image: "http://b.io/ext_15-2",
-            name: "MSI MEG Trident X 10SD-1012AU Intel i7 10700K, 2070 SUPER",
-            quantity: 1,
-            price: 3799.00
-        }
-    ];
+    
+    const location = useLocation();
+    const { selectedCartItems, subtotal, shipping, tax, total } = location.state || {};
 
-    const totalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+    // Nếu không có sản phẩm nào được chọn, hiển thị thông báo
+    if (!selectedCartItems || selectedCartItems.length === 0) {
+        return (
+            <div style={{ textAlign: "center", padding: "20px" }}>
+                <h2>Không có sản phẩm nào được chọn!</h2>
+            </div>
+        );
+    }
+    const totalAmount = selectedCartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
     return (
         <div
@@ -59,7 +55,7 @@ const OrderSummary = () => {
                     fontFamily: "Poppins, sans-serif",
                 }}
             >
-                <div>{items.length} Items in Cart</div>
+                <div>{selectedCartItems.length} Items in Cart</div>
                 <img
                     loading="lazy"
                     src="https://cdn.builder.io/api/v1/image/assets/TEMP/881161bee43a56cddc40e90290f05b7df6796948834c5d4043d83a75f5eb36b7?placeholderIfAbsent=true&apiKey=82af7f18abca424f9dafe2b7f0433a3e"
@@ -74,9 +70,9 @@ const OrderSummary = () => {
                 />
             </div>
 
-            {items.map((item) => (
+            {selectedCartItems.map((item) => (
                 <div
-                    key={item.id}
+                    key={item.productId}
                     style={{
                         display: "flex",
                         marginTop: "25px",
@@ -107,6 +103,7 @@ const OrderSummary = () => {
                     >
                         <div style={{ color: "#000", fontWeight: "500" }}>
                             {item.name}
+                            {console.log("ten san pham : ",item.name)}
                         </div>
                         <div
                             style={{
@@ -121,7 +118,7 @@ const OrderSummary = () => {
                                 <span style={{ fontWeight: "400" }}>Qty </span>
                                 <span>{item.quantity}</span>
                             </div>
-                            <div style={{ color: "#000" }}>${item.price.toFixed(2)}</div>
+                            <div style={{ color: "#000" }}>${item.price }</div>
                         </div>
                     </div>
                 </div>
@@ -139,7 +136,7 @@ const OrderSummary = () => {
                 }}
             >
                 <div>Total</div>
-                <div>${totalAmount.toFixed(2)}</div>
+                <div>${totalAmount }</div>
             </div>
         </div>
     );

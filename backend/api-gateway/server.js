@@ -28,6 +28,7 @@ app.use(express.json());
 const services = {
   products: "http://localhost:4004",
   inventory: "http://localhost:4000",
+  cart: "http://localhost:4005",
 };
 
 // Proxy cho tất cả request đến API Gateway
