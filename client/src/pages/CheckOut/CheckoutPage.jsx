@@ -1,11 +1,19 @@
 import * as React from "react";
 import CheckoutForm from "./CheckoutForm";
 import OrderSummary from "./OrderSummary";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
     const navigate = useNavigate();
-
+    const location = useLocation();
+ 
+    // Lấy dữ liệu được truyền qua state
+    const { selectedCartItems, subtotal, shipping, tax, total } = location.state || {};
+    if (!location.state) {
+        navigate("/cart");
+        return null;
+    }
+    
     return (
         <div
             style={{
@@ -109,7 +117,14 @@ const CheckoutPage = () => {
                     }}
                 >
                     <CheckoutForm />
-                    <OrderSummary />
+                    {/* <OrderSummary /> */}
+                    <OrderSummary
+                        items={selectedCartItems}
+                        subtotal={subtotal}
+                        shipping={shipping}
+                        tax={tax}
+                        total={total}
+                    />
                 </div>
             </main>
 

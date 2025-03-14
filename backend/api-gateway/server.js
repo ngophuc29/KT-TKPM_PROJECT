@@ -28,7 +28,7 @@ app.use(express.json());
 const services = {
   products: "http://localhost:4004",
   inventory: "http://localhost:4000",
-  
+  cart: "http://localhost:4005",
   notification: "http://localhost:4001",
 };
 
