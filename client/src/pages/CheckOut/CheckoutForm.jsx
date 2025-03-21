@@ -3,12 +3,15 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const ORDER_API_URL = "http://localhost:4009/api/orders";
+const ORDER_API_URL = "http://localhost:3000/api/orders";
+// Giả sử INVENTORY_API và CART_API_URL đã được định nghĩa đúng URL của Inventory và Cart API
+const INVENTORY_API = "http://localhost:3000/api/inventory";
+const CART_API_URL = "http://localhost:3000/api/cart";
 
 const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
   const navigate = useNavigate();
 
-  // Sử dụng state cho firstName, lastName, address, phone, email
+  // State cho thông tin khách hàng
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
@@ -19,6 +22,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
   const [customerNote, setCustomerNote] = useState("");
 
   const handleOrderSubmit = async () => {
+    // Validate thông tin khách hàng và giỏ hàng
     if (
       !firstName.trim() ||
       !lastName.trim() ||
@@ -34,7 +38,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       return;
     }
 
-    // Tạo các đối tượng cần truyền
+    // Tạo đối tượng userId và customer
     const userId = "64e65e8d3d5e2b0c8a3e9f12"; // Fake userId; thay đổi theo thực tế nếu cần
     const customer = {
       name: `${firstName} ${lastName}`,
@@ -42,12 +46,16 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       phone,
       email,
     };
+
+    // Tạo danh sách items cho đơn hàng
     const items = selectedItems.map((item) => ({
       productId: item.productId,
       name: item.name,
       quantity: item.quantity,
       price: item.price,
     }));
+
+    // Tạo đối tượng shipping, payment và notes
     const shipping = {
       method: shippingMethod,
       fee: shippingMethod === "standard" ? 30000 : 50000,
@@ -63,30 +71,49 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       sellerNote: "",
     };
 
-    // Tạo payload và gửi qua body
-    const orderPayload = {
-      userId,
-      customer,
-      items,
-      shipping,
-      payment,
-      finalTotal,
-      notes,
-    };
-
-    console.log("orderPayload", orderPayload);
+    // --- Gọi API bulk để lấy thông tin tồn kho ---
     try {
-      const response = await axios.post(`${ORDER_API_URL}/create`, orderPayload);
+      const productIds = items.map(item => item.productId);
+      const productIdsParam = productIds.join(',');
+      const { data: inventoryData } = await axios.get(`${INVENTORY_API}/bulk/${productIdsParam}`);
+
+      if (!inventoryData || inventoryData.length === 0) {
+        toast.error("Không tìm thấy sản phẩm trong kho");
+        return;
+      }
+
+      // Kiểm tra tồn kho từng sản phẩm
+      for (let item of items) {
+        const invItem = inventoryData.find(i => i.productId.toString() === item.productId.toString());
+        if (!invItem || invItem.stock < item.quantity) {
+          toast.error(`Sản phẩm ${item.name} không đủ hàng`);
+          return;
+        }
+      }
+    } catch (error) {
+      toast.error("Lỗi khi kiểm tra tồn kho");
+      console.error("Lỗi khi kiểm tra tồn kho:", error.message);
+      return;
+    }
+
+    // Xây dựng URL với dữ liệu được chuyển đổi qua params.
+    // Lưu ý: finalTotal là một giá trị số nên không cần encode, còn các object cần được stringify và encode.
+    const url = `${ORDER_API_URL}/create/${userId}/${encodeURIComponent(JSON.stringify(customer))}/${encodeURIComponent(JSON.stringify(items))}/${encodeURIComponent(JSON.stringify(shipping))}/${encodeURIComponent(JSON.stringify(payment))}/${finalTotal}/${encodeURIComponent(JSON.stringify(notes))}`;
+
+    try {
+      // Gọi API tạo đơn hàng qua URL params (không gửi dữ liệu trong body)
+      const response = await axios.post(url);
       toast.success("Đặt hàng thành công!");
       navigate("/home", { state: { order: response.data.order } });
+
+      // Xóa giỏ hàng của user sau khi đặt hàng thành công
+      await axios.delete(`${CART_API_URL}/clear/${userId}`);
     } catch (error) {
       const errMsg = error.response?.data?.message || error.message;
       toast.error("Lỗi khi đặt hàng: " + errMsg);
       console.error("Lỗi khi đặt hàng:", error.message);
     }
   };
-
-
 
   return (
     <form
@@ -274,7 +301,9 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
 
       {/* Order Note */}
       <div>
-        <label style={{ display: "block", marginBottom: "5px" }}>Order Note (optional)</label>
+        <label style={{ display: "block", marginBottom: "5px" }}>
+          Order Note (optional)
+        </label>
         <textarea
           id="customerNote"
           name="customerNote"

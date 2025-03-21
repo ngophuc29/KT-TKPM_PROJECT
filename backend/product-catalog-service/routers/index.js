@@ -11,6 +11,7 @@ const getAllProducts = require("../controller/getAllProducts");
 const uploadImage = require("../controller/uploadImage");
 const getProductsByFilters = require("../controller/filterProduct/getProductsByFilters");
 const getPriceCountsByCategory = require("../controller/filterProduct/getPriceCountsByCategory");
+const updateStock = require("../controller/updateStock");
 const router = express.Router();
 
 // Create product api
@@ -48,5 +49,9 @@ router.get("/products", getAllProducts);
 
 // Route dùng để upload ảnh sản phẩm
 router.post("/productsImage", uploadImage);
+
+
+// Route update stock: truyền productId và stock mới qua params
+router.put("/update-stock/:id/:stock", updateStock);
 
 module.exports = router;
