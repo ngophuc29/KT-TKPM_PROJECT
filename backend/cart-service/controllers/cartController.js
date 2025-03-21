@@ -177,6 +177,33 @@ exports.getCart = async (req, res) => {
 
 // Xóa sạch giỏ hàng của user
 // Route ví dụ: DELETE /cart/clear/:userId
+// exports.clearCart = async (req, res) => {
+//     try {
+//         const { userId } = req.params;
+//         if (!userId) {
+//             return res.status(400).json({ message: "UserId không hợp lệ" });
+//         }
+//         const cart = await Cart.findOne({ userId });
+//         if (!cart) {
+//             return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
+//         }
+//         // Release reserved quantity cho từng mặt hàng qua URL parameters
+//         const releasePromises = cart.items.map(item =>
+//             axios.post(`http://localhost:3000/api/inventory/release/${item.productId.toString()}/${item.quantity}`)
+//                 .catch(err => {
+//                     console.error("Lỗi khi giải phóng sản phẩm", item.productId, err.message);
+//                     return null;
+//                 })
+//         );
+//         await Promise.all(releasePromises);
+//         cart.items = [];
+//         await cart.save();
+//         res.json({ message: "Giỏ hàng đã được xóa sạch", cart });
+//     } catch (error) {
+//         res.status(500).json({ message: "Lỗi khi xóa giỏ hàng", error: error.message });
+//     }
+// };
+// Xóa sạch giỏ hàng của user
 exports.clearCart = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -187,15 +214,7 @@ exports.clearCart = async (req, res) => {
         if (!cart) {
             return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
         }
-        // Release reserved quantity cho từng mặt hàng qua URL parameters
-        const releasePromises = cart.items.map(item =>
-            axios.post(`http://localhost:3000/api/inventory/release/${item.productId.toString()}/${item.quantity}`)
-                .catch(err => {
-                    console.error("Lỗi khi giải phóng sản phẩm", item.productId, err.message);
-                    return null;
-                })
-        );
-        await Promise.all(releasePromises);
+        // Loại bỏ bước giải phóng reserved vì đã được xử lý ở confirmOrder
         cart.items = [];
         await cart.save();
         res.json({ message: "Giỏ hàng đã được xóa sạch", cart });

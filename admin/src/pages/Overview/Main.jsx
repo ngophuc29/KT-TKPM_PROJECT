@@ -2,6 +2,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Card from "./OverviewTabs/Card";
 import OverviewContent from "./OverviewTabs/OverviewContent";
 import NotificationContent from "./NotificationTabs/NotificationContent";
+import Order from "./OrdersTabs/Order";
+import TableOrders from "@/components/Orders/TableOrders";
 import axios from "axios";
 const Main = ({ unreadCount, setUnreadCount, loadNotifications, setLoadNotifications }) => {
   const markNotificationsAsRead = async () => {
@@ -27,6 +29,8 @@ const Main = ({ unreadCount, setUnreadCount, loadNotifications, setLoadNotificat
               {unreadCount > 0 ? `(${unreadCount})` : ""}
             </span>
           </TabsTrigger>
+          <TabsTrigger value="order">Order</TabsTrigger>
+
         </TabsList>
 
         {/* Tabs content */}
@@ -36,6 +40,11 @@ const Main = ({ unreadCount, setUnreadCount, loadNotifications, setLoadNotificat
         </TabsContent>
         <TabsContent value="notification">
           <NotificationContent loadNotifications={loadNotifications}/>
+        </TabsContent>
+        <TabsContent value="order">
+          {/* <Order/> */}
+          <TableOrders/>
+          {/* <h1>hello</h1> */}
         </TabsContent>
         <TabsContent value="analytics">Change your password here.</TabsContent>
       </Tabs>
