@@ -10,7 +10,9 @@ const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
   const CART_API_URL = "http://localhost:3000/api/cart/add";
 
   // UserId giả dùng cho demo
-  const fakeUserId = "user9999";
+  // const fakeUserId = "user9999";
+  const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
+
   // Calculate final price
   const finalPrice = price - (price * discount) / 100;
   // Xử lý thêm sản phẩm vào giỏ hàng

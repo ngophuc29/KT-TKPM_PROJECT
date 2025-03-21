@@ -7,7 +7,9 @@ import { Link } from "react-router-dom";
 // Định nghĩa các API URL (điều chỉnh theo backend của bạn)
 const CART_API_URL = "http://localhost:3000/api/cart";
 const PRODUCT_API_URLGetInfo = "http://localhost:3000/api/products/product"; // Giả sử endpoint lấy thông tin sản phẩm
-const fakeUserId = "user9999";
+// const fakeUserId = "user9999";
+const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
+
 
 const Cart = () => {
     const [cart, setCart] = React.useState(null);
@@ -150,9 +152,11 @@ const Cart = () => {
     const subtotal = selectedCartItems.reduce((acc, item) => {
         return acc + item.quantity * parseFloat(item.price.replace(",", ""));
     }, 0);
-    const shipping = selectedCartItems.length > 0 ? 21.0 : 0;
-    const tax = subtotal * 0.1;
-    const total = subtotal + shipping + tax;
+    // const shipping = selectedCartItems.length > 0 ? 21.0 : 0;
+    // const tax = subtotal * 0.1;
+    // const total = subtotal + shipping + tax;
+    const total = subtotal  ;
+
 
     return (
         <div className="bg-white d-flex flex-column overflow-hidden">
@@ -195,7 +199,9 @@ const Cart = () => {
                     </div>
 
                     <div className="col-lg-4">
-                        <CartSummary subtotal={subtotal} shipping={shipping} tax={tax} total={total} selectedCartItems={selectedCartItems} />
+                        {/* <CartSummary subtotal={subtotal} shipping={shipping} tax={tax} total={total} selectedCartItems={selectedCartItems} /> */}
+                        <CartSummary subtotal={subtotal}  total={total} selectedCartItems={selectedCartItems} />
+
                     </div>
                 </div>
             </div>

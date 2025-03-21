@@ -1,14 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
-const CartSummary = ({ subtotal, shipping, tax, total, selectedCartItems }) => {
+const CartSummary = ({ subtotal,   total, selectedCartItems }) => {
     const navigate = useNavigate();
     const handleCheckout = () => {
         if (selectedCartItems.length === 0) {
             toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
             return;
         }
-        navigate("/checkout", { state: { selectedCartItems, subtotal, shipping, tax, total } });
+        navigate("/checkout", { state: { selectedCartItems, subtotal,   total } });
     };
     return (
         <div
@@ -49,8 +49,8 @@ const CartSummary = ({ subtotal, shipping, tax, total, selectedCartItems }) => {
                 </div>
                 <div style={{ fontSize: "14px", textAlign: "right", lineHeight: "2" }}>
                     <div>${subtotal.toFixed(2)}</div>
-                    <div>${shipping.toFixed(2)}</div>
-                    <div>${tax.toFixed(2)}</div>
+                    {/* <div>${shipping.toFixed(2)}</div>
+                    <div>${tax.toFixed(2)}</div> */}
                     <div style={{ fontWeight: "600", fontSize: "18px", marginTop: "10px" }}>
                         ${total.toFixed(2)}
                     </div>

@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 import CheckoutForm from "./CheckoutForm";
 import OrderSummary from "./OrderSummary";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,114 +7,64 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Lấy dữ liệu được truyền qua state
+  // Lấy dữ liệu từ state (điều này được truyền từ giỏ hàng)
   const { selectedCartItems, subtotal, shipping, tax, total } = location.state || {};
   if (!location.state) {
     navigate("/cart");
     return null;
   }
 
+  // Nâng state shippingMethod lên để tính phí ship và final total
+  const [shippingMethod, setShippingMethod] = useState("standard");
+  // Nếu bạn muốn sử dụng đơn vị VND thì giá ship được tính theo số nguyên, ví dụ:
+  const shippingFees = { standard: 30000, express: 50000 };
+  const shippingFee = shippingFees[shippingMethod] || 0;
+  // finalTotal = tổng tiền sản phẩm + phí ship (có thể cộng tax nếu cần)
+  const finalTotal = subtotal + shippingFee;
+
   return (
-    <div
-      style={{
-        backgroundColor: "rgba(255, 255, 255, 1)",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        margin: "30px 0",
-      }}
-    >
+    <div style={{ backgroundColor: "#FFF", margin: "30px 0" }}>
       <main
         style={{
           alignSelf: "center",
           display: "flex",
-          marginTop: "20px",
-          width: "100%",
-          maxWidth: "1400px",
           flexDirection: "column",
-          alignItems: "start",
+          padding: "20px",
+          width: "100%",
+          maxWidth: "1400px"
         }}
         className="container"
       >
         <nav aria-label="Breadcrumb">
-          <div
-            style={{
-              color: "rgba(163, 163, 163, 1)",
-              textAlign: "center",
-              font: "300 12px Poppins, sans-serif",
-            }}
-          >
-            <span style={{ fontWeight: "400", color: "rgba(0,0,0,1)" }}>Home </span>
-            <span style={{ fontWeight: "400", color: "rgba(1,86,255,1)" }}>›</span>
-            <span style={{ fontWeight: "400", color: "rgba(0,0,0,1)" }}> Shopping Cart </span>
-            <span style={{ fontWeight: "400", color: "rgba(1,86,255,1)" }}>›</span>
-            <span style={{ fontWeight: "400", color: "rgba(0,0,0,1)" }}> Checkout Process</span>
+          <div style={{ textAlign: "center", font: "300 12px Poppins, sans-serif", color: "#A3A3A3" }}>
+            <span style={{ fontWeight: "400", color: "#000" }}>Home </span>
+            <span style={{ fontWeight: "400", color: "#0156FF" }}>›</span>
+            <span style={{ fontWeight: "400", color: "#000" }}> Shopping Cart </span>
+            <span style={{ fontWeight: "400", color: "#0156FF" }}>›</span>
+            <span style={{ fontWeight: "400", color: "#000" }}> Checkout Process</span>
           </div>
         </nav>
-
         <div
           style={{
             display: "flex",
-            marginTop: "19px",
-            width: "100%",
-            maxWidth: "1349px",
-            gap: "20px",
-            fontFamily: "Poppins, sans-serif",
             flexWrap: "wrap",
-            justifyContent: "space-between",
-          }}
-          className="row"
-        >
-          <div
-            style={{
-              alignSelf: "start",
-              display: "flex",
-              gap: "32px",
-              fontWeight: "600",
-            }}
-            className="col-12 d-flex align-items-center"
-          >
-            <h1
-              style={{
-                color: "rgba(0, 0, 0, 1)",
-                fontSize: "32px",
-              }}
-            >
-              Checkout
-            </h1>
-            <button
-              style={{
-                borderRadius: "50px",
-                border: "2px solid #0156FF",
-                fontSize: "14px",
-                color: "#0156FF",
-                textAlign: "center",
-                padding: "18px 70px",
-                background: "none",
-                cursor: "pointer",
-              }}
-              className="btn btn-outline-primary"
-              onClick={() => navigate("/login")}
-            >
-              Sign In
-            </button>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            // alignItems: "flex-start",
-            gap: "163px",
-            width: "100%",
-            // maxWidth: "1200px",
-            // margin: "0 auto",
+            gap: "20px",
+            justifyContent: "space-between"
           }}
         >
-          <CheckoutForm />
-          {/* <OrderSummary /> */}
-          <OrderSummary items={selectedCartItems} subtotal={subtotal} shipping={shipping} tax={tax} total={total} />
+          <CheckoutForm
+            selectedItems={selectedCartItems}
+            shippingMethod={shippingMethod}
+            setShippingMethod={setShippingMethod}
+            subtotal={subtotal}
+            finalTotal={finalTotal}
+          />
+          <OrderSummary
+            items={selectedCartItems}
+            subtotal={subtotal}
+            shippingFee={shippingFee}
+            finalTotal={finalTotal}
+          />
         </div>
       </main>
     </div>
