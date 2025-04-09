@@ -115,6 +115,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
     }
   };
 
+ 
   return (
     <form
       style={{
