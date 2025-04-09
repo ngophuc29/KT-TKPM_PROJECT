@@ -134,7 +134,10 @@ exports.createOrder = async (req, res) => {
         await order.save();
 
         // Xóa giỏ hàng của user sau khi đặt hàng thành công
-        await axios.delete(`${CART_API_URL}/clear/${userId}`);
+        // await axios.delete(`${CART_API_URL}/clear/${userId}`);
+        for (let item of itemsArr) {
+            await axios.delete(`${CART_API_URL}/remove/${userId}/${item.productId}`);
+        }
 
         res.json({ message: "Đơn hàng đã được tạo", order });
     } catch (error) {
@@ -170,7 +173,7 @@ exports.getOrdersByUser = async (req, res) => {
 // 📌 Lấy tất cả đơn hàng (Admin)
 exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await Order.find({}).populate("userId");
+        const orders = await Order.find({}).populate("userId").sort({ createdAt: -1 }); // Sắp xếp theo ngày tạo giảm dần (mới nhất trước);
         res.json(orders);
     } catch (error) {
         res.status(500).json({ message: "Lỗi server", error: error.message });

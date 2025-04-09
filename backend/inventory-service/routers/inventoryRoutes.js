@@ -23,11 +23,11 @@ router.post("/import/:productId/:quantity", inventoryController.importStock);
 // ✅ API đồng bộ Inventory với Product Service
 router.post("/syncInventory", inventoryController.syncInventory);
 
-// ✅ Route đặt chỗ sản phẩm (truyền productId và quantity qua params)
-router.post("/reserve/:productId/:quantity", inventoryController.reserveStock);
+// // ✅ Route đặt chỗ sản phẩm (truyền productId và quantity qua params)
+// router.post("/reserve/:productId/:quantity", inventoryController.reserveStock);
 
-// ✅ Route giải phóng sản phẩm (truyền productId và quantity qua params)
-router.post("/release/:productId/:quantity", inventoryController.releaseStock);
+// // ✅ Route giải phóng sản phẩm (truyền productId và quantity qua params)
+// router.post("/release/:productId/:quantity", inventoryController.releaseStock);
 
 // (Optional) Route xác nhận đơn hàng: truyền items dưới dạng chuỗi JSON trong params
 router.post("/confirm/:items", inventoryController.confirmOrder);

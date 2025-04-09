@@ -181,6 +181,23 @@ const [modalOrderId, setModalOrderId] = useState(null);
       accessorFn: (row) => row.customer?.name,
       header: "Khách hàng",
       cell: (info) => info.getValue(),
+    }, {
+      accessorFn: (row) => row.payment?.method,
+      header: "Thanh toán",
+      cell: (info) => info.getValue() === "cod" ? "COD" : info.getValue(),
+    },
+    {
+      accessorFn: (row) => row.payment?.status,
+      header: "TT Thanh toán",
+    },
+    {
+      accessorFn: (row) => row.shipping?.fee,
+      header: "Phí ship",
+      cell: (info) => `${info.getValue()?.toLocaleString()} đ`,
+    },
+    {
+      accessorFn: (row) => row.shipping?.status,
+      header: "TT Giao hàng",
     },
     {
       accessorKey: "finalTotal",
@@ -209,72 +226,83 @@ const [modalOrderId, setModalOrderId] = useState(null);
       cell: ({ row }) => {
         const order = row.original;
         return (
-          <div className="flex items-center  gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {order.status === "pending" && (
-              <Button
-                variant="warning"
-                size="sm"
+              <button
+                className="min-w-[110px] px-3 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-sm"
                 onClick={() => handleChangeStatus(order._id, "confirmed")}
                 disabled={actionLoading}
               >
                 Xác nhận
-              </Button>
+              </button>
             )}
             {order.status === "confirmed" && (
-              <Button
-                variant="success"
-                size="sm"
+              <button
+                className="min-w-[110px] px-3 py-1 text-white bg-blue-600 hover:bg-blue-700 rounded text-sm"
                 onClick={() => handleChangeStatus(order._id, "completed")}
                 disabled={actionLoading}
               >
                 Hoàn thành
-              </Button>
+              </button>
             )}
             {(order.status === "pending" || order.status === "confirmed") ? (
-              <Button variant="info" size="sm" onClick={() => handleEdit(order._id)} disabled={actionLoading}>
+              <button
+                className="min-w-[110px] px-3 py-1 text-white bg-yellow-500 hover:bg-yellow-600 rounded text-sm"
+                onClick={() => handleEdit(order._id)}
+                disabled={actionLoading}
+              >
                 Chỉnh sửa
-              </Button>
+              </button>
             ) : (
-              <Button variant="info" size="sm" disabled>
+              <button
+                className="min-w-[110px] px-3 py-1 text-white bg-yellow-300 cursor-not-allowed rounded text-sm"
+                disabled
+              >
                 Chỉnh sửa
-              </Button>
+              </button>
             )}
             {(order.status === "pending" ||
               order.status === "confirmed" ||
               order.status === "completed") ? (
-              <Button
-                variant="destructive"
-                size="sm"
+              <button
+                className="min-w-[110px] px-3 py-1 text-white bg-red-600 hover:bg-red-700 rounded text-sm"
                 onClick={() => handleAdminCancelOrder(order._id, order.status)}
                 disabled={actionLoading}
               >
                 Hủy
-              </Button>
+              </button>
             ) : (
-              <Button variant="destructive" size="sm" disabled>
+              <button
+                className="min-w-[110px] px-3 py-1 text-white bg-red-300 cursor-not-allowed rounded text-sm"
+                disabled
+              >
                 Hủy
-              </Button>
+              </button>
             )}
             {order.status === "cancelled" ? (
-              <Button
-                variant="outlineDestructive"
-                size="sm"
+              <button
+                className="min-w-[110px] px-3 py-1 text-red-600 border border-red-600 hover:bg-red-100 rounded text-sm"
                 onClick={() => handleDelete(order._id, order.status)}
                 disabled={actionLoading}
               >
                 Xóa
-              </Button>
+              </button>
             ) : (
-              <Button variant="outlineDestructive" size="sm" disabled>
+              <button
+                className="min-w-[110px] px-3 py-1 text-red-300 border border-red-300 cursor-not-allowed rounded text-sm"
+                disabled
+              >
                 Xóa
-              </Button>
+              </button>
             )}
-            <Button variant="destructive" size="sm"
+            <button
+              className="min-w-[150px] px-3 py-1 text-white bg-gray-600 hover:bg-gray-700 rounded text-sm"
               onClick={() => handleViewDetail(order._id)}
             >
-               Chi Tiết Đơn Hàng
-            </Button>
+              Chi Tiết Đơn Hàng
+            </button>
           </div>
+
         );
       },
     },
@@ -307,6 +335,27 @@ const [modalOrderId, setModalOrderId] = useState(null);
   return (
     <div className="p-4">
       <h2 className="mb-4 text-xl font-bold">Quản lý đơn hàng (Admin)</h2>
+      <div className="flex justify-end gap-2 mb-4">
+        <Button
+          variant="outline"
+          onClick={() => {
+            const sorted = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setOrders(sorted);
+          }}
+        >
+          Mới nhất
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            const sorted = [...orders].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            setOrders(sorted);
+          }}
+        >
+          Cũ nhất
+        </Button>
+      </div>
+
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

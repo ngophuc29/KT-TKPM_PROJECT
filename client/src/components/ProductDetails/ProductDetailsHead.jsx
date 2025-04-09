@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import {    toast } from 'react-toastify';
@@ -31,21 +31,39 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   // State cho số lượng sản phẩm, mặc định là 1
   const [quantity, setQuantity] = useState(1);
 
+  // State lưu thông tin tồn kho của sản phẩm (được lấy từ API)
+  const [inventoryInfo, setInventoryInfo] = useState(null);
+  // Fetch thông tin tồn kho khi component mount hoặc id thay đổi
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const { data } = await axios.get(`http://localhost:3000/api/inventory/${id}`);
+        setInventoryInfo(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin tồn kho", error);
+      }
+    };
+    if (id) fetchInventory();
+  }, [id]);
+
    
   
   // UserId giả dùng cho demo
-  const fakeUserId = "user9999";
+  // const fakeUserId = "user9999";
+  const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12"
   // Định nghĩa API URL add to cart với URL params
   const CART_API_URL = "http://localhost:3000/api/cart/add";
 
   // Xử lý thêm sản phẩm vào giỏ hàng qua API
   const handleAddToCart = async () => {
+    console.log("Thêm vào giỏ hàng với ID:", id);
+    
     if (!id) {
       alert("Product ID is not defined!");
       return;
     }
     try {
-      const res = await axios.post(`${CART_API_URL}/${fakeUserId}/${id }/1`);
+      const res = await axios.post(`${CART_API_URL}/${fakeUserId}/${id}/1`);
       // console.log("Thêm vào giỏ hàng thành công", res.data);
       
       toast.success("🛒Thêm vào giỏ hàng thành công");
@@ -57,7 +75,8 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
 
   // Tính giá sau discount
   const finalPrice = price;
-
+  // Xác định trạng thái vô hiệu hóa nút: nếu chưa có thông tin tồn kho hoặc out of stock
+  const isOutOfStock = !inventoryInfo || !inventoryInfo.inStock || inventoryInfo.stockInInventory <= 0;
   return (
     <div className="container" style={styles.container}>
       <div className="bg-white d-flex flex-column align-items-center justify-content-center p-4">
@@ -90,9 +109,30 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
               className="form-control text-center"
               style={styles.quantityInput}
             /> */}
-            <button className="btn btn-primary rounded-pill px-4" onClick={handleAddToCart}>
+
+            {/* THÔNG BÁO SỐ LƯỢNG THẤP */}
+            {inventoryInfo?.stockInInventory > 0 && inventoryInfo.stockInInventory < 10 && (
+              <div className="text-danger fw-bold small">
+                ⚠️ Chỉ còn {inventoryInfo.stockInInventory} sản phẩm!
+              </div>
+            )}
+            <button
+              className="btn btn-primary rounded-pill px-4"
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              style={{
+                opacity: isOutOfStock ? 0.5 : 1,
+                pointerEvents: isOutOfStock ? "none" : "auto",
+                fontSize: 14, 
+                padding: "8px 0px",
+                margin: "0 10px",
+              }}
+              title={isOutOfStock ? "Sản phẩm đã hết hàng" : ""}
+            >
               Add to Cart
             </button>
+
+
             <button
               className="btn btn-warning rounded-pill d-flex align-items-center justify-content-center"
               style={{ width: 80, height: 40 }}
