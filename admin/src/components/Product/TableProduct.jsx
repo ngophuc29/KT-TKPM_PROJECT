@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   flexRender,
@@ -29,6 +29,7 @@ import { useGlobalContext } from "@/context/GlobalProvider";
 const API_BASE = "http://localhost:4004";
 
 // Định nghĩa các cột hiển thị
+// eslint-disable-next-line react-refresh/only-export-components
 export const columns = [
   {
     id: "select",
@@ -101,8 +102,26 @@ export const columns = [
   {
     accessorKey: "color",
     header: "Màu sắc",
-    cell: ({ row }) => <div>{row.getValue("color")}</div>,
+    cell: ({ row }) => (
+      <div style={{ display: "flex", gap: "5px"  }}>
+        {Array.isArray(row.getValue("color")) &&
+          row.getValue("color").map((color, index) => (
+            <div
+              key={index}
+              style={{
+                width: "20px",
+                height: "20px",
+                background: color,
+                borderRadius: "50%",
+                border: "1px solid #000",
+              }}
+              title={color}
+            />
+          ))}
+      </div>
+    ),
   },
+
   {
     accessorKey: "discount",
     header: "Discount",

@@ -1,9 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
-const CartSummary = ({ subtotal, shipping, tax, total }) => {
+import { toast } from 'react-toastify';
+const CartSummary = ({ subtotal,   total, selectedCartItems }) => {
     const navigate = useNavigate();
-
+    const handleCheckout = () => {
+        if (selectedCartItems.length === 0) {
+            toast.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+            return;
+        }
+        navigate("/checkout", { state: { selectedCartItems, subtotal,   total } });
+    };
     return (
         <div
             style={{
@@ -43,8 +49,8 @@ const CartSummary = ({ subtotal, shipping, tax, total }) => {
                 </div>
                 <div style={{ fontSize: "14px", textAlign: "right", lineHeight: "2" }}>
                     <div>${subtotal.toFixed(2)}</div>
-                    <div>${shipping.toFixed(2)}</div>
-                    <div>${tax.toFixed(2)}</div>
+                    {/* <div>${shipping.toFixed(2)}</div>
+                    <div>${tax.toFixed(2)}</div> */}
                     <div style={{ fontWeight: "600", fontSize: "18px", marginTop: "10px" }}>
                         ${total.toFixed(2)}
                     </div>
@@ -64,7 +70,7 @@ const CartSummary = ({ subtotal, shipping, tax, total }) => {
                     cursor: "pointer",
                     border: "none",
                 }}
-                onClick={() => navigate('/checkout')}
+                onClick={handleCheckout}
             >
                 Proceed to Checkout
             </button>

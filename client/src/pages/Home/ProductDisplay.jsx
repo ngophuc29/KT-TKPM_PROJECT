@@ -5,9 +5,10 @@ import InstagramPost from "../../components/ProductDisplay/InstagramPost";
 import IMAGES from "../../constants/images";
 import TestimonialCard from "../../components/ProductDisplay/TestimonialCard";
 import ProductFeatures from "../../components/ProductDisplay/ProductFeatures";
-import Icon from "../../constants/icons";
+import ICONS from "../../constants/icons";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import io from "socket.io-client";
 
 const ProductDisplay = () => {
   const [newProducts, setNewProducts] = useState([]);
@@ -15,6 +16,7 @@ const ProductDisplay = () => {
   const [desktops, setDesktops] = useState([]);
   const [gamingMonitors, setGamingMonitors] = useState([]);
   const [MSILaptops, setMSILaptops] = useState([]);
+  const [uriSocket, setUriSocket] = useState("");
 
   useEffect(() => {
     const fetchNewProducts = async () => {
@@ -34,7 +36,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const fetchProductData = async (category, setState) => {
       try {
-        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products-category?category=${category}`;
+        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products-category/${category}`;
         const response = await axios.get(URL, { withCredentials: true });
         setState(response?.data?.data);
       } catch (error) {
@@ -131,6 +133,37 @@ const ProductDisplay = () => {
     },
   ];
 
+  useEffect(() => {
+    const fetchUriSocket = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/base-url`);
+        setUriSocket(response.data.baseUrl);
+      } catch (error) {
+        console.log("Error fetching socket URL: ", error);
+      }
+    };
+    fetchUriSocket();
+  }, []);
+
+  let socket;
+  if (uriSocket) {
+    socket = io(uriSocket, {
+      withCredentials: true,
+      transports: ["websocket"],
+    });
+    console.log("Socket connected: ", socket);
+  }
+
+  const handleNotification = async() => {
+    try {
+      // Test gửi nên gửi thẳng dữ liệu
+      const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`);
+      console.log("Notification sent: ", response.data);
+    } catch (error) {
+      console.log("Error sending notification: ", error);
+    }
+  };
+
   return (
     <div className="container-fluid bg-light py-5">
       <div className="container">
@@ -163,9 +196,9 @@ const ProductDisplay = () => {
       </div>
 
       <ProductSection
-        title="Custom Builds"
+        title="Custome Builds"
         products={customBuilds}
-        seeAllLink="See All Products"
+        seeAllLink="Custome Builds"
         brandImage={IMAGES.CustomeBuilds}
       />
 
@@ -196,7 +229,7 @@ const ProductDisplay = () => {
       <ProductSection
         title="MSI Laptops"
         products={MSILaptops}
-        seeAllLink="See All Products"
+        seeAllLink="MSI Laptops"
         brandImage={IMAGES.MSILaptops}
       />
 
@@ -224,12 +257,12 @@ const ProductDisplay = () => {
         </div>
       </div>
 
-      <ProductSection title="Desktops" products={desktops} seeAllLink="See All Products" brandImage={IMAGES.Desktops} />
+      <ProductSection title="Desktops" products={desktops} seeAllLink="Desktops" brandImage={IMAGES.Desktops} />
 
       <ProductSection
         title="Gaming Monitors"
         products={gamingMonitors}
-        seeAllLink="See All Products"
+        seeAllLink="Gaming Monitors"
         brandImage={IMAGES.GamingMonitors}
       />
 
@@ -261,8 +294,12 @@ const ProductDisplay = () => {
       <ProductFeatures />
 
       <div className="position-fixed bottom-0 end-0 mx-2 my-4">
-        <button className="btn btn-primary rounded-circle" style={{ width: "50px", height: "50px" }}>
-          <img src={Icon.Message} alt="" className="img-fluid" />
+        <button
+          className="btn btn-primary rounded-circle"
+          style={{ width: "50px", height: "50px" }}
+          onClick={handleNotification}
+        >
+          <img src={ICONS.Message} alt="" className="img-fluid" />
         </button>
       </div>
     </div>

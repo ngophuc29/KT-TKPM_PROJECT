@@ -1,39 +1,162 @@
 import * as React from "react";
- 
+import axios from "axios";
 import CartItem from "./CartItem";
 import CartSummary from "./CartSummary";
- 
+import { Link } from "react-router-dom";
+
+// Định nghĩa các API URL (điều chỉnh theo backend của bạn)
+const CART_API_URL = "http://localhost:3000/api/cart";
+const PRODUCT_API_URLGetInfo = "http://localhost:3000/api/products/product"; // Giả sử endpoint lấy thông tin sản phẩm
+// const fakeUserId = "user9999";
+const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
+
+
 const Cart = () => {
-    const initialItems = [
-        {
-            image: "https://cdn.builder.io/api/v1/image/assets/TEMP/a370c297cc5f9039f066684c7dda53607b99faef47615f270fa3fedd33d79f07",
-            description: "MSI MEG Trident X 10SD-1012AU Intel i7 10700K, 2070 SUPER, 32GB RAM, 1TB SSD, Windows 10 Home, Gaming Keyboard and Mouse 3 Years Warranty",
-            price: "4,349.00",
-            quantity: 3
+    const [cart, setCart] = React.useState(null);
+    const [products, setProducts] = React.useState({});
+    const [selectedItems, setSelectedItems] = React.useState({});
+    const [error, setError] = React.useState("");
+
+    // Load giỏ hàng khi component mount
+    React.useEffect(() => {
+        fetchCart();
+    }, []);
+
+    // Hàm lấy giỏ hàng theo userId
+    const fetchCart = async () => {
+        try {
+            setError("");
+            const res = await axios.get(`${CART_API_URL}/${fakeUserId}`);
+            const cartData = res.data;
+            setCart(cartData);
+
+            // Khởi tạo trạng thái selectedItems (false cho mỗi productId)
+            const initialSelected = {};
+            cartData.items.forEach(item => {
+                initialSelected[item.productId] = false;
+            });
+            setSelectedItems(initialSelected);
+
+            if (cartData.items.length > 0) {
+                await fetchProductDetails(cartData.items.map(item => item.productId));
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+            console.error("Lỗi khi tải giỏ hàng:", err.message);
         }
-    ];
+    };
 
-    const [cartItems, setCartItems] = React.useState(initialItems);
+    // Hàm lấy thông tin chi tiết sản phẩm theo danh sách productIds
+    const fetchProductDetails = async (productIds) => {
+        try {
+            setError("");
+            const responses = await Promise.all(
+                productIds.map(id => axios.get(`${PRODUCT_API_URLGetInfo}/${id}`))
+            );
+            const productData = responses.reduce((acc, res) => {
+                // Lấy dữ liệu sản phẩm từ trường "data" của response
+                const product = res.data.data;
+                acc[product._id] = product;
+                return acc;
+            }, {});
+            setProducts(productData);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+            console.error("Lỗi khi tải chi tiết sản phẩm:", err.message);
+        }
+    };
 
-    const updateQuantity = (description, newQuantity) => {
-        const updatedItems = cartItems.map((item) =>
-            item.description === description ? { ...item, quantity: newQuantity } : item
+    // Cập nhật số lượng sản phẩm
+    const handleUpdateQuantity = async (productId, newQuantity) => {
+        try {
+            setError("");
+            // Thay vì gửi qua body, chuyển userId, productId, quantity vào URL
+            const res = await axios.put(`${CART_API_URL}/update/${fakeUserId}/${productId}/${newQuantity}`);
+            setCart(res.data.cart);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+            console.error("Lỗi khi cập nhật số lượng:", err.message);
+        }
+    };
+
+    // Xóa 1 sản phẩm khỏi giỏ hàng
+    const handleRemoveItem = async (productId) => {
+        if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?")) return;
+        try {
+            setError("");
+            // Truyền userId và productId trực tiếp qua URL
+            const res = await axios.delete(`${CART_API_URL}/remove/${fakeUserId}/${productId}`);
+            setCart(res.data.cart);
+            setSelectedItems(prev => {
+                const newSelected = { ...prev };
+                delete newSelected[productId];
+                return newSelected;
+            });
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+            console.error("Lỗi khi xóa sản phẩm:", err.message);
+        }
+    };
+
+    // Xóa toàn bộ giỏ hàng
+    const handleClearCart = async () => {
+        if (!window.confirm("Bạn có chắc muốn xóa toàn bộ giỏ hàng?")) return;
+        try {
+            setError("");
+            const res = await axios.delete(`${CART_API_URL}/clear/${fakeUserId}`);
+            setCart(res.data.cart);
+            setSelectedItems({});
+        } catch (err) {
+            setError(err.response?.data?.message || err.message);
+            console.error("Lỗi khi xóa toàn bộ giỏ hàng:", err.message);
+        }
+    };
+
+    // Hàm toggle chọn sản phẩm
+    const handleToggleSelection = (productId) => {
+        setSelectedItems(prev => ({
+            ...prev,
+            [productId]: !prev[productId]
+        }));
+    };
+
+    if (error) {
+        return <div className="container mx-auto p-4">Lỗi: {error}</div>;
+    }
+
+    if (!cart) {
+        return (
+            <div className="container mx-auto p-4">
+                <p>Đang tải giỏ hàng...</p>
+            </div>
         );
-        setCartItems(updatedItems);
-    };
+    }
 
-    const removeItem = (description) => {
-        setCartItems(cartItems.filter((item) => item.description !== description));
-    };
+    // Chuyển đổi data từ API thành dạng dùng cho giao diện (cartItems)
+    const cartItems = cart.items.map(item => {
+        const product = products[item.productId];
+        return {
+            name: product?.name || "",
+            image: product?.image || "",
+            description: product?.name || "Sản phẩm chưa cập nhật",
+            price: product?.price ? product.price.toString() : "0.00",
+            quantity: item.quantity,
+            productId: item.productId
+        };
+    });
 
-    const clearCart = () => {
-        setCartItems([]);
-    };
+    // Lấy danh sách sản phẩm được chọn
+    const selectedCartItems = cartItems.filter(item => selectedItems[item.productId]);
 
-    const subtotal = cartItems.reduce((acc, item) => acc + item.quantity * parseFloat(item.price.replace(",", "")), 0);
-    const shipping = 21.0; // Example static value
-    const tax = subtotal * 0.1; // 10% tax
-    const total = subtotal + shipping + tax;
+    // Tính toán tổng tiền chỉ tính cho sản phẩm được chọn
+    const subtotal = selectedCartItems.reduce((acc, item) => {
+        return acc + item.quantity * parseFloat(item.price.replace(",", ""));
+    }, 0);
+    // const shipping = selectedCartItems.length > 0 ? 21.0 : 0;
+    // const tax = subtotal * 0.1;
+    // const total = subtotal + shipping + tax;
+    const total = subtotal  ;
+
 
     return (
         <div className="bg-white d-flex flex-column overflow-hidden">
@@ -43,39 +166,42 @@ const Cart = () => {
                 <div className="row mt-4">
                     <div className="col-lg-8">
                         <div className="d-flex fw-bold align-items-center mt-4">
+                            <div style={{ flex: 0.2 }}></div>
                             <div style={{ flex: 2, textAlign: "left" }}>Item</div>
-                            <div style={{
-                                flex: 1,
-                                // textAlign: "center",
-                                paddingLeft: '48px'
-                            }}>Price</div>
-                            <div style={{
-                                flex: 1,
-                                // textAlign: "center"
-                            }}>Qty</div>
-                            <div style={{
-                                flex: 1,
-                                // textAlign: "center"
-                            }}>Subtotal</div>
+                            <div style={{ flex: 1, paddingLeft: "48px" }}>Price</div>
+                            <div style={{ flex: 1 }}>Qty</div>
+                            <div style={{ flex: 1 }}>Subtotal</div>
                         </div>
 
-                        {cartItems.map((item, index) => (
-                            <CartItem
-                                key={index}
-                                {...item}
-                                onQuantityChange={updateQuantity}
-                                onRemove={() => removeItem(item.description)}
-                            />
-                        ))}
+                        {cart.items.length === 0 ? (
+                            <div className="m-5 text-center">
+                                <p>
+                                    Giỏ hàng của bạn đang trống <Link to="/home">Tiếp tục mua sắm</Link>
+                                </p>
+                            </div>
+                        ) : (
+                            cartItems.map((item, index) => (
+                                <CartItem
+                                    key={index}
+                                    {...item}
+                                    isChecked={selectedItems[item.productId] || false}
+                                    onToggle={() => handleToggleSelection(item.productId)}
+                                    onQuantityChange={(desc, newQuantity) => handleUpdateQuantity(item.productId, newQuantity)}
+                                    onRemove={() => handleRemoveItem(item.productId)}
+                                />
+                            ))
+                        )}
 
-                        <div className="d-flex justify-content-between mt-4">
+                        <div className="d-flex justify-content-between mt-5 mb-5">
                             <button className="btn btn-outline-secondary">Continue Shopping</button>
-                            <button className="btn btn-dark" onClick={clearCart}>Clear Shopping Cart</button>
+                            <button className="btn btn-dark" onClick={handleClearCart}>Clear Shopping Cart</button>
                         </div>
                     </div>
 
                     <div className="col-lg-4">
-                        <CartSummary subtotal={subtotal} shipping={shipping} tax={tax} total={total} />
+                        {/* <CartSummary subtotal={subtotal} shipping={shipping} tax={tax} total={total} selectedCartItems={selectedCartItems} /> */}
+                        <CartSummary subtotal={subtotal}  total={total} selectedCartItems={selectedCartItems} />
+
                     </div>
                 </div>
             </div>

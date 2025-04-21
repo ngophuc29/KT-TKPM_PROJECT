@@ -1,5 +1,3 @@
-import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 function AboutProduct() {
     return (
@@ -26,7 +24,7 @@ function AboutProduct() {
 
                 {/* Cột trái: Thông tin sản phẩm */}
                 <div className="col-md-6"  >
-                    
+
                     <h1 className="h1" style={{
                         fontSize: '40px',
                         margin: '32px 0'
@@ -88,7 +86,7 @@ function AboutProduct() {
                         className="img-fluid mb-3"
                     />
 
-                     
+
                 </div>
             </div>
         </div>

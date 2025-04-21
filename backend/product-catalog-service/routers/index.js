@@ -9,6 +9,9 @@ const deleteProduct = require("../controller/deleteProduct");
 const addReview = require("../controller/addReview");
 const getAllProducts = require("../controller/getAllProducts");
 const uploadImage = require("../controller/uploadImage");
+const getProductsByFilters = require("../controller/filterProduct/getProductsByFilters");
+const getPriceCountsByCategory = require("../controller/filterProduct/getPriceCountsByCategory");
+const updateStock = require("../controller/updateStock");
 const router = express.Router();
 
 // Create product api
@@ -22,17 +25,33 @@ router.get("/products-brand/:brand", getProductBrand);
 
 // Get products by category api
 router.get("/products-category/:category", getProductCategory);
+
+// Get products by name, category, and price
+router.get("/products-filters", getProductsByFilters);
+
+// Get price counts by category
+router.get("/price-counts", getPriceCountsByCategory);
+
 // Route lấy chi tiết sản phẩm theo ID
 router.get("/product/:id", getProductById);
+
 // Route cập nhật sản phẩm theo ID
 router.put("/product/:id", updateProduct);
+
 // Route xóa sản phẩm theo ID
 router.delete("/product/:id", deleteProduct);
+
 // Route thêm đánh giá cho sản phẩm theo ID
 router.post("/product/:id/review", addReview);
+
 // Route lấy danh sách tất cả sản phẩm
 router.get("/products", getAllProducts);
 
-//route dùng để upload ảnh sản phẩm 
+// Route dùng để upload ảnh sản phẩm
 router.post("/productsImage", uploadImage);
+
+
+// Route update stock: truyền productId và stock mới qua params
+router.put("/update-stock/:id/:stock", updateStock);
+
 module.exports = router;

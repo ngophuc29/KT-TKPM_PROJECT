@@ -1,96 +1,206 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
+import ICONS from "../../constants/icons";
 
+const FilterSection = ({ initialCategory, setProducts, appliedFilters, setAppliedFilters, setClearFilter }) => {
+  const [isCategoryVisible, setIsCategoryVisible] = useState(true);
+  const [isPriceVisible, setIsPriceVisible] = useState(true);
 
-const FilterSection = () => {
+  const [categories, setCategories] = useState([]);
+  const [prices, setPrices] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedPrice, setSelectedPrice] = useState(null);
+
+  useEffect(() => {
+    const fetchFilterData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/price-counts`);
+        setCategories(response.data.categories);
+        setPrices(response.data.prices);
+        if (initialCategory) {
+          setSelectedCategory(initialCategory);
+          const priceResponse = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/price-counts`, {
+            params: { category: initialCategory },
+          });
+          setPrices(priceResponse.data.prices);
+          setAppliedFilters((prev) => ({ ...prev, category: initialCategory }));
+        }
+      } catch (error) {
+        console.error("Error fetching filter data:", error);
+      }
+    };
+    fetchFilterData();
+  }, [initialCategory, setAppliedFilters]);
+
+  useEffect(() => {
+    const filters = {
+      category: selectedCategory,
+      priceRange: selectedPrice,
+    };
+    const fetchProductsData = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products-filters`, {
+          params: filters,
+        });
+        setProducts(response.data.data);
+      } catch (error) {
+        console.error("Error fetching products data:", error);
+      }
+    };
+    fetchProductsData();
+  }, [selectedCategory, selectedPrice, setProducts]);
+
+  useEffect(() => {
+    if (appliedFilters.category === "") {
+      setSelectedCategory(null);
+    } else if (appliedFilters.price === "") {
+      setSelectedPrice(null);
+    }
+  }, [appliedFilters]);
+
+  const toggleCategoryVisibility = () => {
+    setIsCategoryVisible(!isCategoryVisible);
+  };
+
+  const togglePriceVisibility = () => {
+    setIsPriceVisible(!isPriceVisible);
+  };
+
+  useEffect(() => {
+    const handleCategoryClick = async () => {
+      setSelectedPrice(null);
+      if (selectedCategory) {
+        setAppliedFilters({ category: selectedCategory, price: "" });
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/price-counts`, {
+            params: { category: selectedCategory },
+          });
+          setPrices(response.data.prices);
+        } catch (error) {
+          console.error("Error fetching price counts:", error);
+        }
+      } else {
+        setAppliedFilters({ category: "", price: "" });
+        setClearFilter((prev) => !prev);
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/price-counts`);
+          setPrices(response.data.prices);
+        } catch (error) {
+          console.error("Error fetching price counts:", error);
+        }
+      }
+    };
+    handleCategoryClick();
+  }, [selectedCategory, setAppliedFilters, setClearFilter]);
+
+  const handlePriceClick = (price) => {
+    setSelectedPrice(price === selectedPrice ? null : price);
+    if (price !== selectedPrice) {
+      setAppliedFilters((prev) => ({ ...prev, price }));
+    } else {
+      setAppliedFilters((prev) => ({ ...prev, price: "" }));
+    }
+  };
+
+  const handleClearFilters = async () => {
+    setSelectedCategory(null);
+    setSelectedPrice(null);
+    setAppliedFilters({ category: "", price: "" });
+    setClearFilter((prev) => !prev);
+  };
+
+  const transitionStyles = {
+    transition: "max-height 0.6s ease-in-out",
+    overflow: "hidden",
+  };
+
   return (
-    <div className="bg-light p-3 rounded">
+    <div className="p-3" style={{ backgroundColor: "#F9FAFB" }}>
       <div className="text-center mb-4">
-        <h5 className="fw-bold mb-3">Filters</h5>
-        <button className="btn btn-outline-secondary w-100">
-          Clear Filter
+        <p className="fw-bold mb-3" style={{ fontSize: "16px" }}>
+          Filters
+        </p>
+
+        <button
+          className="btn btn-primary w-100 fw-bold text-white hover"
+          style={{
+            height: "37px",
+            borderColor: "#CACDD8",
+            borderWidth: 2,
+            fontSize: "15px",
+            borderRadius: "999px",
+          }}
+          onClick={handleClearFilters}
+        >
+          Clear Filters ({(selectedCategory ? 1 : 0) + (selectedPrice ? 1 : 0)})
         </button>
       </div>
 
       <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h6 className="mb-0">Category</h6>
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/f64b4290f32e6a4f276425609f366bf4d8fd3debf7439b25e61d9612c5ff3ff7?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-            alt="Toggle"
-            style={{ width: "16px", height: "16px" }}
-          />
-        </div>
-        <div className="d-flex justify-content-between">
-          <div className="small">
-            <div>CUSTOM PCS</div>
-            <div>MSI ALL-IN-ONE PCS</div>
-            <div>HP/COMPAQ PCS</div>
-          </div>
-          <div className="text-end small">
-            <div>15</div>
-            <div>45</div>
-            <div>1</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h6 className="mb-0">Price</h6>
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/fb1ba39ff44b4321ff74e8fbbe75d2cf617f86047d984ea1d7c8fa0c47d5264f?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-            alt="Toggle"
-            style={{ width: "16px", height: "16px" }}
-          />
-        </div>
-        <div className="d-flex justify-content-between">
-          <div className="small">
-            <div>$0.00 - $1,000.00</div>
-            <div>$1,000.00 - $2,000.00</div>
-            <div>$2,000.00 - $3,000.00</div>
-            <div>$3,000.00 - $4,000.00</div>
-            <div>$4,000.00 - $5,000.00</div>
-            <div>$5,000.00 - $6,000.00</div>
-            <div>$6,000.00 - $7,000.00</div>
-            <div>$7,000.00 And Above</div>
-          </div>
-          <div className="text-end small">
-            <div>19</div>
-            <div>21</div>
-            <div>9</div>
-            <div>6</div>
-            <div>3</div>
-            <div>1</div>
-            <div>1</div>
-            <div>1</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h6 className="mb-0">Color</h6>
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/fb1ba39ff44b4321ff74e8fbbe75d2cf617f86047d984ea1d7c8fa0c47d5264f?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-            alt="Toggle"
-            style={{ width: "16px", height: "16px" }}
-          />
+        <div
+          className="d-flex justify-content-between align-items-center mb-3"
+          style={{ cursor: "pointer" }}
+          onClick={toggleCategoryVisibility}
+        >
+          <p className="mb-0 fw-bold">Category</p>
+          <img src={ICONS.Arrow} alt="" style={{ transform: isCategoryVisible ? "rotate(0deg)" : "rotate(90deg)" }} />
         </div>
         <div
-          className="rounded-circle bg-dark"
-          style={{ width: "23px", height: "23px" }}
-        ></div>
+          style={{
+            ...transitionStyles,
+            maxHeight: isCategoryVisible ? "500px" : "0",
+          }}
+        >
+          {categories.map((category, index) => (
+            <button
+              key={index}
+              className={`btn w-100 d-flex align-items-center justify-content-between hover ${
+                selectedCategory === category.name ? "active btn-outline-primary" : ""
+              }`}
+              style={{ borderRadius: "6px", fontSize: "14px" }}
+              onClick={() => setSelectedCategory((prev) => (prev === category.name ? null : category.name))}
+            >
+              {category.name} <span>{category.count}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h6 className="mb-0">Filter Name</h6>
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/TEMP/9326ad59a058ecf01720c3885beadd603b9841918fe205a45fea5973ec1984aa?placeholderIfAbsent=true&apiKey=1a2630dba26c44fe94fe53d5e705e42a"
-            alt="Toggle"
-            style={{ width: "16px", height: "16px" }}
-          />
+      <div className="mb-4">
+        <div
+          className="d-flex justify-content-between align-items-center mb-3"
+          style={{ cursor: "pointer" }}
+          onClick={togglePriceVisibility}
+        >
+          <p className="mb-0 fw-bold">Price</p>
+          <img src={ICONS.Arrow} alt="" style={{ transform: isPriceVisible ? "rotate(0deg)" : "rotate(90deg)" }} />
         </div>
-        <button className="btn btn-primary w-100">Apply Filters (2)</button>
+        <div
+          style={{
+            ...transitionStyles,
+            maxHeight: isPriceVisible ? "500px" : "0",
+          }}
+        >
+          {prices.map((price, index) => (
+            <button
+              key={index}
+              className={`btn w-100 d-flex align-items-center justify-content-between hover hover ${
+                selectedPrice === price.range ? "active btn-outline-primary" : ""
+              }`}
+              style={{ borderRadius: "6px", fontSize: "14px" }}
+              onClick={() => handlePriceClick(price.range)}
+            >
+              {price.range} <span>{price.count}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <p className="mb-0 fw-bold">Color</p>
+        </div>
+        <div className="rounded-circle bg-dark" style={{ width: "23px", height: "23px" }}></div>
       </div>
     </div>
   );

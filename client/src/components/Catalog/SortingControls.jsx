@@ -1,78 +1,84 @@
+import { useState } from "react";
+import ICONS from "../../constants/icons";
+import { Link } from "react-router-dom";
 
-const SortingControls = () => {
+const SortingControls = ({ productsPerPage, setProductsPerPage, totalProducts, currentPage }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleSelect = (value) => {
+    setProductsPerPage(value);
+    setIsDropdownOpen(false);
+  };
+
+  const startItem = (currentPage - 1) * productsPerPage + 1;
+  const endItem = Math.min(currentPage * productsPerPage, totalProducts);
+
   return (
     <div className="row align-items-center mb-4">
-      <div className="col-auto">
-        <button className="btn btn-outline-secondary">‹ Back</button>
+      <div className="col-12 col-md-3">
+        <Link
+          to="/"
+          className="d-flex align-items-center justify-content-center btn w-100 border-0 fw-bold hover"
+          style={{ fontSize: "14px" }}
+        >
+          <img src={ICONS.Arrow} alt="" style={{ transform: "rotate(90deg)" }} />
+          Back
+        </Link>
       </div>
       <div className="col">
-        <div className="d-flex align-items-center gap-3 flex-wrap">
-          <span className="text-muted">Items 1-35 of 61</span>
+        <div className="d-flex align-items-center justify-content-between">
+          <p className="text-muted" style={{ fontSize: "13px", color: "#A2A6B0" }}>
+            Items {startItem}-{endItem} of {totalProducts}
+          </p>
 
-          <div className="dropdown">
+          <div className="d-flex gap-2 align-items-center">
             <button
-              className="btn btn-outline-secondary dropdown-toggle"
-              type="button"
-              id="sortDropdown"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
+              className="btn fw-bold hover"
+              style={{ width: "176px", height: "50px", borderColor: "#CACDD8", borderWidth: 2, fontSize: "13px" }}
             >
-              <span className="text-muted">Sort By: </span>Position
+              <span className="text-muted" style={{ color: "#A2A6B0" }}>
+                Sort By:{" "}
+              </span>
+              Default
+              <img src={ICONS.Arrow} alt="" />
             </button>
-            <ul className="dropdown-menu" aria-labelledby="sortDropdown">
-              <li>
-                <a className="dropdown-item" href="#">
-                  Position
-                </a>
-              </li>
-              <li>
-                <a className="dropdown-item" href="#">
-                  Price
-                </a>
-              </li>
-              <li>
-                <a className="dropdown-item" href="#">
-                  Name
-                </a>
-              </li>
-            </ul>
-          </div>
 
-          <div className="dropdown">
-            <button
-              className="btn btn-outline-secondary dropdown-toggle"
-              type="button"
-              id="showDropdown"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <span className="text-muted">Show: </span>35 per page
-            </button>
-            <ul className="dropdown-menu" aria-labelledby="showDropdown">
-              <li>
-                <a className="dropdown-item" href="#">
-                  35 per page
-                </a>
-              </li>
-              <li>
-                <a className="dropdown-item" href="#">
-                  50 per page
-                </a>
-              </li>
-              <li>
-                <a className="dropdown-item" href="#">
-                  100 per page
-                </a>
-              </li>
-            </ul>
-          </div>
+            <div className="dropdown">
+              <button
+                className="btn fw-bold hover dropdown-toggle"
+                style={{ width: "176px", height: "50px", fontSize: "13px", borderColor: "#CACDD8", borderWidth: 2 }}
+                onClick={toggleDropdown}
+              >
+                <span className="text-muted" style={{ color: "#A2A6B0" }}>
+                  Show:{" "}
+                </span>
+                {productsPerPage} per page
+                <img src={ICONS.Arrow} alt="" />
+              </button>
+              {isDropdownOpen && (
+                <div
+                  className="dropdown-menu py-0 show w-100"
+                  style={{ borderRadius: 0, borderColor: "#CACDD8", borderWidth: 2, borderTop: 0 }}
+                >
+                  {[10, 20, 30, 40].map((value) => (
+                    <button
+                      key={value}
+                      className="dropdown-item d-flex align-items-center justify-content-center fs-5 fw-bold py-3"
+                      onClick={() => handleSelect(value)}
+                    >
+                      <p className="m-0">{value} per page</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <div className="btn-group" role="group" aria-label="View options">
-            <button type="button" className="btn btn-outline-secondary">
-              <i className="bi bi-grid"></i>
-            </button>
-            <button type="button" className="btn btn-outline-secondary">
-              <i className="bi bi-list"></i>
+            <button className="btn border-0 hover">
+              <img src={ICONS.All} alt="" />
             </button>
           </div>
         </div>

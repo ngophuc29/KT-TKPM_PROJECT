@@ -50,34 +50,67 @@ h2 {
   line-height: 1.2;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+button::after {
+  display: none !important;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+p {
+  margin: 0;
+}
+
+.hover:hover {
+  opacity: 0.8;
+}
+
+.filter-section {
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.filter-collapsed {
+  max-width: 0;
+  opacity: 0;
+  padding: 0;
+  transition: all 0.3s ease-in-out;
+}
+
+.holographic-card {
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.holographic-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(0deg, transparent, transparent 65%, #6a8dc2);
+  transform: rotate(-45deg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.holographic-card:hover {
+  cursor: pointer;
+  z-index: 1;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px #537fc0;
+}
+
+.holographic-card:hover::before {
+  animation: holographic-effect 1s forwards;
+}
+
+@keyframes holographic-effect {
+  0% {
+    opacity: 0;
+    transform: rotate(-45deg);
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+  100% {
+    opacity: 1;
+    transform: rotate(-45deg) translateY(100%);
   }
 }
