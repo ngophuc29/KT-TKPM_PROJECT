@@ -7,6 +7,7 @@ const ORDER_API_URL = "http://localhost:3000/api/orders";
 // Giả sử INVENTORY_API và CART_API_URL đã được định nghĩa đúng URL của Inventory và Cart API
 const INVENTORY_API = "http://localhost:3000/api/inventory";
 const CART_API_URL = "http://localhost:3000/api/cart";
+ 
 
 const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
   const navigate = useNavigate();
@@ -90,28 +91,55 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           return;
         }
       }
-    } catch (error) {
-      toast.error("Lỗi khi kiểm tra tồn kho");
-      console.error("Lỗi khi kiểm tra tồn kho:", error.message);
-      return;
-    }
 
-    // Xây dựng URL với dữ liệu được chuyển đổi qua params.
-    // Lưu ý: finalTotal là một giá trị số nên không cần encode, còn các object cần được stringify và encode.
-    const url = `${ORDER_API_URL}/create/${userId}/${encodeURIComponent(JSON.stringify(customer))}/${encodeURIComponent(JSON.stringify(items))}/${encodeURIComponent(JSON.stringify(shipping))}/${encodeURIComponent(JSON.stringify(payment))}/${finalTotal}/${encodeURIComponent(JSON.stringify(notes))}`;
-
-    try {
-      // Gọi API tạo đơn hàng qua URL params (không gửi dữ liệu trong body)
-      const response = await axios.post(url);
+      // Xây dựng URL với dữ liệu được chuyển đổi qua params
+      const url = `${ORDER_API_URL}/create/${userId}/${encodeURIComponent(JSON.stringify(customer))}/${encodeURIComponent(JSON.stringify(items))}/${encodeURIComponent(JSON.stringify(shipping))}/${encodeURIComponent(JSON.stringify(payment))}/${finalTotal}/${encodeURIComponent(JSON.stringify(notes))}`;
       toast.success("Đặt hàng thành công!");
-      navigate("/home", { state: { order: response.data.order } });
+      if (paymentMethod === "bank") {
+        try {
+          // Tạo đơn hàng trước với trạng thái pending
+          const orderResponse = await axios.post(url);
+          const orderId = orderResponse.data.order._id; // Lấy orderId từ response của order service
+          
+          // Gọi payment service để lấy payment URL
+          const paymentResponse = await axios.post(`http://localhost:4545/payment`, {
+            amount: finalTotal.toString(),
+            orderInfo: `Thanh toan don hang cho ${customer.name}`,
+            // redirectUrl: window.location.origin + "/payment-return",
+            // ipnUrl: window.location.origin + "/payment-callback",
+            extraData: "",
+            orderId: orderId,
+            requestId: orderId,
+            partnerCode: "MOMO",
+            requestType: "payWithMethod"
+          });
 
-      // Xóa giỏ hàng của user sau khi đặt hàng thành công
-      await axios.delete(`${CART_API_URL}/clear/${userId}`);
+          if (paymentResponse.data && paymentResponse.data.payUrl) {
+            // Lưu orderId để check khi redirect về
+            localStorage.setItem('pendingOrderId', orderId);
+            
+            // Chuyển hướng người dùng đến trang thanh toán
+            window.location.href = paymentResponse.data.payUrl;
+          } else {
+            toast.error("Không thể tạo URL thanh toán");
+          }
+        } catch (error) {
+          toast.error("Lỗi khi tạo thanh toán: " + error.message);
+          console.error("Lỗi khi tạo thanh toán:", error);
+        }
+      } else {
+        // Xử lý đơn hàng bình thường cho các phương thức thanh toán khác
+        const response = await axios.post(url);
+        toast.success("Đặt hàng thành công!");
+        navigate("/home", { state: { order: response.data.order } });
+
+        // Xóa giỏ hàng của user sau khi đặt hàng thành công
+        await axios.delete(`${CART_API_URL}/clear/${userId}`);
+      }
     } catch (error) {
       const errMsg = error.response?.data?.message || error.message;
-      toast.error("Lỗi khi đặt hàng: " + errMsg);
-      console.error("Lỗi khi đặt hàng:", error.message);
+      toast.error("Lỗi khi xử lý đơn hàng: " + errMsg);
+      console.error("Lỗi khi xử lý đơn hàng:", error.message);
     }
   };
 
@@ -295,7 +323,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           }}
         >
           <option value="cod">Cash on Delivery</option>
-          <option value="credit">Credit Card</option>
+          
           <option value="bank">Bank Transfer</option>
         </select>
       </div>
