@@ -31,6 +31,7 @@ const services = {
   cart: "http://localhost:4005",
   notification: "http://localhost:4001",
   orders: "http://localhost:4009",
+  payment: "http://localhost:4545",
 };
 
 // Proxy cho tất cả request đến API Gateway

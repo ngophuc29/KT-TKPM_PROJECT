@@ -4,33 +4,23 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const ORDER_API_URL = "http://localhost:3000/api/orders";
-// Giả sử INVENTORY_API và CART_API_URL đã được định nghĩa đúng URL của Inventory và Cart API
 const INVENTORY_API = "http://localhost:3000/api/inventory";
 const CART_API_URL = "http://localhost:3000/api/cart";
- 
 
 const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
   const navigate = useNavigate();
 
-  // State cho thông tin khách hàng
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [customerNote, setCustomerNote] = useState("");
 
   const handleOrderSubmit = async () => {
-    // Validate thông tin khách hàng và giỏ hàng
-    if (
-      !firstName.trim() ||
-      !lastName.trim() ||
-      !address.trim() ||
-      !phone.trim() ||
-      !email.trim()
-    ) {
+    // Validate
+    if (!firstName || !lastName || !address || !phone || !email) {
       toast.error("Vui lòng nhập đầy đủ thông tin khách hàng.");
       return;
     }
@@ -39,107 +29,71 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       return;
     }
 
-    // Tạo đối tượng userId và customer
-    const userId = "64e65e8d3d5e2b0c8a3e9f12"; // Fake userId; thay đổi theo thực tế nếu cần
-    const customer = {
-      name: `${firstName} ${lastName}`,
-      address,
-      phone,
-      email,
-    };
-
-    // Tạo danh sách items cho đơn hàng
-    const items = selectedItems.map((item) => ({
-      productId: item.productId,
-      name: item.name,
-      quantity: item.quantity,
-      price: item.price,
+    const userId = "64e65e8d3d5e2b0c8a3e9f12";
+    const customer = { name: `${firstName} ${lastName}`, address, phone, email };
+    const items = selectedItems.map(i => ({
+      productId: i.productId, name: i.name, quantity: i.quantity, price: i.price
     }));
-
-    // Tạo đối tượng shipping, payment và notes
     const shipping = {
       method: shippingMethod,
       fee: shippingMethod === "standard" ? 30000 : 50000,
-      status: "processing",
-      trackingNumber: "",
+      status: "processing", trackingNumber: ""
     };
-    const payment = {
-      method: paymentMethod,
-      status: "pending",
-    };
-    const notes = {
-      customerNote,
-      sellerNote: "",
-    };
+    const payment = { method: paymentMethod, status: "pending" };
+    const notes = { customerNote, sellerNote: "" };
 
-    // --- Gọi API bulk để lấy thông tin tồn kho ---
     try {
-      const productIds = items.map(item => item.productId);
-      const productIdsParam = productIds.join(',');
-      const { data: inventoryData } = await axios.get(`${INVENTORY_API}/bulk/${productIdsParam}`);
-
-      if (!inventoryData || inventoryData.length === 0) {
-        toast.error("Không tìm thấy sản phẩm trong kho");
-        return;
-      }
-
-      // Kiểm tra tồn kho từng sản phẩm
-      for (let item of items) {
-        const invItem = inventoryData.find(i => i.productId.toString() === item.productId.toString());
-        if (!invItem || invItem.stock < item.quantity) {
-          toast.error(`Sản phẩm ${item.name} không đủ hàng`);
+      // 1) Check tồn kho
+      const idsParam = items.map(i => i.productId).join(",");
+      const { data: inv } = await axios.get(`${INVENTORY_API}/bulk/${idsParam}`);
+      for (let it of items) {
+        const stockItem = inv.find(x => x.productId === it.productId);
+        if (!stockItem || stockItem.stock < it.quantity) {
+          toast.error(`Sản phẩm ${it.name} không đủ hàng`);
           return;
         }
       }
 
-      // Xây dựng URL với dữ liệu được chuyển đổi qua params
-      const url = `${ORDER_API_URL}/create/${userId}/${encodeURIComponent(JSON.stringify(customer))}/${encodeURIComponent(JSON.stringify(items))}/${encodeURIComponent(JSON.stringify(shipping))}/${encodeURIComponent(JSON.stringify(payment))}/${finalTotal}/${encodeURIComponent(JSON.stringify(notes))}`;
-      toast.success("Đặt hàng thành công!");
+      // 2) Tạo order trước
+      const createUrl = `${ORDER_API_URL}/create/${userId}` +
+        `/${encodeURIComponent(JSON.stringify(customer))}` +
+        `/${encodeURIComponent(JSON.stringify(items))}` +
+        `/${encodeURIComponent(JSON.stringify(shipping))}` +
+        `/${encodeURIComponent(JSON.stringify(payment))}` +
+        `/${finalTotal}` +
+        `/${encodeURIComponent(JSON.stringify(notes))}`;
+      const orderResp = await axios.post(createUrl);
+      const orderId = orderResp.data.order._id;
+
+      // 3) Nếu chọn bank (Momo) → gọi service payment qua params
       if (paymentMethod === "bank") {
-        try {
-          // Tạo đơn hàng trước với trạng thái pending
-          const orderResponse = await axios.post(url);
-          const orderId = orderResponse.data.order._id; // Lấy orderId từ response của order service
-          
-          // Gọi payment service để lấy payment URL
-          const paymentResponse = await axios.post(`http://localhost:4545/payment`, {
-            amount: finalTotal.toString(),
-            orderInfo: `Thanh toan don hang cho ${customer.name}`,
-            // redirectUrl: window.location.origin + "/payment-return",
-            // ipnUrl: window.location.origin + "/payment-callback",
-            extraData: "",
-            orderId: orderId,
-            requestId: orderId,
-            partnerCode: "MOMO",
-            requestType: "payWithMethod"
-          });
-
-          if (paymentResponse.data && paymentResponse.data.payUrl) {
-            // Lưu orderId để check khi redirect về
-            localStorage.setItem('pendingOrderId', orderId);
-            
-            // Chuyển hướng người dùng đến trang thanh toán
-            window.location.href = paymentResponse.data.payUrl;
-          } else {
-            toast.error("Không thể tạo URL thanh toán");
-          }
-        } catch (error) {
-          toast.error("Lỗi khi tạo thanh toán: " + error.message);
-          console.error("Lỗi khi tạo thanh toán:", error);
+        const params = {
+          amount: finalTotal.toString(),
+          orderInfo: `Thanh toán đơn ${orderId}`,
+          orderId,
+          requestId: orderId,
+          extraData: ""
+        };
+        const payResp = await axios.get("http://localhost:3000/api/payment/payment", { params });
+        if (payResp.data.payUrl) {
+          localStorage.setItem("pendingOrderId", orderId);
+          window.location.href = payResp.data.payUrl;
+          return;
+        } else {
+          toast.error("Không thể tạo URL thanh toán");
+          return;
         }
-      } else {
-        // Xử lý đơn hàng bình thường cho các phương thức thanh toán khác
-        const response = await axios.post(url);
-        toast.success("Đặt hàng thành công!");
-        navigate("/home", { state: { order: response.data.order } });
-
-        // Xóa giỏ hàng của user sau khi đặt hàng thành công
-        await axios.delete(`${CART_API_URL}/clear/${userId}`);
       }
-    } catch (error) {
-      const errMsg = error.response?.data?.message || error.message;
-      toast.error("Lỗi khi xử lý đơn hàng: " + errMsg);
-      console.error("Lỗi khi xử lý đơn hàng:", error.message);
+
+      // 4) Nếu COD hoặc khác → hoàn tất, xóa cart
+      toast.success("Đặt hàng thành công!");
+      navigate("/home", { state: { order: orderResp.data.order } });
+      await axios.delete(`${CART_API_URL}/clear/${userId}`);
+
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message;
+      toast.error("Lỗi khi xử lý đơn hàng: " + msg);
+      console.error(err);
     }
   };
 
