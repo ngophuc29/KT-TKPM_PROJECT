@@ -3,6 +3,7 @@ import DefaultLayout from "@/layouts/DafaultLayout/DefaultLayout";
 import { routes } from "@/routes/routes";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import GlobalProvider from "./context/GlobalProvider";
+import Login from "./components/Authentication/Login";
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
                   />
                 );
               })}
+              <Route path="/login" element={<Login />} />
             </Routes>
           </div>
         </Router>
