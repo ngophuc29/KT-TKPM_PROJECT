@@ -1,0 +1,13 @@
+.user-menu-item {
+    padding: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+    border-radius: 8px;
+}
+
+.user-menu-item:hover {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+}
