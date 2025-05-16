@@ -1,0 +1,73 @@
+2025-05-16T00:01:49.021+07:00  WARN 12992 --- [GearVnFE] [HikariPool-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=46m5s300ms455µs200ns).
+2025-05-16T02:02:43.664+07:00  WARN 12992 --- [GearVnFE] [HikariPool-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=44m17s702ms628µs800ns).
+2025-05-16T18:01:43.415+07:00  WARN 12992 --- [GearVnFE] [HikariPool-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=15h44m7s170ms372µs600ns).
+2025-05-16T18:27:24.203+07:00  INFO 12992 --- [GearVnFE] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (0 additions, 0 deletions, 1 modification)
+2025-05-16T18:27:24.269+07:00  INFO 12992 --- [GearVnFE] [Thread-5] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-05-16T18:27:24.287+07:00  INFO 12992 --- [GearVnFE] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-05-16T18:27:24.292+07:00  INFO 12992 --- [GearVnFE] [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-05-16T18:27:24.571+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.gearvn.GearVnFeApplication           : Starting GearVnFeApplication using Java 21.0.4 with PID 12992 (C:\Users\Minh Quan\Downloads\GearVnBackEnd\target\classes started by Minh Quan in C:\Users\Minh Quan\Downloads\GearVnBackEnd)
+2025-05-16T18:27:24.571+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.gearvn.GearVnFeApplication           : No active profile set, falling back to 1 default profile: "default"
+2025-05-16T18:27:25.653+07:00  INFO 12992 --- [GearVnFE] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-16T18:27:25.671+07:00  INFO 12992 --- [GearVnFE] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 17 ms. Found 3 JPA repository interfaces.
+2025-05-16T18:27:25.836+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9998 (http)
+2025-05-16T18:27:25.838+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-05-16T18:27:25.839+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2025-05-16T18:27:25.932+07:00  INFO 12992 --- [GearVnFE] [restartedMain] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2025-05-16T18:27:25.934+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-05-16T18:27:25.934+07:00  INFO 12992 --- [GearVnFE] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1359 ms
+2025-05-16T18:27:25.954+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2025-05-16T18:27:25.967+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.mariadb.jdbc.Connection@6ada33a5
+2025-05-16T18:27:25.967+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2025-05-16T18:27:25.972+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1050-42S01: Table 'spring_session' already exists
+2025-05-16T18:27:25.981+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1061-42000: Duplicate key name 'SPRING_SESSION_IX1'
+2025-05-16T18:27:25.987+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1061-42000: Duplicate key name 'SPRING_SESSION_IX2'
+2025-05-16T18:27:25.991+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1061-42000: Duplicate key name 'SPRING_SESSION_IX3'
+2025-05-16T18:27:25.992+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1050-42S01: Table 'spring_session_attributes' already exists
+2025-05-16T18:27:26.006+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-16T18:27:26.010+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-05-16T18:27:26.023+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-16T18:27:26.111+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-16T18:27:26.150+07:00  INFO 12992 --- [GearVnFE] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-16T18:27:26.239+07:00  WARN 12992 --- [GearVnFE] [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-05-16T18:27:26.285+07:00  WARN 12992 --- [GearVnFE] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-05-16T18:27:26.469+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-05-16T18:27:26.488+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9998 (http) with context path '/'
+2025-05-16T18:27:26.497+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.gearvn.GearVnFeApplication           : Started GearVnFeApplication in 2.021 seconds (process running for 98490.46)
+2025-05-16T18:27:26.541+07:00  INFO 12992 --- [GearVnFE] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2025-05-16T18:28:40.364+07:00  INFO 12992 --- [GearVnFE] [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (0 additions, 0 deletions, 1 modification)
+2025-05-16T18:28:40.380+07:00  INFO 12992 --- [GearVnFE] [Thread-7] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-05-16T18:28:40.383+07:00  INFO 12992 --- [GearVnFE] [Thread-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2025-05-16T18:28:40.387+07:00  INFO 12992 --- [GearVnFE] [Thread-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2025-05-16T18:28:40.488+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.gearvn.GearVnFeApplication           : Starting GearVnFeApplication using Java 21.0.4 with PID 12992 (C:\Users\Minh Quan\Downloads\GearVnBackEnd\target\classes started by Minh Quan in C:\Users\Minh Quan\Downloads\GearVnBackEnd)
+2025-05-16T18:28:40.489+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.gearvn.GearVnFeApplication           : No active profile set, falling back to 1 default profile: "default"
+2025-05-16T18:28:40.697+07:00  INFO 12992 --- [GearVnFE] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-16T18:28:40.710+07:00  INFO 12992 --- [GearVnFE] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 12 ms. Found 3 JPA repository interfaces.
+2025-05-16T18:28:40.811+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9998 (http)
+2025-05-16T18:28:40.812+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-05-16T18:28:40.812+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2025-05-16T18:28:40.881+07:00  INFO 12992 --- [GearVnFE] [restartedMain] org.apache.jasper.servlet.TldScanner     : At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+2025-05-16T18:28:40.883+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-05-16T18:28:40.883+07:00  INFO 12992 --- [GearVnFE] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 393 ms
+2025-05-16T18:28:40.899+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2025-05-16T18:28:40.903+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.mariadb.jdbc.Connection@157fff29
+2025-05-16T18:28:40.903+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2025-05-16T18:28:40.905+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1050-42S01: Table 'spring_session' already exists
+2025-05-16T18:28:40.911+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1061-42000: Duplicate key name 'SPRING_SESSION_IX1'
+2025-05-16T18:28:40.915+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1061-42000: Duplicate key name 'SPRING_SESSION_IX2'
+2025-05-16T18:28:40.920+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1061-42000: Duplicate key name 'SPRING_SESSION_IX3'
+2025-05-16T18:28:40.920+07:00  WARN 12992 --- [GearVnFE] [restartedMain] o.m.jdbc.message.server.ErrorPacket      : Error: 1050-42S01: Table 'spring_session_attributes' already exists
+2025-05-16T18:28:40.930+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-16T18:28:40.932+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-05-16T18:28:40.937+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-16T18:28:40.996+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-16T18:28:41.037+07:00  INFO 12992 --- [GearVnFE] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-16T18:28:41.103+07:00  WARN 12992 --- [GearVnFE] [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-05-16T18:28:41.132+07:00  WARN 12992 --- [GearVnFE] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-05-16T18:28:41.260+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-05-16T18:28:41.276+07:00  INFO 12992 --- [GearVnFE] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9998 (http) with context path '/'
+2025-05-16T18:28:41.287+07:00  INFO 12992 --- [GearVnFE] [restartedMain] com.gearvn.GearVnFeApplication           : Started GearVnFeApplication in 0.824 seconds (process running for 98565.249)
+2025-05-16T18:28:41.319+07:00  INFO 12992 --- [GearVnFE] [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2025-05-16T18:36:33.291+07:00  INFO 12992 --- [GearVnFE] [RMI TCP Connection(503)-127.0.0.1] inMXBeanRegistrar$SpringApplicationAdmin : Application shutdown requested.
+2025-05-16T18:36:33.307+07:00  INFO 12992 --- [GearVnFE] [RMI TCP Connection(503)-127.0.0.1] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-05-16T18:36:33.309+07:00  INFO 12992 --- [GearVnFE] [RMI TCP Connection(503)-127.0.0.1] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2025-05-16T18:36:33.314+07:00  INFO 12992 --- [GearVnFE] [RMI TCP Connection(503)-127.0.0.1] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
