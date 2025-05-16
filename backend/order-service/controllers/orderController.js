@@ -374,4 +374,18 @@ exports.adminDeleteOrder = async (req, res) => {
     }
 };
 
+// Khi Order gọi đến Inventory để kiểm tra stock (day ne)
+async function checkInventoryWithRetry(productIds) {
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      return await axios.get(`${INVENTORY_API}/bulk/${productIdsParam}`);
+    } catch (error) {
+      retries--;
+      if (retries === 0) throw error;
+      await new Promise(resolve => setTimeout(resolve, 3000)); // chờ 3s
+    }
+  }
+}
+
 
