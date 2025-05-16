@@ -6,8 +6,33 @@ const getCacheKey = (userId) => `cart:${userId}`;
 
 // Hàm tạo lại cache sau khi cập nhật
 const updateCartCache = async (userId, cart) => {
-    const cacheKey = getCacheKey(userId);
-    await redisClient.setEx(cacheKey, 600, JSON.stringify(cart));
+    try {
+        const cacheKey = getCacheKey(userId);
+        await redisClient.setEx(cacheKey, 600, JSON.stringify(cart));
+    } catch (error) {
+        console.error('Redis cache update failed:', error);
+        // Continue without caching if Redis fails
+    }
+};
+
+// Hàm lấy cart từ cache hoặc database
+const getCartFromCacheOrDB = async (userId) => {
+    try {
+        const cacheKey = getCacheKey(userId);
+        const cachedCart = await redisClient.get(cacheKey);
+        if (cachedCart) {
+            return JSON.parse(cachedCart);
+        }
+    } catch (error) {
+        console.error('Redis cache retrieval failed:', error);
+        // Continue to DB if Redis fails
+    }
+
+    const cart = await Cart.findOne({ userId });
+    if (cart) {
+        await updateCartCache(userId, cart);
+    }
+    return cart;
 };
 
 // Thêm sản phẩm vào giỏ hàng
@@ -142,16 +167,12 @@ exports.getCart = async (req, res) => {
         const { userId } = req.params;
         if (!userId) return res.status(400).json({ message: "UserId không hợp lệ" });
 
-        const cacheKey = getCacheKey(userId);
-        const cachedCart = await redisClient.get(cacheKey);
-        if (cachedCart) return res.json(JSON.parse(cachedCart));
-
-        const cart = await Cart.findOne({ userId });
+        const cart = await getCartFromCacheOrDB(userId);
         if (!cart) return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
 
-        await updateCartCache(userId, cart);
         res.json(cart);
     } catch (error) {
+        console.error('Get cart error:', error);
         res.status(500).json({ message: "Lỗi khi lấy giỏ hàng", error: error.message });
     }
 };
