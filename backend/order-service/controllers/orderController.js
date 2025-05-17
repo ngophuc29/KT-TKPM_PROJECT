@@ -219,37 +219,85 @@ exports.updateOrder = async (req, res) => {
 exports.cancelOrder = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const order = await Order.findById(orderId);
-        if (!order) return res.status(404).json({ message: "Đơn hàng không tồn tại" });
-
-        // Cho phép hủy nếu đơn hàng chưa được xác nhận (status là "pending")
-        if (order.status !== "pending") {
-            return res.status(400).json({ message: "Chỉ đơn hàng chưa xác nhận mới có thể hủy" });
+        console.log(`Attempting to cancel order: ${orderId}`);
+        
+        // Use a single database operation to update the order
+        const order = await Order.findByIdAndUpdate(
+            orderId,
+            { status: "cancelled" },
+            { new: true, runValidators: false }
+        );
+        
+        if (!order) {
+            console.log(`Order not found: ${orderId}`);
+            return res.status(404).json({ message: "Đơn hàng không tồn tại" });
         }
 
-        // Cập nhật trạng thái đơn hàng thành "cancelled"
-        order.status = "cancelled";
-        await order.save();
-
-        // Gọi API release cho từng mặt hàng (sử dụng params)
-        for (const item of order.items) {
-            try {
-                await axios.put(`${INVENTORY_API}/release/${item.productId}/${item.quantity}`);
-            } catch (err) {
-                console.error(
-                    `Lỗi khi gọi API release cho sản phẩm ${item.productId}:`,
-                    err.response?.data || err.message
-                );
-                // Bạn có thể quyết định xử lý lỗi riêng cho từng item (hoặc thông báo cho người dùng)
-            }
-        }
-
-        res.json({ message: "Đơn hàng đã bị hủy", order });
+        // Send response immediately, then handle inventory restoration
+        // This way the client doesn't have to wait for inventory operations
+        res.json({ 
+            success: true,
+            message: "Đơn hàng đã bị hủy thành công", 
+            order 
+        });
+        
+        // Process inventory restoration in the background
+        restoreInventoryWithRetry(order.items).catch(err => {
+            console.error("Background inventory restoration error:", err);
+        });
+        
     } catch (error) {
-        res.status(500).json({ message: "Lỗi server", error: error.message });
+        console.error("Unhandled error in cancelOrder:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Lỗi server khi hủy đơn hàng", 
+            error: error.message 
+        });
     }
 };
 
+// Optimized inventory restoration with parallel processing
+async function restoreInventoryWithRetry(items) {
+    // Process all items in parallel using Promise.all
+    const results = await Promise.all(items.map(async (item) => {
+        let retries = 2; // Reduce retries from 3 to 2
+        
+        while (retries >= 0) {
+            try {
+                // Shorter timeout (8s instead of 15s)
+                const response = await axios.post(
+                    `http://localhost:3000/api/inventory/restore/${item.productId}/${item.quantity}`,
+                    {},
+                    { timeout: 8000 }
+                );
+                
+                console.log(`Successfully restored inventory for product ${item.productId}`);
+                return { success: true, productId: item.productId };
+            } catch (err) {
+                retries--;
+                console.error(`Attempt failed for product ${item.productId}, retries left: ${retries}`);
+                
+                // Shorter wait between retries (1s, 2s)
+                if (retries >= 0) {
+                    await new Promise(resolve => setTimeout(resolve, (2-retries) * 1000));
+                } else {
+                    return { 
+                        success: false, 
+                        productId: item.productId, 
+                        error: err.message 
+                    };
+                }
+            }
+        }
+    }));
+    
+    const errors = results.filter(r => !r.success);
+    if (errors.length > 0) {
+        console.warn("Some inventory restorations failed:", errors);
+    }
+    
+    return { success: errors.length === 0, errors };
+}
 
 // 📌 Hủy đơn hàng bởi Admin (không ràng buộc trạng thái)
 // exports.adminCancelOrder = async (req, res) => {
