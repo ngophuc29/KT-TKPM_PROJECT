@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableCell, TableBody } from "@/components/ui/table";
 import OrderDetailModal from "./OrderDetailModal";
+import OrderEditModal from "./OrderEditModal";
 
 // Đường dẫn API (sửa lại nếu cần)
 const ORDER_API_URL = "http://localhost:3000/api/orders";
@@ -65,6 +66,7 @@ export default function TableOrders() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
   const [modalOrderId, setModalOrderId] = useState(null);
+  const [editModalOrderId, setEditModalOrderId] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -97,8 +99,29 @@ export default function TableOrders() {
     }
   };
 
+  // Force modal to show for testing
+  useEffect(() => {
+    console.log("Component mounted, checking for OrderEditModal component");
+  }, []);
+
   const handleEdit = (orderId) => {
-    alert(`Chỉnh sửa đơn hàng ${orderId}`);
+    console.log("Opening edit modal for order:", orderId);
+    setEditModalOrderId(orderId);
+  };
+
+  // Add a function to refresh orders
+  const refreshOrders = async () => {
+    try {
+      setActionLoading(true);
+      const response = await axios.get(ORDER_API_URL);
+      setOrders(response.data);
+      console.log("Orders refreshed successfully");
+    } catch (err) {
+      console.error("Failed to refresh orders:", err);
+      setError("Không thể cập nhật danh sách đơn hàng");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleAdminCancelOrder = async (orderId, currentStatus) => {
@@ -287,7 +310,7 @@ export default function TableOrders() {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 relative">
       <h2 className="mb-4 text-xl font-bold">Quản lý đơn hàng (Admin)</h2>
       <div className="flex justify-end gap-2 mb-4">
         <Button
@@ -366,12 +389,29 @@ export default function TableOrders() {
         </Button>
       </div>
 
-      {modalOrderId && (
-        <OrderDetailModal
-          orderId={modalOrderId}
-          onClose={() => setModalOrderId(null)}
-        />
-      )}
+      {/* Ensure modal gets rendered with highest z-index */}
+      <div className="relative z-50">
+        {modalOrderId && (
+          <OrderDetailModal
+            orderId={modalOrderId}
+            onClose={() => setModalOrderId(null)}
+          />
+        )}
+
+        {editModalOrderId && (
+          <OrderEditModal
+            orderId={editModalOrderId}
+            onClose={() => {
+              console.log("Closing edit modal");
+              setEditModalOrderId(null);
+            }}
+            onOrderUpdated={() => {
+              console.log("Order updated, refreshing order list");
+              refreshOrders();
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableCell, TableBody } from "@/components/ui/table";
 import OrderDetailModal from "./OrderDetailModal";
+import OrderEditModal from "./OrderEditModal";
 
 // Đường dẫn API (sửa lại nếu cần)
 const ORDER_API_URL = "http://localhost:3000/api/orders";
@@ -65,6 +66,7 @@ export default function TableOrders() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
   const [modalOrderId, setModalOrderId] = useState(null);
+  const [editModalOrderId, setEditModalOrderId] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -98,11 +100,11 @@ export default function TableOrders() {
   };
 
   const handleEdit = (orderId) => {
-    alert(`Chỉnh sửa đơn hàng ${orderId}`);
+    setEditModalOrderId(orderId);
   };
 
   const handleAdminCancelOrder = async (orderId, currentStatus) => {
-    if (!["pending", "confirmed"].includes(currentStatus)) {
+    if (!["pending", "confirmed" ].includes(currentStatus)) {
       return alert("Chỉ có thể hủy đơn hàng ở trạng thái: pending, confirmed ");
     }
     if (window.confirm("Bạn có chắc muốn hủy đơn hàng này không?")) {
@@ -140,7 +142,7 @@ export default function TableOrders() {
       }
     }
   };
-
+  
 
   const handleViewDetail = (orderId) => {
     setModalOrderId(orderId);
@@ -218,8 +220,8 @@ export default function TableOrders() {
             )}
             <Button
               className={`${order.status === "pending" || order.status === "confirmed"
-                ? "bg-yellow-500 hover:bg-yellow-600"
-                : "bg-yellow-300 cursor-not-allowed"
+                  ? "bg-yellow-500 hover:bg-yellow-600"
+                  : "bg-yellow-300 cursor-not-allowed"
                 }`}
               onClick={() =>
                 (order.status === "pending" || order.status === "confirmed") &&
@@ -370,6 +372,28 @@ export default function TableOrders() {
         <OrderDetailModal
           orderId={modalOrderId}
           onClose={() => setModalOrderId(null)}
+        />
+      )}
+      
+      {editModalOrderId && (
+        <OrderEditModal
+          orderId={editModalOrderId}
+          onClose={() => setEditModalOrderId(null)}
+          onOrderUpdated={() => {
+            // Refresh orders list after update
+            const fetchOrders = async () => {
+              try {
+                setActionLoading(true);
+                const response = await axios.get(ORDER_API_URL);
+                setOrders(response.data);
+              } catch (err) {
+                console.error("Failed to refresh orders:", err);
+              } finally {
+                setActionLoading(false);
+              }
+            };
+            fetchOrders();
+          }}
         />
       )}
     </div>

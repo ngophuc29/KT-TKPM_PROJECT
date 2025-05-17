@@ -207,11 +207,47 @@ exports.updateOrder = async (req, res) => {
             return res.status(400).json({ message: "Dữ liệu update không hợp lệ", error: err.message });
         }
 
-        const order = await Order.findByIdAndUpdate(orderId, parsedData, { new: true });
+        // Validate important fields
+        if (parsedData.customer && (!parsedData.customer.name || !parsedData.customer.phone || !parsedData.customer.address)) {
+            return res.status(400).json({ message: "Thiếu thông tin khách hàng quan trọng" });
+        }
+
+        // In case of status change, record previous status for handling logic
+        let previousStatus = null;
+        if (parsedData.status) {
+            const currentOrder = await Order.findById(orderId);
+            if (currentOrder) {
+                previousStatus = currentOrder.status;
+            }
+        }
+
+        console.log(`📝 Updating order ${orderId}`, parsedData);
+        
+        // Update the order
+        const order = await Order.findByIdAndUpdate(orderId, parsedData, { new: true, runValidators: true });
+        
         if (!order) return res.status(404).json({ message: "Đơn hàng không tồn tại" });
-        res.json({ message: "Đơn hàng đã được cập nhật", order });
+        
+        // Handle status change logic if needed
+        if (previousStatus && previousStatus !== order.status) {
+            console.log(`📊 Order status changed from ${previousStatus} to ${order.status}`);
+            
+            // Add any special handling for status changes here
+            // For example, if status changed to "cancelled", you might want to restore inventory
+        }
+        
+        res.json({ 
+            success: true,
+            message: "Đơn hàng đã được cập nhật thành công", 
+            order 
+        });
     } catch (error) {
-        res.status(500).json({ message: "Lỗi server", error: error.message });
+        console.error("🚨 Error updating order:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Lỗi server khi cập nhật đơn hàng", 
+            error: error.message 
+        });
     }
 };
 
