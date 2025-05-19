@@ -26,11 +26,8 @@ const Navigation = () => {
     const categories = [
         "Laptops",
         "Desktop PCs",
-        "Networking Devices",
-        "Printers & Scanners",
         "PC Parts",
         "All Other Products",
-        "Repairs",
     ];
 
     const handleLogout = () => {
