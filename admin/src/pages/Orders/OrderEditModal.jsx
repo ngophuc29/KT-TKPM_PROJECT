@@ -37,6 +37,10 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         customerNote: "",
         sellerNote: ""
     });
+    // Add state for order items
+    const [orderItems, setOrderItems] = useState([]);
+    // Add state for tracking original total
+    const [originalTotal, setOriginalTotal] = useState(0);
 
     // Fetch order details
     useEffect(() => {
@@ -72,6 +76,10 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     customerNote: orderData.notes?.customerNote || "",
                     sellerNote: orderData.notes?.sellerNote || ""
                 });
+
+                // Initialize order items
+                setOrderItems(orderData.items || []);
+                setOriginalTotal(orderData.finalTotal || 0);
             } catch (err) {
                 setError("Lỗi khi lấy chi tiết đơn hàng");
                 console.error(err);
@@ -114,6 +122,33 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         }
     };
 
+    // Add function to handle item quantity change
+    const handleItemQuantityChange = (itemId, newQuantity) => {
+        if (newQuantity < 1) newQuantity = 1;
+        
+        setOrderItems(items => 
+            items.map(item => 
+                item._id === itemId ? { ...item, quantity: parseInt(newQuantity) } : item
+            )
+        );
+    };
+
+    // Add function to handle item removal
+    const handleRemoveItem = (itemId) => {
+        if (orderItems.length <= 1) {
+            setError("Đơn hàng phải có ít nhất một sản phẩm");
+            return;
+        }
+        
+        setOrderItems(items => items.filter(item => item._id !== itemId));
+    };
+
+    // Add function to calculate new total
+    const calculateUpdatedTotal = () => {
+        const itemsTotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        return itemsTotal + (shippingInfo.fee || 0);
+    };
+
     // Admin-specific edit function
     const handleAdminEdit = async () => {
         // Reset error state and set initial progress
@@ -136,6 +171,13 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             return;
         }
 
+        if (orderItems.length === 0) {
+            setError("Đơn hàng phải có ít nhất một sản phẩm");
+            setSaving(false);
+            setSaveProgress(0);
+            return;
+        }
+
         try {
             setSaveProgress(30);
             console.log("Admin đang chỉnh sửa đơn hàng:", orderId);
@@ -147,6 +189,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 previousStatus: order.status
             };
             
+            // Calculate the updated total
+            const updatedTotal = calculateUpdatedTotal();
+            
             // Prepare updated order data - include admin metadata
             // Keep original customer name and don't include payment info
             const updateData = {
@@ -157,6 +202,8 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 shipping: shippingInfo,
                 status: orderStatus,
                 notes: notes,
+                items: orderItems, // Include the updated items
+                finalTotal: updatedTotal, // Include the updated total
                 // Don't include payment to preserve original values
                 adminMeta: adminMetadata
             };
@@ -467,7 +514,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         </div>
                     </fieldset>
 
-                    {/* Order Items (Read-only for now) */}
+                    {/* Order Items (Now Editable) */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Sản phẩm trong đơn hàng</legend>
                         
@@ -476,29 +523,93 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 <thead>
                                     <tr className="bg-gray-100">
                                         <th className="px-4 py-2 text-left">Sản phẩm</th>
-                                        <th className="px-4 py-2 text-left">Số lượng</th>
-                                        <th className="px-4 py-2 text-left">Giá</th>
+                                        <th className="px-4 py-2 text-center">Số lượng</th>
+                                        <th className="px-4 py-2 text-right">Giá</th>
+                                        <th className="px-4 py-2 text-right">Thành tiền</th>
+                                        <th className="px-4 py-2 text-center">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {order?.items?.map((item) => (
+                                    {orderItems.map((item) => (
                                         <tr key={item._id} className="border-b">
                                             <td className="px-4 py-2">{item.name}</td>
-                                            <td className="px-4 py-2">{item.quantity}</td>
-                                            <td className="px-4 py-2">
+                                            <td className="px-4 py-2 text-center">
+                                                <Input
+                                                    type="number"
+                                                    min="1"
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleItemQuantityChange(item._id, e.target.value)}
+                                                    className="w-20 text-center mx-auto"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2 text-right">
                                                 {new Intl.NumberFormat("vi-VN", {
                                                     style: "currency",
                                                     currency: "VND",
                                                 }).format(item.price)}
                                             </td>
+                                            <td className="px-4 py-2 text-right">
+                                                {new Intl.NumberFormat("vi-VN", {
+                                                    style: "currency",
+                                                    currency: "VND",
+                                                }).format(item.price * item.quantity)}
+                                            </td>
+                                            <td className="px-4 py-2 text-center">
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleRemoveItem(item._id)}
+                                                    disabled={orderItems.length <= 1}
+                                                    className="h-8 px-3"
+                                                >
+                                                    Xóa
+                                                </Button>
+                                            </td>
                                         </tr>
                                     ))}
+                                    <tr className="font-bold">
+                                        <td colSpan="3" className="px-4 py-2 text-right">Tổng tiền sản phẩm:</td>
+                                        <td className="px-4 py-2 text-right">
+                                            {new Intl.NumberFormat("vi-VN", {
+                                                style: "currency",
+                                                currency: "VND",
+                                            }).format(orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr className="font-bold">
+                                        <td colSpan="3" className="px-4 py-2 text-right">Phí vận chuyển:</td>
+                                        <td className="px-4 py-2 text-right">
+                                            {new Intl.NumberFormat("vi-VN", {
+                                                style: "currency",
+                                                currency: "VND",
+                                            }).format(shippingInfo.fee || 0)}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr className="font-bold text-lg bg-gray-50">
+                                        <td colSpan="3" className="px-4 py-3 text-right">Tổng cộng:</td>
+                                        <td className="px-4 py-3 text-right">
+                                            {new Intl.NumberFormat("vi-VN", {
+                                                style: "currency",
+                                                currency: "VND",
+                                            }).format(calculateUpdatedTotal())}
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    {originalTotal !== calculateUpdatedTotal() && (
+                                        <tr className="text-sm text-blue-600">
+                                            <td colSpan="5" className="px-4 py-1 text-right italic">
+                                                * Tổng tiền đã thay đổi từ {new Intl.NumberFormat("vi-VN", {
+                                                    style: "currency",
+                                                    currency: "VND",
+                                                }).format(originalTotal)}
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
-                        <p className="text-sm text-gray-500 mt-2">
-                            * Chỉnh sửa sản phẩm sẽ được cập nhật trong phiên bản tiếp theo
-                        </p>
                     </fieldset>
                 </div>
 
