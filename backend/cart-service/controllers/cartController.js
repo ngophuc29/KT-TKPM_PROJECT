@@ -3,8 +3,8 @@ const axios = require("axios");
 const redisClient = require("../utils/redisClient");
 
 // Get base API URL from environment variable or fallback to localhost for development
-const API_BASE_URL =
-  process.env.NODE_ENV === "production" ? "http://api-gateway:3000/api" : "http://localhost:3000/api";
+const API_BASE_URL = "https://kt-tkpm-project-inventory-service.onrender.com";
+
 
 const getCacheKey = (userId) => `cart:${userId}`;
 
@@ -48,7 +48,7 @@ exports.addToCart = async (req, res) => {
       return res.status(400).json({ message: "Dữ liệu không hợp lệ" });
     }
 
-    const stockResponse = await axios.get(`${API_BASE_URL}/inventory/${productId}`);
+    const stockResponse = await axios.get(`${API_BASE_URL}/${productId}`);
     const availableStock = stockResponse.data.stock;
 
     const allCarts = await Cart.find({});
@@ -108,7 +108,7 @@ exports.updateCartItem = async (req, res) => {
       return res.status(404).json({ message: "Sản phẩm không tồn tại trong giỏ" });
     }
 
-    const stockResponse = await axios.get(`${API_BASE_URL}/inventory/${productId}`);
+    const stockResponse = await axios.get(`${API_BASE_URL}/${productId}`);
     const availableStock = stockResponse.data.stock;
 
     const otherCarts = await Cart.find({ userId: { $ne: userId } });
@@ -209,7 +209,7 @@ exports.checkCart = async (req, res) => {
     if (!cart) return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
 
     const productIds = cart.items.map((item) => item.productId);
-    const inventoryRes = await axios.get(`${API_BASE_URL}/inventory/bulk/${productIds.join(",")}`);
+    const inventoryRes = await axios.get(`${API_BASE_URL}/bulk/${productIds.join(",")}`);
     const inventoryData = inventoryRes.data;
 
     const result = cart.items.map((item) => {
