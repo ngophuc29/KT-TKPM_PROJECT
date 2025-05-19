@@ -31,6 +31,7 @@ const services = {
   cart: process.env.NODE_ENV === "production" ? "http://cart-service:4005" : "http://localhost:4005",
   notification: process.env.NODE_ENV === "production" ? "http://notification-service:4001" : "http://localhost:4001",
   orders: process.env.NODE_ENV === "production" ? "http://order-service:4009" : "http://localhost:4009",
+  payment: "http://localhost:4545",
 };
 
 // Proxy cho tất cả request đến API Gateway

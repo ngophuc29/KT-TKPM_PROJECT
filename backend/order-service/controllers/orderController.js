@@ -207,11 +207,47 @@ exports.updateOrder = async (req, res) => {
             return res.status(400).json({ message: "Dữ liệu update không hợp lệ", error: err.message });
         }
 
-        const order = await Order.findByIdAndUpdate(orderId, parsedData, { new: true });
+        // Validate important fields
+        if (parsedData.customer && (!parsedData.customer.name || !parsedData.customer.phone || !parsedData.customer.address)) {
+            return res.status(400).json({ message: "Thiếu thông tin khách hàng quan trọng" });
+        }
+
+        // In case of status change, record previous status for handling logic
+        let previousStatus = null;
+        if (parsedData.status) {
+            const currentOrder = await Order.findById(orderId);
+            if (currentOrder) {
+                previousStatus = currentOrder.status;
+            }
+        }
+
+        console.log(`📝 Updating order ${orderId}`, parsedData);
+        
+        // Update the order
+        const order = await Order.findByIdAndUpdate(orderId, parsedData, { new: true, runValidators: true });
+        
         if (!order) return res.status(404).json({ message: "Đơn hàng không tồn tại" });
-        res.json({ message: "Đơn hàng đã được cập nhật", order });
+        
+        // Handle status change logic if needed
+        if (previousStatus && previousStatus !== order.status) {
+            console.log(`📊 Order status changed from ${previousStatus} to ${order.status}`);
+            
+            // Add any special handling for status changes here
+            // For example, if status changed to "cancelled", you might want to restore inventory
+        }
+        
+        res.json({ 
+            success: true,
+            message: "Đơn hàng đã được cập nhật thành công", 
+            order 
+        });
     } catch (error) {
-        res.status(500).json({ message: "Lỗi server", error: error.message });
+        console.error("🚨 Error updating order:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Lỗi server khi cập nhật đơn hàng", 
+            error: error.message 
+        });
     }
 };
 
@@ -219,37 +255,85 @@ exports.updateOrder = async (req, res) => {
 exports.cancelOrder = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const order = await Order.findById(orderId);
-        if (!order) return res.status(404).json({ message: "Đơn hàng không tồn tại" });
-
-        // Cho phép hủy nếu đơn hàng chưa được xác nhận (status là "pending")
-        if (order.status !== "pending") {
-            return res.status(400).json({ message: "Chỉ đơn hàng chưa xác nhận mới có thể hủy" });
+        console.log(`Attempting to cancel order: ${orderId}`);
+        
+        // Use a single database operation to update the order
+        const order = await Order.findByIdAndUpdate(
+            orderId,
+            { status: "cancelled" },
+            { new: true, runValidators: false }
+        );
+        
+        if (!order) {
+            console.log(`Order not found: ${orderId}`);
+            return res.status(404).json({ message: "Đơn hàng không tồn tại" });
         }
 
-        // Cập nhật trạng thái đơn hàng thành "cancelled"
-        order.status = "cancelled";
-        await order.save();
-
-        // Gọi API release cho từng mặt hàng (sử dụng params)
-        for (const item of order.items) {
-            try {
-                await axios.put(`${INVENTORY_API}/release/${item.productId}/${item.quantity}`);
-            } catch (err) {
-                console.error(
-                    `Lỗi khi gọi API release cho sản phẩm ${item.productId}:`,
-                    err.response?.data || err.message
-                );
-                // Bạn có thể quyết định xử lý lỗi riêng cho từng item (hoặc thông báo cho người dùng)
-            }
-        }
-
-        res.json({ message: "Đơn hàng đã bị hủy", order });
+        // Send response immediately, then handle inventory restoration
+        // This way the client doesn't have to wait for inventory operations
+        res.json({ 
+            success: true,
+            message: "Đơn hàng đã bị hủy thành công", 
+            order 
+        });
+        
+        // Process inventory restoration in the background
+        restoreInventoryWithRetry(order.items).catch(err => {
+            console.error("Background inventory restoration error:", err);
+        });
+        
     } catch (error) {
-        res.status(500).json({ message: "Lỗi server", error: error.message });
+        console.error("Unhandled error in cancelOrder:", error);
+        res.status(500).json({ 
+            success: false,
+            message: "Lỗi server khi hủy đơn hàng", 
+            error: error.message 
+        });
     }
 };
 
+// Optimized inventory restoration with parallel processing
+async function restoreInventoryWithRetry(items) {
+    // Process all items in parallel using Promise.all
+    const results = await Promise.all(items.map(async (item) => {
+        let retries = 2; // Reduce retries from 3 to 2
+        
+        while (retries >= 0) {
+            try {
+                // Shorter timeout (8s instead of 15s)
+                const response = await axios.post(
+                    `http://localhost:3000/api/inventory/restore/${item.productId}/${item.quantity}`,
+                    {},
+                    { timeout: 8000 }
+                );
+                
+                console.log(`Successfully restored inventory for product ${item.productId}`);
+                return { success: true, productId: item.productId };
+            } catch (err) {
+                retries--;
+                console.error(`Attempt failed for product ${item.productId}, retries left: ${retries}`);
+                
+                // Shorter wait between retries (1s, 2s)
+                if (retries >= 0) {
+                    await new Promise(resolve => setTimeout(resolve, (2-retries) * 1000));
+                } else {
+                    return { 
+                        success: false, 
+                        productId: item.productId, 
+                        error: err.message 
+                    };
+                }
+            }
+        }
+    }));
+    
+    const errors = results.filter(r => !r.success);
+    if (errors.length > 0) {
+        console.warn("Some inventory restorations failed:", errors);
+    }
+    
+    return { success: errors.length === 0, errors };
+}
 
 // 📌 Hủy đơn hàng bởi Admin (không ràng buộc trạng thái)
 // exports.adminCancelOrder = async (req, res) => {
@@ -373,5 +457,19 @@ exports.adminDeleteOrder = async (req, res) => {
         res.status(500).json({ message: "Lỗi server", error: error.message });
     }
 };
+
+// Khi Order gọi đến Inventory để kiểm tra stock (day ne)
+async function checkInventoryWithRetry(productIds) {
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      return await axios.get(`${INVENTORY_API}/bulk/${productIdsParam}`);
+    } catch (error) {
+      retries--;
+      if (retries === 0) throw error;
+      await new Promise(resolve => setTimeout(resolve, 3000)); // chờ 3s
+    }
+  }
+}
 
 

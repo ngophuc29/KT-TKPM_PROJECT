@@ -18,40 +18,54 @@ services:
     build: ./product-catalog-service
     ports:
       - "4004:4004"
-    expose:
-      - "4004"
+    environment:
+      - NODE_ENV=production
 
   inventory-service:
     build: ./inventory-service
     ports:
       - "4000:4000"
-    expose:
-      - "4000"
+    environment:
+      - NODE_ENV=production
 
   cart-service:
     build: ./cart-service
     ports:
       - "4005:4005"
-    expose:
-      - "4005"
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
 
   order-service:
     build: ./order-service
     ports:
       - "4009:4009"
-    expose:
-      - "4009"
+    environment:
+      - NODE_ENV=production
 
   notification-service:
     build: ./notification-service
     ports:
       - "4001:4001"
-    expose:
-      - "4001"
+    environment:
+      - NODE_ENV=production
 
   payment-service:
     build: ./payment-service
     ports:
       - "4003:4003"
-    expose:
-      - "4003"
+    environment:
+      - NODE_ENV=production
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:
