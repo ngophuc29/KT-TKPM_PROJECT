@@ -4,7 +4,10 @@ import OverviewContent from "./OverviewTabs/OverviewContent";
 import NotificationContent from "./NotificationTabs/NotificationContent";
 import Order from "./OrdersTabs/Order";
 import TableOrders from "@/components/Orders/TableOrders";
+ 
 import axios from "axios";
+import AnalyticsContent from "./AnalyticsTabs/AnalyticsContent";
+
 const Main = ({ unreadCount, setUnreadCount, loadNotifications, setLoadNotifications }) => {
   const markNotificationsAsRead = async () => {
     try {
@@ -22,31 +25,32 @@ const Main = ({ unreadCount, setUnreadCount, loadNotifications, setLoadNotificat
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+          {/* <TabsTrigger value="reports">Reports</TabsTrigger> */}
           <TabsTrigger value="notification" onClick={markNotificationsAsRead}>
             Notification
             <span className="flex items-center justify-center rounded-full text-red-500">
               {unreadCount > 0 ? `(${unreadCount})` : ""}
             </span>
           </TabsTrigger>
-          <TabsTrigger value="order">Order</TabsTrigger>
-
+          {/* <TabsTrigger value="order">Order</TabsTrigger> */}
         </TabsList>
 
         {/* Tabs content */}
         <TabsContent value="overview">
-          <Card />
+          {/* <Card /> */}
           <OverviewContent />
         </TabsContent>
         <TabsContent value="notification">
           <NotificationContent loadNotifications={loadNotifications}/>
         </TabsContent>
-        <TabsContent value="order">
-          {/* <Order/> */}
+        {/* <TabsContent value="order">
+      
           <TableOrders/>
-          {/* <h1>hello</h1> */}
+         
+        </TabsContent> */}
+        <TabsContent value="analytics">
+          <AnalyticsContent />
         </TabsContent>
-        <TabsContent value="analytics">Change your password here.</TabsContent>
       </Tabs>
     </div>
   );
