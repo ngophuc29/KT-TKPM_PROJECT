@@ -5,6 +5,8 @@ const axios = require("axios");
 const PRODUCT_SERVICE_URL = "http://localhost:3000/api/products/products";
 const PRODUCT_SERVICE_URLImport = "http://localhost:3000/api/products/product";
 const PRODUCT_UPDATE_STOCK_URL = "http://localhost:3000/api/products/update-stock";
+const CART_API_URL = "http://localhost:3000/api/cart";
+const Order_api ='http://localhost:3000/api/orders'
 const LOW_STOCK_THRESHOLD = 5; // Ngưỡng cảnh báo tồn kho thấp
 
 // ------------------------------
@@ -301,5 +303,437 @@ exports.getProduct = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: "Lỗi khi lấy thông tin tồn kho", error: error.message });
+    }
+};
+
+// ------------------------------
+// 11️⃣ API thống kê tổng quan
+// ------------------------------
+exports.getGeneralStats = async (req, res) => {
+    try {
+        // Lấy thông tin từ các service
+        const [products, orders, inventory] = await Promise.all([
+            axios.get(PRODUCT_SERVICE_URL),
+            axios.get(Order_api),
+            Inventory.find({})
+        ]);
+
+        // Tính toán thống kê
+        const totalProducts = products.data.data.length;
+        const totalOrders = orders.data.length;
+        const totalInventory = inventory.reduce((sum, item) => sum + item.quantity, 0);
+        const totalRevenue = orders.data.reduce((sum, order) => sum + order.finalTotal, 0);
+        
+        // Thống kê theo trạng thái đơn hàng
+        const orderStatusStats = orders.data.reduce((acc, order) => {
+            acc[order.status] = (acc[order.status] || 0) + 1;
+            return acc;
+        }, {});
+
+        // Thống kê sản phẩm theo danh mục
+        const categoryStats = products.data.data.reduce((acc, product) => {
+            acc[product.category] = (acc[product.category] || 0) + 1;
+            return acc;
+        }, {});
+
+        // Thống kê sản phẩm tồn kho thấp
+        const lowStockProducts = inventory.filter(item => item.quantity <= LOW_STOCK_THRESHOLD);
+
+        res.json({
+            general: {
+                totalProducts,
+                totalOrders,
+                totalInventory,
+                totalRevenue,
+                averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0
+            },
+            orderStatus: orderStatusStats,
+            categoryStats,
+            inventoryAlerts: {
+                lowStockCount: lowStockProducts.length,
+                lowStockProducts: lowStockProducts.map(item => ({
+                    productId: item.productId,
+                    name: item.name,
+                    currentStock: item.quantity
+                }))
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê tổng quan",
+            error: error.message
+        });
+    }
+};
+
+// ------------------------------
+// 12️⃣ API thống kê doanh thu theo thời gian
+// ------------------------------
+exports.getRevenueStats = async (req, res) => {
+    try {
+        const { period = 'month' } = req.query; // period: 'day', 'week', 'month', 'year'
+        const orders = await axios.get(Order_api);
+        
+        // Lọc các đơn hàng đã hoàn thành
+        const completedOrders = orders.data.filter(order => order.status === 'completed');
+        
+        // Nhóm doanh thu theo thời gian
+        const revenueByPeriod = completedOrders.reduce((acc, order) => {
+            const date = new Date(order.createdAt);
+            let periodKey;
+            
+            switch(period) {
+                case 'day':
+                    periodKey = date.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay());
+                    periodKey = weekStart.toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    periodKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    break;
+                case 'year':
+                    periodKey = date.getFullYear().toString();
+                    break;
+                default:
+                    periodKey = date.toISOString().split('T')[0];
+            }
+            
+            acc[periodKey] = (acc[periodKey] || 0) + order.finalTotal;
+            return acc;
+        }, {});
+
+        // Tính toán các chỉ số
+        const totalRevenue = Object.values(revenueByPeriod).reduce((sum, val) => sum + val, 0);
+        const averageRevenue = Object.values(revenueByPeriod).length > 0 
+            ? totalRevenue / Object.values(revenueByPeriod).length 
+            : 0;
+
+        res.json({
+            revenueByPeriod,
+            totalRevenue,
+            averageRevenue,
+            period
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê doanh thu",
+            error: error.message
+        });
+    }
+};
+
+// ------------------------------
+// 13️⃣ API thống kê sản phẩm bán chạy
+// ------------------------------
+exports.getTopSellingProducts = async (req, res) => {
+    try {
+        const { limit = 10 } = req.query;
+        const orders = await axios.get(Order_api);
+        
+        // Tính toán số lượng bán của từng sản phẩm
+        const productSales = orders.data.reduce((acc, order) => {
+            if (order.status === 'completed') {
+                order.items.forEach(item => {
+                    acc[item.productId] = (acc[item.productId] || 0) + item.quantity;
+                });
+            }
+            return acc;
+        }, {});
+
+        // Lấy thông tin chi tiết sản phẩm
+        const products = await axios.get(PRODUCT_SERVICE_URL);
+        const productDetails = products.data.data;
+
+        // Kết hợp thông tin và sắp xếp theo số lượng bán
+        const topProducts = Object.entries(productSales)
+            .map(([productId, quantity]) => {
+                const product = productDetails.find(p => p._id === productId);
+                return {
+                    productId,
+                    name: product?.name || 'Unknown Product',
+                    category: product?.category || 'Unknown Category',
+                    totalSold: quantity,
+                    price: product?.price || 0,
+                    revenue: (product?.price || 0) * quantity
+                };
+            })
+            .sort((a, b) => b.totalSold - a.totalSold)
+            .slice(0, parseInt(limit));
+
+        res.json({
+            topProducts,
+            totalProducts: Object.keys(productSales).length
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê sản phẩm bán chạy",
+            error: error.message
+        });
+    }
+};
+
+// ------------------------------
+// 14️⃣ API thống kê tồn kho theo danh mục
+// ------------------------------
+exports.getInventoryByCategory = async (req, res) => {
+    try {
+        const products = await axios.get(PRODUCT_SERVICE_URL);
+        const inventory = await Inventory.find({});
+
+        // Tạo map để dễ dàng truy xuất thông tin sản phẩm
+        const productMap = products.data.data.reduce((acc, product) => {
+            acc[product._id] = product;
+            return acc;
+        }, {});
+
+        // Thống kê tồn kho theo danh mục
+        const categoryStats = inventory.reduce((acc, item) => {
+            const product = productMap[item.productId];
+            if (product) {
+                const category = product.category;
+                if (!acc[category]) {
+                    acc[category] = {
+                        totalProducts: 0,
+                        totalStock: 0,
+                        lowStockCount: 0,
+                        products: []
+                    };
+                }
+                
+                acc[category].totalProducts++;
+                acc[category].totalStock += item.quantity;
+                if (item.quantity <= LOW_STOCK_THRESHOLD) {
+                    acc[category].lowStockCount++;
+                }
+                
+                acc[category].products.push({
+                    productId: item.productId,
+                    name: item.name,
+                    currentStock: item.quantity,
+                    price: product.price,
+                    totalValue: item.quantity * product.price
+                });
+            }
+            return acc;
+        }, {});
+
+        // Tính toán tổng giá trị tồn kho
+        const totalInventoryValue = Object.values(categoryStats).reduce(
+            (sum, category) => sum + category.products.reduce(
+                (catSum, product) => catSum + product.totalValue, 0
+            ), 0
+        );
+
+        res.json({
+            categoryStats,
+            totalInventoryValue,
+            totalCategories: Object.keys(categoryStats).length
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê tồn kho theo danh mục",
+            error: error.message
+        });
+    }
+};
+
+// ------------------------------
+// 15️⃣ API thống kê chi tiết đơn hàng theo trạng thái
+// ------------------------------
+exports.getOrderStatusStats = async (req, res) => {
+    try {
+        const orders = await axios.get(Order_api);
+        
+        // Thống kê theo trạng thái
+        const statusStats = orders.data.reduce((acc, order) => {
+            acc[order.status] = (acc[order.status] || 0) + 1;
+            return acc;
+        }, {});
+
+        // Thống kê doanh thu theo trạng thái
+        const revenueByStatus = orders.data.reduce((acc, order) => {
+            acc[order.status] = (acc[order.status] || 0) + order.finalTotal;
+            return acc;
+        }, {});
+
+        // Thống kê theo thời gian (24h gần nhất, 7 ngày, 30 ngày)
+        const now = new Date();
+        const last24h = new Date(now - 24 * 60 * 60 * 1000);
+        const last7days = new Date(now - 7 * 24 * 60 * 60 * 1000);
+        const last30days = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+        const timeStats = {
+            last24h: orders.data.filter(order => new Date(order.createdAt) > last24h).length,
+            last7days: orders.data.filter(order => new Date(order.createdAt) > last7days).length,
+            last30days: orders.data.filter(order => new Date(order.createdAt) > last30days).length
+        };
+
+        res.json({
+            statusStats,
+            revenueByStatus,
+            timeStats,
+            totalOrders: orders.data.length
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê trạng thái đơn hàng",
+            error: error.message
+        });
+    }
+};
+
+// ------------------------------
+// 16️⃣ API thống kê doanh thu chi tiết theo sản phẩm
+// ------------------------------
+exports.getProductRevenueStats = async (req, res) => {
+    try {
+        const orders = await axios.get(Order_api);
+        const products = await axios.get(PRODUCT_SERVICE_URL);
+        
+        // Tạo map sản phẩm để dễ truy xuất
+        const productMap = products.data.data.reduce((acc, product) => {
+            acc[product._id] = product;
+            return acc;
+        }, {});
+
+        // Tính toán doanh thu và số lượng bán cho từng sản phẩm
+        const productStats = orders.data.reduce((acc, order) => {
+            if (order.status === 'completed') {
+                order.items.forEach(item => {
+                    if (!acc[item.productId]) {
+                        acc[item.productId] = {
+                            productId: item.productId,
+                            name: productMap[item.productId]?.name || 'Unknown',
+                            category: productMap[item.productId]?.category || 'Unknown',
+                            totalSold: 0,
+                            totalRevenue: 0,
+                            averagePrice: 0,
+                            orders: 0
+                        };
+                    }
+                    
+                    acc[item.productId].totalSold += item.quantity;
+                    acc[item.productId].totalRevenue += item.price * item.quantity;
+                    acc[item.productId].orders += 1;
+                });
+            }
+            return acc;
+        }, {});
+
+        // Tính giá trung bình và sắp xếp theo doanh thu
+        const productStatsArray = Object.values(productStats).map(stat => ({
+            ...stat,
+            averagePrice: stat.totalSold > 0 ? stat.totalRevenue / stat.totalSold : 0
+        })).sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+        // Thống kê theo danh mục
+        const categoryStats = productStatsArray.reduce((acc, product) => {
+            if (!acc[product.category]) {
+                acc[product.category] = {
+                    totalRevenue: 0,
+                    totalSold: 0,
+                    productCount: 0
+                };
+            }
+            acc[product.category].totalRevenue += product.totalRevenue;
+            acc[product.category].totalSold += product.totalSold;
+            acc[product.category].productCount += 1;
+            return acc;
+        }, {});
+
+        res.json({
+            productStats: productStatsArray,
+            categoryStats,
+            totalRevenue: productStatsArray.reduce((sum, p) => sum + p.totalRevenue, 0),
+            totalProducts: productStatsArray.length
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê doanh thu sản phẩm",
+            error: error.message
+        });
+    }
+};
+
+// ------------------------------
+// 17️⃣ API thống kê tổng hợp chi tiết
+// ------------------------------
+exports.getDetailedStats = async (req, res) => {
+    try {
+        const [orders, products, inventory] = await Promise.all([
+            axios.get(Order_api),
+            axios.get(PRODUCT_SERVICE_URL),
+            Inventory.find({})
+        ]);
+
+        // Thống kê đơn hàng
+        const orderStats = {
+            total: orders.data.length,
+            byStatus: orders.data.reduce((acc, order) => {
+                acc[order.status] = (acc[order.status] || 0) + 1;
+                return acc;
+            }, {}),
+            revenue: orders.data.reduce((sum, order) => sum + order.finalTotal, 0),
+            averageOrderValue: orders.data.length > 0 
+                ? orders.data.reduce((sum, order) => sum + order.finalTotal, 0) / orders.data.length 
+                : 0
+        };
+
+        // Thống kê sản phẩm
+        const productStats = {
+            total: products.data.data.length,
+            byCategory: products.data.data.reduce((acc, product) => {
+                acc[product.category] = (acc[product.category] || 0) + 1;
+                return acc;
+            }, {}),
+            lowStock: inventory.filter(item => item.quantity <= LOW_STOCK_THRESHOLD).length,
+            outOfStock: inventory.filter(item => item.quantity === 0).length
+        };
+
+        // Thống kê doanh thu theo thời gian
+        const now = new Date();
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const revenueStats = {
+            total: orderStats.revenue,
+            thisMonth: orders.data
+                .filter(order => new Date(order.createdAt) >= thisMonth)
+                .reduce((sum, order) => sum + order.finalTotal, 0),
+            lastMonth: orders.data
+                .filter(order => new Date(order.createdAt) >= lastMonth && new Date(order.createdAt) < thisMonth)
+                .reduce((sum, order) => sum + order.finalTotal, 0)
+        };
+
+        // Thống kê tồn kho
+        const inventoryStats = {
+            totalItems: inventory.reduce((sum, item) => sum + item.quantity, 0),
+            totalValue: inventory.reduce((sum, item) => {
+                const product = products.data.data.find(p => p._id === item.productId);
+                return sum + (item.quantity * (product?.price || 0));
+            }, 0),
+            lowStockItems: inventory.filter(item => item.quantity <= LOW_STOCK_THRESHOLD)
+                .map(item => ({
+                    productId: item.productId,
+                    name: item.name,
+                    currentStock: item.quantity
+                }))
+        };
+
+        res.json({
+            orderStats,
+            productStats,
+            revenueStats,
+            inventoryStats,
+            lastUpdated: new Date()
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Lỗi khi lấy thống kê chi tiết",
+            error: error.message
+        });
     }
 };

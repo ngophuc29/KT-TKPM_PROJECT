@@ -1,32 +1,64 @@
-export default function RecentSales() {
-    const sales = [
-        { name: "Olivia Martin", email: "olivia.martin@email.com", amount: "+$1,999.00" },
-        { name: "Jackson Lee", email: "jackson.lee@email.com", amount: "+$39.00" },
-        { name: "Isabella Nguyen", email: "isabella.nguyen@email.com", amount: "+$299.00" },
-        { name: "William Kim", email: "will@email.com", amount: "+$99.00" },
-        { name: "Sofia Davis", email: "sofia.davis@email.com", amount: "+$39.00" },
-    ];
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+const RecentSales = () => {
+    const [topProducts, setTopProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchTopProducts = async () => {
+            setIsLoading(true);
+            try {
+                const response = await axios.get("http://localhost:3000/api/inventory/stats/product-revenue");
+                if (response.data && response.data.productStats) {
+                    setTopProducts(response.data.productStats.slice(0, 5));
+                }
+            } catch (error) {
+                console.error("Error fetching top products:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchTopProducts();
+    }, []);
 
     return (
-        <div className=" p-6 rounded-xl max-w-md shadow-lg">
-            <h2 className="text-lg font-semibold">Recent Sales</h2>
-            <p className="text-sm text-gray-400">You made 265 sales this month.</p>
-            <div className="mt-4 space-y-4">
-                {sales.map((sale, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white">
-                                <span className="text-sm font-medium">{sale.name.charAt(0)}</span>
+        <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-4">Top sản phẩm bán chạy</h2>
+            {isLoading ? (
+                <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {topProducts.map((product, index) => (
+                        <div key={product.productId} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex items-center space-x-4">
+                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <span className="text-blue-600 font-bold">{index + 1}</span>
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">{product.name}</h3>
+                                    <p className="text-sm text-gray-500">{product.category}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-medium">{sale.name}</p>
-                                <p className="text-sm text-gray-400">{sale.email}</p>
+                            <div className="text-right">
+                                <p className="font-semibold text-green-600">
+                                    {new Intl.NumberFormat('vi-VN', {
+                                        style: 'currency',
+                                        currency: 'VND',
+                                        maximumFractionDigits: 0
+                                    }).format(product.totalRevenue)}
+                                </p>
+                                <p className="text-sm text-gray-500">Đã bán: {product.totalSold}</p>
                             </div>
                         </div>
-                        <p className="text-green-400 font-medium">{sale.amount}</p>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
-}
+};
+
+export default RecentSales;

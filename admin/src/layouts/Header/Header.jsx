@@ -59,11 +59,11 @@ export default function Header() {
                 Products
               </Link>
             </NavigationMenuItem>
-            <NavigationMenuItem>
+            {/* <NavigationMenuItem>
               <Link to="/settings" className={getLinkClass("/settings")}>
                 Settings
               </Link>
-            </NavigationMenuItem>
+            </NavigationMenuItem> */}
             <NavigationMenuItem>
               <Link to="/orders" className={getLinkClass("/orders")}>
                 Orders

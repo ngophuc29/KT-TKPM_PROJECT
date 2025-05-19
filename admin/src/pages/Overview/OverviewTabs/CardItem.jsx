@@ -1,17 +1,19 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const CardItem = ({ title, value, currency, percentage }) => {
-    return (
-        <Card className=" rounded-xl shadow-lg p-3 w-96">
-            <CardHeader className="flex flex-row justify-between items-center">
-                <CardTitle className="text-sm text-gray-400">{title}</CardTitle>
-                <span className="text-gray-400 text-lg">{currency}</span>
-            </CardHeader>
-            <CardContent className="text-2xl font-bold">{value}</CardContent>
-            <CardContent className="text-sm  ">{percentage} </CardContent>
-        </Card>
-    );
+const CardItem = ({ title, value, icon, color }) => {
+  return (
+    <div className={`p-6 rounded-lg shadow-md ${color}`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-semibold text-gray-800 mt-2">{value}</p>
+        </div>
+        <div className="p-3 rounded-full bg-white">
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CardItem;
