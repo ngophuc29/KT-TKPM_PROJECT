@@ -115,7 +115,17 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
     }
   };
 
- 
+  const handleNotification = async() => {
+    try {
+      // Test gửi nên gửi thẳng dữ liệu
+      const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`);
+      console.log("Notification sent: ", response.data);
+    } catch (error) {
+      console.log("Error sending notification: ", error);
+    }
+  };
+
+
   return (
     <form
       style={{
@@ -323,7 +333,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       {/* Confirm Order Button */}
       <button
         type="button"
-        onClick={handleOrderSubmit}
+        onClick={() => { handleOrderSubmit(); handleNotification(); }}
         style={{
           backgroundColor: "#C94D3F",
           color: "#FFF",

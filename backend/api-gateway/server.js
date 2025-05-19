@@ -24,13 +24,13 @@ app.use(
 
 app.use(express.json());
 
-// Cấu hình các service
+// Cấu hình các service - sử dụng tên service từ docker-compose thay vì localhost
 const services = {
-  products: "http://localhost:4004",
-  inventory: "http://localhost:4000",
-  cart: "http://localhost:4005",
-  notification: "http://localhost:4001",
-  orders: "http://localhost:4009",
+  products: process.env.NODE_ENV === "production" ? "http://product-catalog-service:4004" : "http://localhost:4004",
+  inventory: process.env.NODE_ENV === "production" ? "http://inventory-service:4000" : "http://localhost:4000",
+  cart: process.env.NODE_ENV === "production" ? "http://cart-service:4005" : "http://localhost:4005",
+  notification: process.env.NODE_ENV === "production" ? "http://notification-service:4001" : "http://localhost:4001",
+  orders: process.env.NODE_ENV === "production" ? "http://order-service:4009" : "http://localhost:4009",
 };
 
 // Proxy cho tất cả request đến API Gateway
