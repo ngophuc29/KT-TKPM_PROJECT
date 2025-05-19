@@ -6,7 +6,7 @@ const cors = require("cors");
 const app = express();
 app.use(
   cors({
-    origin: process.env.FONTEND_URL || "*", // Nếu không có biến môi trường, cho phép tất cả
+    origin: process.env.FRONTEND_URL || "*", // Nếu không có biến môi trường, cho phép tất cả
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
