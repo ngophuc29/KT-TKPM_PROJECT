@@ -1,5 +1,5 @@
 // Navigation.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FiShoppingCart } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
@@ -10,8 +10,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Navigation.css";
 import UserInfoModal from "../../pages/User/UserInfoModal";
 import EditUserModal from "../../pages/User/EditUserModal";
-// OrderModal mặc định của bạn:
 import OrderModal from "../../pages/User/OrderModal";
+import axios from "axios";
 
 const Navigation = () => {
     const [showSearch, setShowSearch] = useState(false);
@@ -19,7 +19,14 @@ const Navigation = () => {
     const [showUserInfoModal, setShowUserInfoModal] = useState(false);
     const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [showOrderModal, setShowOrderModal] = useState(false);
-
+    
+    // States cho chức năng tìm kiếm
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [showResults, setShowResults] = useState(false);
+    const [loading, setLoading] = useState(false);
+    
+    const searchRef = useRef(null);
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
@@ -36,13 +43,11 @@ const Navigation = () => {
         navigate("/login");
     };
 
-    // Khi mở OrderModal thì ẩn dropdown
     const openOrderModal = () => {
         setShowUserMenu(false);
         setShowOrderModal(true);
     };
 
-    // Khi đóng OrderModal: chỉ đóng modal, không reset dropdown
     const closeOrderModal = () => {
         setShowOrderModal(false);
     };
@@ -56,6 +61,91 @@ const Navigation = () => {
         avatar: "https://i.pravatar.cc/150?img=1",
     };
     const [user, setUser] = useState(sampleUser);
+
+    // Xử lý click bên ngoài kết quả tìm kiếm
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowResults(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // Debounced search
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            // Chỉ thực hiện tìm kiếm khi có ít nhất 1 ký tự và ô tìm kiếm đang hiển thị
+            if (searchTerm.trim().length > 0 && showSearch) {
+                performSearch();
+            } else {
+                setSearchResults([]);
+                setShowResults(false);
+            }
+        }, 300); // Đợi 300ms sau khi người dùng ngừng gõ
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, showSearch]);
+
+    const performSearch = async () => {
+        try {
+            setLoading(true);
+            
+            const params = new URLSearchParams();
+            params.set('name', searchTerm);
+            params.set('limit', '5');
+
+            const response = await axios.get(
+                `http://localhost:3000/api/products/products-filters?${params.toString()}`
+            );
+            
+            // Lọc kết quả để chỉ hiển thị sản phẩm có tên chứa từ khóa tìm kiếm
+            const filteredResults = response.data.data || [];
+            
+            setSearchResults(filteredResults);
+            setShowResults(true);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error searching products:", error);
+            setSearchResults([]);
+            setLoading(false);
+            setShowResults(true);
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        
+        // Chỉ hiển thị kết quả và loading khi có ít nhất 1 ký tự
+        if (value.trim().length > 0) {
+            setLoading(true);
+            setShowResults(true);
+        } else {
+            setShowResults(false);
+        }
+    };
+
+    const handleProductClick = (productId) => {
+        navigate(`/product/${productId}`);
+        setShowResults(false);
+        setShowSearch(false);
+        setSearchTerm("");
+    };
+
+    const handleViewAllResults = () => {
+        if (searchTerm.trim()) {
+            const params = new URLSearchParams();
+            params.set('name', searchTerm);
+            navigate(`/products?${params.toString()}`);
+            setShowResults(false);
+            setShowSearch(false);
+        }
+    };
 
     const handleSaveUser = (updatedUser) => {
         setUser(updatedUser);
@@ -109,6 +199,7 @@ const Navigation = () => {
                         </div>
                     ) : (
                         <div
+                            ref={searchRef}
                             style={{
                                 display: "flex",
                                 alignItems: "center",
@@ -118,6 +209,7 @@ const Navigation = () => {
                                 flexGrow: 1,
                                 marginLeft: 20,
                                 boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                                position: "relative"
                             }}
                         >
                             <CiSearch size={20} color="#007bff" style={{ marginRight: 10 }} />
@@ -125,6 +217,13 @@ const Navigation = () => {
                                 type="text"
                                 placeholder="Search entire store here..."
                                 autoFocus
+                                value={searchTerm}
+                                onChange={handleInputChange}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter' && searchTerm.trim()) {
+                                        handleViewAllResults();
+                                    }
+                                }}
                                 style={{
                                     border: "none",
                                     outline: "none",
@@ -133,13 +232,70 @@ const Navigation = () => {
                                     fontSize: 14,
                                 }}
                             />
+                            
+                            {/* Dropdown kết quả tìm kiếm */}
+                            {showResults && (
+                                <div className="search-results-dropdown">
+                                    {loading ? (
+                                        <div className="search-loading">Đang tìm kiếm...</div>
+                                    ) : searchResults.length === 0 ? (
+                                        <div className="no-results">
+                                            Không tìm thấy sản phẩm nào cho từ khóa "{searchTerm}"
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="search-results-header">
+                                                Kết quả cho: <strong>{searchTerm}</strong>
+                                            </div>
+                                            <ul className="results-list">
+                                                {searchResults.map(product => (
+                                                    <li 
+                                                        key={product._id} 
+                                                        className="result-item"
+                                                        onClick={() => handleProductClick(product._id)}
+                                                    >
+                                                        <div className="result-image">
+                                                            {product.image ? (
+                                                                <img src={product.image} alt={product.name} />
+                                                            ) : (
+                                                                <div className="no-image">No Image</div>
+                                                            )}
+                                                        </div>
+                                                        <div className="result-details">
+                                                            <h4>{product.name}</h4>
+                                                            <p className="result-category">{product.category}</p>
+                                                            <p className="result-price">
+                                                                {product.price?.toLocaleString('vi-VN') || 0}đ
+                                                            </p>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <div className="view-all-results">
+                                                <button onClick={handleViewAllResults}>
+                                                    Xem tất cả kết quả cho "{searchTerm}"
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
 
                     {/* Icons */}
                     <div style={{ display: "flex", alignItems: "center", gap: 20, marginLeft: 20 }}>
                         {showSearch ? (
-                            <AiOutlineClose size={24} color="#007bff" onClick={() => setShowSearch(false)} style={{ cursor: "pointer" }} />
+                            <AiOutlineClose 
+                                size={24} 
+                                color="#007bff" 
+                                onClick={() => {
+                                    setShowSearch(false);
+                                    setSearchTerm("");
+                                    setShowResults(false);
+                                }} 
+                                style={{ cursor: "pointer" }} 
+                            />
                         ) : (
                             <CiSearch size={24} onClick={() => setShowSearch(true)} style={{ cursor: "pointer" }} />
                         )}
