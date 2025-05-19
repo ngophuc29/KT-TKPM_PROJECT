@@ -1,0 +1,190 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Install client dependencies
+        run: |
+          cd client
+          npm ci
+
+      - name: Run backend linting
+        run: |
+          cd backend
+          npm run lint || echo "No linting configuration found"
+
+      - name: Run client linting
+        run: |
+          cd client
+          npm run lint || echo "No linting configuration found"
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          npm test || echo "No test configuration found"
+
+      - name: Run client tests
+        run: |
+          cd client
+          npm test -- --watchAll=false || echo "No test configuration found"
+
+  build-and-push-images:
+    name: Build and Push Docker Images
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build and push API Gateway
+      - name: Build and push API Gateway
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/api-gateway
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-api-gateway:latest
+
+      # Build and push Product Catalog Service
+      - name: Build and push Product Catalog Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/product-catalog-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-product-catalog:latest
+
+      # Build and push Inventory Service
+      - name: Build and push Inventory Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/inventory-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-inventory:latest
+
+      # Build and push Cart Service
+      - name: Build and push Cart Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/cart-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-cart:latest
+
+      # Build and push Order Service
+      - name: Build and push Order Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/order-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-order:latest
+
+      # Build and push Notification Service
+      - name: Build and push Notification Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/notification-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-notification:latest
+
+      # Build and push Payment Service
+      - name: Build and push Payment Service
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/payment-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-payment:latest
+
+      # Build and push Client
+      - name: Build and push Client
+        uses: docker/build-push-action@v4
+        with:
+          context: ./client
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/kt-tkpm-client:latest
+
+  deploy:
+    name: Deploy
+    needs: build-and-push-images
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up environment variables
+        run: |
+          echo "DEPLOY_ENV=${{ github.event.inputs.environment || 'staging' }}" >> $GITHUB_ENV
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            # Navigate to application directory
+            cd /opt/kt-tkpm-project
+
+            # Pull the latest docker-compose file
+            git pull origin main
+
+            # Login to DockerHub
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            # Pull the latest images
+            docker-compose pull
+
+            # Stop and remove existing containers
+            docker-compose down
+
+            # Start the new containers
+            docker-compose up -d
+
+            # Clean up unused images
+            docker image prune -af

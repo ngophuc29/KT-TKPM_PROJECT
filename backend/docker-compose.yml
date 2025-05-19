@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   api-gateway:
-    build: ./api-gateway
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-api-gateway:latest
     ports:
       - "3000:3000"
     environment:
@@ -13,52 +13,72 @@ services:
       - order-service
       - notification-service
       - payment-service
+    restart: always
 
   product-catalog-service:
-    build: ./product-catalog-service
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-product-catalog:latest
     ports:
       - "4004:4004"
     environment:
       - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+    restart: always
 
   inventory-service:
-    build: ./inventory-service
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-inventory:latest
     ports:
       - "4000:4000"
     environment:
       - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+    restart: always
 
   cart-service:
-    build: ./cart-service
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-cart:latest
     ports:
       - "4005:4005"
     environment:
       - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     depends_on:
       - redis
+    restart: always
 
   order-service:
-    build: ./order-service
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-order:latest
     ports:
       - "4009:4009"
     environment:
       - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+    restart: always
 
   notification-service:
-    build: ./notification-service
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-notification:latest
     ports:
       - "4001:4001"
     environment:
       - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+    restart: always
 
   payment-service:
-    build: ./payment-service
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-payment:latest
     ports:
       - "4003:4003"
     environment:
       - NODE_ENV=production
+    restart: always
+
+  client:
+    image: ${DOCKERHUB_USERNAME}/kt-tkpm-client:latest
+    ports:
+      - "2000:2000"
+    environment:
+      - VITE_APP_API_GATEWAY_URL=http://localhost:3000/api
+    restart: always
 
   redis:
     image: redis:alpine
@@ -66,6 +86,7 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    restart: always
 
 volumes:
   redis-data:
