@@ -117,14 +117,9 @@ pipeline {
                     echo "Starting Docker build and push for services..."
 
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
-                     usernameVariable: 'DOCKER_USER',
-                     passwordVariable: 'DOCKER_PASS')]) {
-                        powershell """
-                    \$password = '${DOCKER_PASS}'
-                    echo \$password | docker login -u '${DOCKER_USER}' --password-stdin
-                    """
-                        }
-
+                 usernameVariable: 'DOCKER_USER',
+                 passwordVariable: 'DOCKER_PASS')]) {
+    sh "docker login -u \$DOCKER_USER -p \$DOCKER_PASS"
 }
 
                     // Kiểm tra những service nào cần build mới
