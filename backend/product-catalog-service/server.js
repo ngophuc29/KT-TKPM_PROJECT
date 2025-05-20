@@ -21,6 +21,7 @@ const allowedOrigins = [
 
 console.log("Allowed Origins:", allowedOrigins);
 
+
 // Cấu hình CORS đúng với credentials: true
 app.use(
   cors({
@@ -37,6 +38,7 @@ app.use(
       return callback(new Error("CORS policy does not allow this origin."));
     },
     credentials: true,
+
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
