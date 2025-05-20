@@ -127,33 +127,47 @@ pipeline {
                         echo "Docker Hub login successful"
                     }
 
-                    // Kiểm tra những service nào cần build mới
+                    // Tối ưu hóa build Docker image - chỉ tạo một image với nhiều tag
                     def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
+                    def gitHash = powershell(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
                     services.each { service ->
                         def serviceDir = "backend/${service}"
-                        def imageName = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${BUILD_NUMBER}"
-                        def latestTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}"
 
                         if (fileExists("${serviceDir}/Dockerfile")) {
-                            // Build Docker image (sử dụng bat cho Windows)
-                            bat "docker build -t ${imageName} -t ${latestTag} ${serviceDir}"
+                            echo "Building Docker image for ${service}..."
 
-                            // Push Docker image
-                            bat "docker push ${imageName}"
-                            bat "docker push ${latestTag}"
+                            // Tạo một single build command với nhiều tag
+                            def buildCmd = "docker build -t ${DOCKER_HUB_USERNAME}/kttkpm:${service}"
 
-                            // Tag image với git hash - sử dụng PowerShell
-                            def gitHash = powershell(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                            echo "Git hash: ${gitHash}"
-                            // Chỉ tạo tag nếu có hash hợp lệ
-                            if (gitHash && gitHash.length() > 0) {
-                                def gitTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
-                                bat "docker tag ${imageName} ${gitTag}"
-                                bat "docker push ${gitTag}"
-                            } else {
-                                echo "Warning: Could not get git hash, skipping git tag creation"
+                            // Chỉ đặt tag phiên bản nếu là build từ nhánh chính
+                            if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
+                                buildCmd += " -t ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${BUILD_NUMBER}"
+
+                                if (gitHash && gitHash.length() > 0) {
+                                    buildCmd += " -t ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
+                                }
                             }
+
+                            // Thêm đường dẫn build
+                            buildCmd += " ${serviceDir}"
+
+                            // Thực thi lệnh build
+                            bat "${buildCmd}"
+
+                            // Đẩy image chính lên Docker Hub
+                            bat "docker push ${DOCKER_HUB_USERNAME}/kttkpm:${service}"
+
+                            // Đẩy các tag bổ sung (chỉ khi ở nhánh chính)
+                            if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
+                                bat "docker push ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${BUILD_NUMBER}"
+
+                                if (gitHash && gitHash.length() > 0) {
+                                    bat "docker push ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
+                                }
+                            }
+
+                            echo "Completed build and push for ${service}"
                         } else {
                             echo "Skipping Docker build for ${service} - Dockerfile not found."
                         }
