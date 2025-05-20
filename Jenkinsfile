@@ -143,11 +143,19 @@ pipeline {
                             bat "docker push ${imageName}"
                             bat "docker push ${latestTag}"
 
-                            // Tag image với git hash
-                            def gitHash = bat(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                            def gitTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
-                            bat "docker tag ${imageName} ${gitTag}"
-                            bat "docker push ${gitTag}"
+                            // Tag image với git hash - sửa lại cách lấy hash trên Windows
+                            def gitHashOutput = bat(script: "git rev-parse --short HEAD", returnStdout: true)
+                            // Xử lý output đúng cách trên Windows
+                            def gitHash = gitHashOutput.trim().readLines().drop(1).join(" ").trim()
+                            echo "Git hash: ${gitHash}"
+                            // Chỉ tạo tag nếu có hash hợp lệ
+                            if (gitHash) {
+                                def gitTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
+                                bat "docker tag ${imageName} ${gitTag}"
+                                bat "docker push ${gitTag}"
+                            } else {
+                                echo "Warning: Could not get git hash, skipping git tag creation"
+                            }
                         } else {
                             echo "Skipping Docker build for ${service} - Dockerfile not found."
                         }
