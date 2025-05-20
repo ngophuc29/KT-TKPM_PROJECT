@@ -114,7 +114,7 @@ app.post('/callback', async (req, res) => {
     });
     try {
       const updateOrderResponse = await axios.put(
-        `http://localhost:3000/api/orders/update/${extraData}/${encodeURIComponent(updateData)}`
+        `https://kt-tkpm-project-api-getaway.onrender.com/api/orders/update/${extraData}/${encodeURIComponent(updateData)}`
       );
       console.log('✅ Order updated:', updateOrderResponse.data);
       return res.status(200).json({ message: 'Payment successful and order updated' });
@@ -130,7 +130,7 @@ app.post('/callback', async (req, res) => {
     });
     try {
       await axios.put(
-        `http://localhost:3000/api/orders/update/${extraData}/${encodeURIComponent(updateData)}`
+        `https://kt-tkpm-project-api-getaway.onrender.com/api/orders/update/${extraData}/${encodeURIComponent(updateData)}`
       );
       console.log('✅ Order set to failed');
     } catch (err) {

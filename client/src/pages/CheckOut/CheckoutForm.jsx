@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const ORDER_API_URL = "http://localhost:3000/api/orders";
-const INVENTORY_API = "http://localhost:3000/api/inventory";
-const CART_API_URL = "http://localhost:3000/api/cart";
+const ORDER_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/orders";
+const INVENTORY_API = "https://kt-tkpm-project-api-getaway.onrender.com/api/inventory";
+const CART_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/cart";
 
 const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           requestId: orderId,
           extraData: ""
         };
-        const payResp = await axios.get("http://localhost:3000/api/payment/payment", { params });
+        const payResp = await axios.get("https://kt-tkpm-project-api-getaway.onrender.com/api/payment/payment", { params });
         if (payResp.data.payUrl) {
           localStorage.setItem("pendingOrderId", orderId);
           window.location.href = payResp.data.payUrl;
@@ -97,7 +97,17 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
     }
   };
 
- 
+  const handleNotification = async() => {
+    try {
+      // Test gửi nên gửi thẳng dữ liệu
+      const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`);
+      console.log("Notification sent: ", response.data);
+    } catch (error) {
+      console.log("Error sending notification: ", error);
+    }
+  };
+
+
   return (
     <form
       style={{
@@ -305,7 +315,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       {/* Confirm Order Button */}
       <button
         type="button"
-        onClick={handleOrderSubmit}
+        onClick={() => { handleOrderSubmit(); handleNotification(); }}
         style={{
           backgroundColor: "#C94D3F",
           color: "#FFF",

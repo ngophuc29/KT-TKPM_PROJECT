@@ -6,7 +6,9 @@ const cors = require("cors");
 const authMiddleware = require("./middlewares/authMiddleware");
 const roleMiddleware = require("./middlewares/roleMiddleware");
 const app = express();
-const allowedOrigins = ["http://localhost:2000", "http://localhost:5173"];
+
+const allowedOrigins = ["http://localhost:2000", "http://localhost:5173", "https://kt-tkpm-project.vercel.app"];
+
 
 console.log("Allowed Origins:", allowedOrigins);
 
@@ -25,16 +27,16 @@ app.use(
 );
 
 
-
-// Cấu hình các service
+// Cấu hình các service - sử dụng tên service từ docker-compose thay vì localhost
 const services = {
-  auth: "http://localhost:5000",
-  products: "http://localhost:4004",
-  inventory: "http://localhost:4000",
-  cart: "http://localhost:4005",
-  notification: "http://localhost:4001",
-  orders: "http://localhost:4009",
-  payment: "http://localhost:4545",
+  products: "https://kt-tkpm-project-product-catalog-service.onrender.com",
+  inventory: "https://kt-tkpm-project-inventory-service.onrender.com",
+  cart: "https://kt-tkpm-project-cart-service.onrender.com",
+  notification: "https://kt-tkpm-project-notification-service.onrender.com",
+  orders: 'https://kt-tkpm-project-order-service.onrender.com',
+  payment: "https://kt-tkpm-project-payment-service.onrender.com",
+  // api-getaway:'https://kt-tkpm-project-api-getaway.onrender.com'
+  auth: "https://localhost:5000",
 };
 // Proxy cho tất cả request đến API Gateway
 app.use(

@@ -3,11 +3,12 @@ import { useState } from "react";
 import ICONS from "../constants/icons";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
   const [hover, setHover] = useState(false);
-  const CART_API_URL = "http://localhost:3000/api/cart/add";
+  // Use environment variable for API URL instead of hardcoded URL
+  const CART_API_URL = `https://kt-tkpm-project-api-getaway.onrender.com/api/cart/add`;
 
   // UserId giả dùng cho demo
   // const fakeUserId = "user9999";
@@ -18,19 +19,13 @@ const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
   // Xử lý thêm sản phẩm vào giỏ hàng
   const handleAddToCart = async (productId) => {
     try {
-      // const res = await axios.post(CART_API_URL, {
-      //   userId: fakeUserId,
-      //   productId,
-      //   quantity: 1
-      // });
-      const res = await axios.post(`${CART_API_URL}/${fakeUserId}/${productId}/1`);
-      // console.log("Thêm vào giỏ hàng thành công", res.data);
-      // alert("them vao gio hang thanh cong")
-            toast.success("🛒Thêm vào giỏ hàng thành công");
-      
+      await axios.post(`${CART_API_URL}/${fakeUserId}/${productId}/1`);
+      toast.success("🛒Thêm vào giỏ hàng thành công");
+
       // Có thể hiển thị thông báo thành công cho người dùng tại đây
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng", error.response?.data || error.message);
+      toast.error("Không thể thêm vào giỏ hàng: " + (error.response?.data?.message || error.message));
     }
   };
   return (
@@ -54,11 +49,12 @@ const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
         )}
       </div>
       {hover && stock > 0 && (
-        <button className="position-absolute top-0 end-0 m-2 btn m-0 p-0 border-0 hover"
+        <button
+          className="position-absolute top-0 end-0 m-2 btn m-0 p-0 border-0 hover"
           onClick={(e) => {
             e.preventDefault();
-            handleAddToCart(_id)
-        }}
+            handleAddToCart(_id);
+          }}
         >
           <img src={ICONS.Cart} alt="" className="hover" />
         </button>

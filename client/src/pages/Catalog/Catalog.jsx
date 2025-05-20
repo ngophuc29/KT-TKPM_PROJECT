@@ -27,7 +27,7 @@ const Catalog = () => {
     if (!initialCategory) {
       const fetchProducts = async () => {
         try {
-          const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products`;
+          const URL = `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products`;
           const response = await axios.get(URL, { withCredentials: true });
 
           setProducts(response?.data?.data);

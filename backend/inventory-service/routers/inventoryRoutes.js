@@ -23,16 +23,18 @@ router.post("/import/:productId/:quantity", inventoryController.importStock);
 // ✅ API đồng bộ Inventory với Product Service
 router.post("/syncInventory", inventoryController.syncInventory);
 
-// // ✅ Route đặt chỗ sản phẩm (truyền productId và quantity qua params)
-// router.post("/reserve/:productId/:quantity", inventoryController.reserveStock);
-
-// // ✅ Route giải phóng sản phẩm (truyền productId và quantity qua params)
-// router.post("/release/:productId/:quantity", inventoryController.releaseStock);
-
 // (Optional) Route xác nhận đơn hàng: truyền items dưới dạng chuỗi JSON trong params
 router.post("/confirm/:items", inventoryController.confirmOrder);
 
 // (Optional) Route restore stock: truyền productId và quantity qua params
 router.post("/restore/:productId/:quantity", inventoryController.restoreStock);
+
+// Statistics routes
+router.get("/stats/general", inventoryController.getGeneralStats);
+router.get("/stats/revenue", inventoryController.getRevenueStats);
+router.get("/stats/order-status", inventoryController.getOrderStatusStats);
+router.get("/stats/product-revenue", inventoryController.getProductRevenueStats);
+router.get("/stats/detailed", inventoryController.getDetailedStats);
+router.get("/stats/inventory-by-category", inventoryController.getInventoryByCategory);
 
 module.exports = router;

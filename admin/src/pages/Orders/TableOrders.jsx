@@ -12,9 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableCell, TableBody } from "@/components/ui/table";
 import OrderDetailModal from "./OrderDetailModal";
+import OrderEditModal from "./OrderEditModal";
 
 // Đường dẫn API (sửa lại nếu cần)
-const ORDER_API_URL = "http://localhost:3000/api/orders";
+const ORDER_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/orders";
 
 // Data mẫu (bạn có thể thay bằng axios.get khi API đã ổn)
 const sampleData = [
@@ -64,17 +65,15 @@ export default function TableOrders() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
-const [modalOrderId, setModalOrderId] = useState(null);
-  // Lấy danh sách đơn hàng
+  const [modalOrderId, setModalOrderId] = useState(null);
+  const [editModalOrderId, setEditModalOrderId] = useState(null);
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        // Nếu API hoạt động, sử dụng axios.get:
         const response = await axios.get(ORDER_API_URL);
         setOrders(response.data);
-        // Tạm thời dùng sampleData để debug:
-        // setOrders(sampleData);
-        // console.log("Orders:", sampleData);
+        // if (useSampleData) setOrders(sampleData);
       } catch (err) {
         setError("Lỗi khi lấy danh sách đơn hàng");
         console.error(err);
@@ -85,26 +84,10 @@ const [modalOrderId, setModalOrderId] = useState(null);
     fetchOrders();
   }, []);
 
-  // Hàm cập nhật trạng thái đơn hàng (Admin)
-  // const handleChangeStatus = async (orderId, newStatus) => {
-  //   try {
-  //     setActionLoading(true);
-  //     await axios.put(`${ORDER_API_URL}/${orderId}`, { status: newStatus });
-  //     const response = await axios.get(ORDER_API_URL);
-  //     setOrders(response.data);
-  //   } catch (err) {
-  //     alert("Lỗi khi cập nhật trạng thái đơn hàng");
-  //     console.error(err);
-  //   } finally {
-  //     setActionLoading(false);
-  //   }
-  // };
   const handleChangeStatus = async (orderId, newStatus) => {
     try {
       setActionLoading(true);
-      // Tạo chuỗi JSON chứa dữ liệu update và encode để truyền qua URL
       const updateData = encodeURIComponent(JSON.stringify({ status: newStatus }));
-      // Gọi API update với endpoint theo định dạng: /:orderId/:updateData
       await axios.put(`${ORDER_API_URL}/update/${orderId}/${updateData}`);
       const response = await axios.get(ORDER_API_URL);
       setOrders(response.data);
@@ -116,24 +99,21 @@ const [modalOrderId, setModalOrderId] = useState(null);
     }
   };
 
-  // Hàm chỉnh sửa đơn hàng (ví dụ mở modal, chuyển trang,...)
   const handleEdit = (orderId) => {
-    alert(`Chỉnh sửa đơn hàng ${orderId}`);
+    setEditModalOrderId(orderId);
   };
 
-  // Hàm hủy đơn hàng (Admin)
   const handleAdminCancelOrder = async (orderId, currentStatus) => {
-    if (!(currentStatus === "pending" || currentStatus === "confirmed" || currentStatus === "completed")) {
-      alert("Chỉ đơn hàng chưa giao (pending, confirmed) hoặc đã hoàn thành (completed) mới có thể hủy.");
-      return;
+    if (!["pending", "confirmed" ].includes(currentStatus)) {
+      return alert("Chỉ có thể hủy đơn hàng ở trạng thái: pending, confirmed ");
     }
     if (window.confirm("Bạn có chắc muốn hủy đơn hàng này không?")) {
       try {
         setActionLoading(true);
         await axios.post(`${ORDER_API_URL}/admin/cancel/${orderId}`);
-        alert("Đơn hàng đã được hủy bởi Admin");
         const response = await axios.get(ORDER_API_URL);
         setOrders(response.data);
+        alert("Đơn hàng đã được hủy.");
       } catch (err) {
         alert("Lỗi khi hủy đơn hàng");
         console.error(err);
@@ -143,21 +123,17 @@ const [modalOrderId, setModalOrderId] = useState(null);
     }
   };
 
-  // Hàm xóa đơn hàng (Admin)
   const handleDelete = async (orderId, currentStatus) => {
-    if (currentStatus !== "cancelled") {
-      alert("Đơn hàng phải có trạng thái 'cancelled' mới được xóa");
-      return;
+    if (currentStatus === "confirmed") {
+      return alert("Không thể xóa đơn hàng đã được xác nhận.");
     }
-    if (
-      window.confirm("Bạn có chắc muốn xóa đơn hàng này không? Thao tác này sẽ xóa hoàn toàn đơn hàng.")
-    ) {
+    if (window.confirm("Bạn có chắc muốn xóa đơn hàng này không?")) {
       try {
         setActionLoading(true);
         await axios.delete(`${ORDER_API_URL}/admin/delete/${orderId}`);
-        alert("Đơn hàng đã được xóa bởi Admin");
         const response = await axios.get(ORDER_API_URL);
         setOrders(response.data);
+        alert("Đơn hàng đã được xóa.");
       } catch (err) {
         alert("Lỗi khi xóa đơn hàng");
         console.error(err);
@@ -166,22 +142,22 @@ const [modalOrderId, setModalOrderId] = useState(null);
       }
     }
   };
-  // Khi nhấn nút "Chi Tiết Đơn Hàng", lưu orderId vào state để mở modal
+  
+
   const handleViewDetail = (orderId) => {
     setModalOrderId(orderId);
   };
-  // Định nghĩa cột cho react-table
+
   const columns = [
     {
       accessorKey: "_id",
       header: "Mã đơn",
-      cell: (info) => info.getValue(),
     },
     {
       accessorFn: (row) => row.customer?.name,
       header: "Khách hàng",
-      cell: (info) => info.getValue(),
-    }, {
+    },
+    {
       accessorFn: (row) => row.payment?.method,
       header: "Thanh toán",
       cell: (info) => info.getValue() === "cod" ? "COD" : info.getValue(),
@@ -202,18 +178,15 @@ const [modalOrderId, setModalOrderId] = useState(null);
     {
       accessorKey: "finalTotal",
       header: "Tổng tiền",
-      cell: (info) => {
-        const value = info.getValue();
-        return new Intl.NumberFormat("vi-VN", {
+      cell: (info) =>
+        new Intl.NumberFormat("vi-VN", {
           style: "currency",
           currency: "VND",
-        }).format(value);
-      },
+        }).format(info.getValue()),
     },
     {
       accessorKey: "status",
       header: "Trạng thái",
-      cell: (info) => info.getValue(),
     },
     {
       accessorKey: "createdAt",
@@ -228,81 +201,72 @@ const [modalOrderId, setModalOrderId] = useState(null);
         return (
           <div className="flex flex-wrap items-center gap-2">
             {order.status === "pending" && (
-              <button
-                className="min-w-[110px] px-3 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-sm"
+              <Button
+                className="bg-green-600 hover:bg-green-700"
                 onClick={() => handleChangeStatus(order._id, "confirmed")}
                 disabled={actionLoading}
               >
                 Xác nhận
-              </button>
+              </Button>
             )}
             {order.status === "confirmed" && (
-              <button
-                className="min-w-[110px] px-3 py-1 text-white bg-blue-600 hover:bg-blue-700 rounded text-sm"
+              <Button
+                className="bg-blue-600 hover:bg-blue-700"
                 onClick={() => handleChangeStatus(order._id, "completed")}
                 disabled={actionLoading}
               >
                 Hoàn thành
-              </button>
+              </Button>
             )}
-            {(order.status === "pending" || order.status === "confirmed") ? (
-              <button
-                className="min-w-[110px] px-3 py-1 text-white bg-yellow-500 hover:bg-yellow-600 rounded text-sm"
-                onClick={() => handleEdit(order._id)}
-                disabled={actionLoading}
-              >
-                Chỉnh sửa
-              </button>
-            ) : (
-              <button
-                className="min-w-[110px] px-3 py-1 text-white bg-yellow-300 cursor-not-allowed rounded text-sm"
-                disabled
-              >
-                Chỉnh sửa
-              </button>
-            )}
-            {(order.status === "pending" ||
-              order.status === "confirmed" ||
-              order.status === "completed") ? (
-              <button
-                className="min-w-[110px] px-3 py-1 text-white bg-red-600 hover:bg-red-700 rounded text-sm"
-                onClick={() => handleAdminCancelOrder(order._id, order.status)}
-                disabled={actionLoading}
-              >
-                Hủy
-              </button>
-            ) : (
-              <button
-                className="min-w-[110px] px-3 py-1 text-white bg-red-300 cursor-not-allowed rounded text-sm"
-                disabled
-              >
-                Hủy
-              </button>
-            )}
-            {order.status === "cancelled" ? (
-              <button
-                className="min-w-[110px] px-3 py-1 text-red-600 border border-red-600 hover:bg-red-100 rounded text-sm"
-                onClick={() => handleDelete(order._id, order.status)}
-                disabled={actionLoading}
-              >
-                Xóa
-              </button>
-            ) : (
-              <button
-                className="min-w-[110px] px-3 py-1 text-red-300 border border-red-300 cursor-not-allowed rounded text-sm"
-                disabled
-              >
-                Xóa
-              </button>
-            )}
-            <button
-              className="min-w-[150px] px-3 py-1 text-white bg-gray-600 hover:bg-gray-700 rounded text-sm"
+            <Button
+              className={`${order.status === "pending" || order.status === "confirmed"
+                  ? "bg-yellow-500 hover:bg-yellow-600"
+                  : "bg-yellow-300 cursor-not-allowed"
+                }`}
+              onClick={() =>
+                (order.status === "pending" || order.status === "confirmed") &&
+                handleEdit(order._id)
+              }
+              disabled={!(order.status === "pending" || order.status === "confirmed")}
+            >
+              Chỉnh sửa
+            </Button>
+            <Button
+              className={`${["pending", "confirmed"].includes(order.status)
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-red-300 cursor-not-allowed"
+                }`}
+              onClick={() =>
+                ["pending", "confirmed"].includes(order.status) &&
+                handleAdminCancelOrder(order._id, order.status)
+              }
+              disabled={!["pending", "confirmed"].includes(order.status)}
+            >
+              Hủy
+            </Button>
+
+            <Button
+              variant="outline"
+              className={`${order.status !== "confirmed"
+                ? "text-red-600 border-red-600 hover:bg-red-100"
+                : "text-red-300 border-red-300 cursor-not-allowed"
+                }`}
+              onClick={() =>
+                order.status !== "confirmed" && handleDelete(order._id, order.status)
+              }
+              disabled={order.status === "confirmed"}
+            >
+              Xóa
+            </Button>
+
+
+            <Button
+              className="bg-gray-600 hover:bg-gray-700"
               onClick={() => handleViewDetail(order._id)}
             >
               Chi Tiết Đơn Hàng
-            </button>
+            </Button>
           </div>
-
         );
       },
     },
@@ -317,19 +281,11 @@ const [modalOrderId, setModalOrderId] = useState(null);
   });
 
   if (loading) {
-    return (
-      <div className="p-4 text-center">
-        Loading...
-      </div>
-    );
+    return <div className="p-4 text-center text-sm">Đang tải dữ liệu đơn hàng...</div>;
   }
 
   if (error) {
-    return (
-      <div className="p-4">
-        {error}
-      </div>
-    );
+    return <div className="p-4 text-red-600">{error}</div>;
   }
 
   return (
@@ -339,7 +295,9 @@ const [modalOrderId, setModalOrderId] = useState(null);
         <Button
           variant="outline"
           onClick={() => {
-            const sorted = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const sorted = [...orders].sort(
+              (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+            );
             setOrders(sorted);
           }}
         >
@@ -348,7 +306,9 @@ const [modalOrderId, setModalOrderId] = useState(null);
         <Button
           variant="outline"
           onClick={() => {
-            const sorted = [...orders].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const sorted = [...orders].sort(
+              (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+            );
             setOrders(sorted);
           }}
         >
@@ -362,9 +322,7 @@ const [modalOrderId, setModalOrderId] = useState(null);
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
+                  {flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -373,7 +331,7 @@ const [modalOrderId, setModalOrderId] = useState(null);
         <TableBody>
           {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -383,13 +341,14 @@ const [modalOrderId, setModalOrderId] = useState(null);
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+              <TableCell colSpan={columns.length} className="text-center py-8">
+                Không có đơn hàng nào.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
@@ -408,10 +367,33 @@ const [modalOrderId, setModalOrderId] = useState(null);
           Next
         </Button>
       </div>
+
       {modalOrderId && (
         <OrderDetailModal
           orderId={modalOrderId}
           onClose={() => setModalOrderId(null)}
+        />
+      )}
+      
+      {editModalOrderId && (
+        <OrderEditModal
+          orderId={editModalOrderId}
+          onClose={() => setEditModalOrderId(null)}
+          onOrderUpdated={() => {
+            // Refresh orders list after update
+            const fetchOrders = async () => {
+              try {
+                setActionLoading(true);
+                const response = await axios.get(ORDER_API_URL);
+                setOrders(response.data);
+              } catch (err) {
+                console.error("Failed to refresh orders:", err);
+              } finally {
+                setActionLoading(false);
+              }
+            };
+            fetchOrders();
+          }}
         />
       )}
     </div>

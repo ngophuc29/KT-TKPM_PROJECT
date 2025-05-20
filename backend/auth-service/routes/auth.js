@@ -28,7 +28,7 @@ router.post('/login', async (req, res) => {
   const user = await User.findOne({ email });
   if (!user || !(await user.comparePassword(password))) {
     return res.status(401).json({ message: 'Invalid credentials' });
-  } q
+  }
 
   const payload = { sub: user._id, role: user.role };
   const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN });

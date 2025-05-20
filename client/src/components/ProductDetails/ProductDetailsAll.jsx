@@ -18,7 +18,7 @@ const ProductDetailsAll = () => {
   useEffect(() => {
     const fetchNewProducts = async () => {
       try {
-        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/product/${id}`;
+        const URL = `https://kt-tkpm-project-api-getaway.onrender.com/api/products/product/${id}`;
         const response = await axios.get(URL, { withCredentials: true });
 
         setProduct(response?.data?.data);
