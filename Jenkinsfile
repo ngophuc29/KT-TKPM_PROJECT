@@ -28,8 +28,8 @@ pipeline {
                     }
                     steps {
                         dir('backend/product-catalog-service') {
-                            sh 'npm install'
-                            sh 'npm test || true' // Thêm || true để tránh lỗi khi không có test
+                            bat 'npm install'
+                            bat 'npm test || exit 0' // Sử dụng exit 0 để tiếp tục nếu test thất bại
                         }
                     }
                 }
@@ -43,8 +43,8 @@ pipeline {
                     }
                     steps {
                         dir('backend/inventory-service') {
-                            sh 'npm install'
-                            sh 'npm test || true' // Thêm || true để tránh lỗi khi không có test
+                            bat 'npm install'
+                            bat 'npm test || exit 0'
                         }
                     }
                 }
@@ -58,8 +58,8 @@ pipeline {
                     }
                     steps {
                         dir('backend/cart-service') {
-                            sh 'npm install'
-                            sh 'npm test || true' // Thêm || true để tránh lỗi khi không có test
+                            bat 'npm install'
+                            bat 'npm test || exit 0'
                         }
                     }
                 }
@@ -73,8 +73,8 @@ pipeline {
                     }
                     steps {
                         dir('backend/order-service') {
-                            sh 'npm install'
-                            sh 'npm test || true' // Thêm || true để tránh lỗi khi không có test
+                            bat 'npm install'
+                            bat 'npm test || exit 0'
                         }
                     }
                 }
@@ -88,8 +88,8 @@ pipeline {
                     }
                     steps {
                         dir('backend/notification-service') {
-                            sh 'npm install'
-                            sh 'npm test || true' // Thêm || true để tránh lỗi khi không có test
+                            bat 'npm install'
+                            bat 'npm test || exit 0'
                         }
                     }
                 }
@@ -103,8 +103,8 @@ pipeline {
                     }
                     steps {
                         dir('backend/api-gateway') {
-                            sh 'npm install'
-                            sh 'npm test || true' // Thêm || true để tránh lỗi khi không có test
+                            bat 'npm install'
+                            bat 'npm test || exit 0'
                         }
                     }
                 }
@@ -116,34 +116,38 @@ pipeline {
                 script {
                     echo "Starting Docker build and push for services..."
 
+                    // Sử dụng bat thay vì sh cho Windows
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
-                 usernameVariable: 'DOCKER_USER',
-                 passwordVariable: 'DOCKER_PASS')]) {
-    sh "docker login -u \$DOCKER_USER -p \$DOCKER_PASS"
-}
+                                     usernameVariable: 'DOCKER_USER',
+                                     passwordVariable: 'DOCKER_PASS')]) {
+                        echo "Logging in to Docker Hub as ${DOCKER_USER}..."
+
+                        // Đăng nhập Docker phiên bản Windows
+                        bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                        echo "Docker Hub login successful"
+                    }
 
                     // Kiểm tra những service nào cần build mới
                     def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
 
                     services.each { service ->
                         def serviceDir = "backend/${service}"
-                        // Cập nhật đặt tên theo cấu trúc bạn đã sử dụng
                         def imageName = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${BUILD_NUMBER}"
                         def latestTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}"
 
                         if (fileExists("${serviceDir}/Dockerfile")) {
-                            // Build Docker image
-                            sh "docker build -t ${imageName} -t ${latestTag} ${serviceDir}"
+                            // Build Docker image (sử dụng bat cho Windows)
+                            bat "docker build -t ${imageName} -t ${latestTag} ${serviceDir}"
 
                             // Push Docker image
-                            sh "docker push ${imageName}"
-                            sh "docker push ${latestTag}"
+                            bat "docker push ${imageName}"
+                            bat "docker push ${latestTag}"
 
-                            // Tag image with git hash
-                            def gitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            // Tag image với git hash
+                            def gitHash = bat(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                             def gitTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
-                            sh "docker tag ${imageName} ${gitTag}"
-                            sh "docker push ${gitTag}"
+                            bat "docker tag ${imageName} ${gitTag}"
+                            bat "docker push ${gitTag}"
                         } else {
                             echo "Skipping Docker build for ${service} - Dockerfile not found."
                         }
@@ -179,12 +183,19 @@ pipeline {
 
                         services.each { service ->
                             echo "Triggering deployment for service: ${service}"
-                            sh """
-                                curl -X POST https://api.render.com/v1/services/${service}/deploys \\
-                                    -H "Authorization: Bearer ${RENDER_API_KEY}" \\
-                                    -H "Content-Type: application/json" || echo "Deployment request for ${service} failed but continuing"
+                            // Sử dụng PowerShell để gửi cURL request
+                            powershell """
+                                \$headers = @{
+                                    'Authorization' = 'Bearer ${RENDER_API_KEY}'
+                                    'Content-Type' = 'application/json'
+                                }
+                                try {
+                                    Invoke-RestMethod -Uri "https://api.render.com/v1/services/${service}/deploys" -Method POST -Headers \$headers
+                                    Write-Host "Deployment request sent for ${service}"
+                                } catch {
+                                    Write-Host "Deployment request for ${service} failed but continuing: \$_"
+                                }
                             """
-                            echo "Deployment request sent for ${service}"
                         }
                     } else {
                         echo "Warning: No Render API key found. Skipping deployment step."
@@ -200,14 +211,7 @@ pipeline {
             script {
                 try {
                     echo "Cleaning up Docker images..."
-                    // Sử dụng powershell hoặc kiểm tra trước khi prune
-                    powershell '''
-                        if (docker info) {
-                            docker system prune -f
-                        } else {
-                            Write-Host "Docker not available or not running"
-                        }
-                    '''
+                    bat "docker system prune -f || exit 0"
                 } catch (Exception e) {
                     echo "Warning: Docker cleanup failed: ${e.message}"
                     // Không làm failed pipeline nếu chỉ là cleanup không thành công
