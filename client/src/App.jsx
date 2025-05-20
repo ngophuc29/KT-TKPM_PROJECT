@@ -3,6 +3,8 @@ import DefaultLayout from "@/layouts/DafaultLayout/DefaultLayout";
 import { publicRoutes } from "@/routes/routes";
 import "./App.css";
 import { ToastContainer, toast } from 'react-toastify';
+import ChatBot from "./components/ChatBot";
+
 function App() {
   return (
     <Router>
@@ -24,6 +26,7 @@ function App() {
             );
           })}
         </Routes>
+        <ChatBot />
       </div>
       <ToastContainer
         position="top-right"
@@ -36,7 +39,6 @@ function App() {
         draggable
         pauseOnHover
         theme="light"
-         
       />
     </Router>
   );
