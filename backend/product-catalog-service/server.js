@@ -14,7 +14,7 @@ connectDB();
 // Danh sách origin được phép
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:2000",
-  process.env.FRONTEND_URL_2 || "http://localhost:5173",
+  process.env.FRONTEND_URL_2 || "http://localhost:5173","https://kt-tkpm-project-asa09y0ei-phuc-ngos-projects-529e4a42.vercel.app'
 ];
 
 console.log("Allowed Origins:", allowedOrigins);
