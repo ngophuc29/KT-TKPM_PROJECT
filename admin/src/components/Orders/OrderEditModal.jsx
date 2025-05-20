@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Update the API URLs with correct endpoints
-const ORDER_API_URL = "http://localhost:3000/api/orders";
-const PRODUCT_API_URL = "http://localhost:3000/api/products/products";
-const INVENTORY_API_URL = "http://localhost:3000/api/inventory"; // Add Inventory API URL
+const ORDER_API_URL = "https://kt-tkpm-project-order-service.onrender.com";
+const PRODUCT_API_URL = "https://kt-tkpm-project-product-catalog-service.onrender.com/products";
+const INVENTORY_API_URL = "https://kt-tkpm-project-inventory-service.onrender.com"; // Add Inventory API URL
 
 export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const [order, setOrder] = useState(null);
@@ -780,7 +780,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 console.log("Trying alternate API endpoint...");
                 try {
                     // Try another common endpoint pattern
-                    const alternateResponse = await axios.get("http://localhost:3000/api/products", {
+                    const alternateResponse = await axios.get("https://kt-tkpm-project-product-catalog-service.onrender.com", {
                         timeout: 10000
                     });
                     
@@ -891,9 +891,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             // Start with a simple API check before full product load
             try {
                 const testEndpoints = [
-                    "http://localhost:3000/api/products/products",
-                    "http://localhost:3000/api/products",
-                    "http://localhost:3000/api/products/product", // Some APIs use singular endpoint
+                    "https://kt-tkpm-project-product-catalog-service.onrender.com/products",
+                    "https://kt-tkpm-project-product-catalog-service.onrender.com",
+                    "https://kt-tkpm-project-product-catalog-service.onrender.com/product", // Some APIs use singular endpoint
                 ];
                 
                 let apiFound = false;

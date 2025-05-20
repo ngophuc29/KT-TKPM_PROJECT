@@ -37,7 +37,7 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:3000/api/inventory/${id}`);
+        const { data } = await axios.get(`https://kt-tkpm-project-inventory-service.onrender.com/${id}`);
         setInventoryInfo(data);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin tồn kho", error);
@@ -52,7 +52,7 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   // const fakeUserId = "user9999";
   const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12"
   // Định nghĩa API URL add to cart với URL params
-  const CART_API_URL = "http://localhost:3000/api/cart/add";
+  const CART_API_URL = "https://kt-tkpm-project-cart-service.onrender.com/add";
 
   // Xử lý thêm sản phẩm vào giỏ hàng qua API
   const handleAddToCart = async () => {

@@ -20,7 +20,7 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
         setLoading(true);
         setError("");
         axios
-            .get(`http://localhost:3000/api/orders/${orderId}`)
+            .get(`https://kt-tkpm-project-order-service.onrender.com/${orderId}`)
             .then((res) => {
                 const d = res.data;
                 setFormData({
@@ -60,7 +60,7 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
             const encodedUpdateData = encodeURIComponent(JSON.stringify(updateData));
             
             // Use the correct endpoint with URL parameters
-            await axios.put(`http://localhost:3000/api/orders/update/${orderId}/${encodedUpdateData}`);
+            await axios.put(`https://kt-tkpm-project-order-service.onrender.com/update/${orderId}/${encodedUpdateData}`);
             
             onUpdated();
             onHide();
@@ -86,7 +86,7 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
             
-            const response = await fetch(`http://localhost:3000/api/orders/cancel/${orderId}`, {
+            const response = await fetch(`https://kt-tkpm-project-order-service.onrender.com/cancel/${orderId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 signal: controller.signal
