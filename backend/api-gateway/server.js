@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const allowedOrigins = ["http://localhost:2000", "http://localhost:5173","*"];
+const allowedOrigins = ["http://localhost:2000", "http://localhost:5173","https://kt-tkpm-project-asa09y0ei-phuc-ngos-projects-529e4a42.vercel.app/"];
 
 console.log("Allowed Origins:", allowedOrigins);
 
