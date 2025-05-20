@@ -248,7 +248,7 @@ pipeline {
 
                         // Đối với mỗi service đã được định nghĩa trong Render
                         def services = [
-                            "kt-tkpm-project-product-catalog-service",
+                            "kt-tkpm-project-product-catalog-service", // Tên chính xác của dịch vụ trên Render
                             "kt-tkpm-project-inventory-service",
                             "kt-tkpm-project-cart-service",
                             "kt-tkpm-project-notification-service",
