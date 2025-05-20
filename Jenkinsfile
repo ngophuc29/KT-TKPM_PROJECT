@@ -113,8 +113,12 @@ pipeline {
         stage('Build & Push Docker Images') {
             steps {
                 script {
-                    // Đăng nhập vào Docker Hub
-                    sh "echo ${DOCKER_HUB_CREDS_PSW} | docker login -u ${DOCKER_HUB_CREDS_USR} --password-stdin"
+                    // Đăng nhập vào Docker Hub sử dụng withCredentials cho bảo mật
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
+                                     usernameVariable: 'DOCKER_USER',
+                                     passwordVariable: 'DOCKER_PASS')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    }
 
                     // Kiểm tra những service nào cần build mới
                     def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
