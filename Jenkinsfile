@@ -116,17 +116,11 @@ pipeline {
                 script {
                     echo "Starting Docker build and push for services..."
 
-                    // Fix đăng nhập Docker sử dụng cú pháp Windows
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
-                                     usernameVariable: 'DOCKER_USER',
-                                     passwordVariable: 'DOCKER_PASS')]) {
-                        echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-                        // Sử dụng powershell để xử lý đúng trên Windows
-                        powershell '''
-                            $env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin
-                        '''
-                        echo "Docker Hub login successful"
-                    }
+                                    usernameVariable: 'DOCKER_USER',
+                                    passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+}
 
                     // Kiểm tra những service nào cần build mới
                     def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
