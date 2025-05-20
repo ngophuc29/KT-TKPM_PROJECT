@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const allowedOrigins = ["http://localhost:2000", "http://localhost:5173"];
+const allowedOrigins = ["http://localhost:2000", "http://localhost:5173","*"];
 
 console.log("Allowed Origins:", allowedOrigins);
 
@@ -26,12 +26,12 @@ app.use(express.json());
 
 // Cấu hình các service - sử dụng tên service từ docker-compose thay vì localhost
 const services = {
-  products: process.env.NODE_ENV === "production" ? "http://product-catalog-service:4004" : "http://localhost:4004",
-  inventory: process.env.NODE_ENV === "production" ? "http://inventory-service:4000" : "http://localhost:4000",
-  cart: process.env.NODE_ENV === "production" ? "http://cart-service:4005" : "http://localhost:4005",
-  notification: process.env.NODE_ENV === "production" ? "http://notification-service:4001" : "http://localhost:4001",
-  orders: process.env.NODE_ENV === "production" ? "http://order-service:4009" : "http://localhost:4009",
-  payment: "http://localhost:4545",
+  products: "https://kt-tkpm-project-product-catalog-service.onrender.com",
+  inventory: "https://kt-tkpm-project-inventory-service.onrender.com",
+  cart: "https://kt-tkpm-project-cart-service.onrender.com",
+  notification: "https://kt-tkpm-project-notification-service.onrender.com",
+  orders: 'https://kt-tkpm-project-order-service.onrender.com',
+  payment: "https://kt-tkpm-project-payment-service.onrender.com",
 };
 
 // Proxy cho tất cả request đến API Gateway
