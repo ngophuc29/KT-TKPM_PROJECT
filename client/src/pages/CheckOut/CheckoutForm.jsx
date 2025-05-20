@@ -55,15 +55,15 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       }
 
       // 2) Tạo order trước
-      // const createUrl = `${ORDER_API_URL}/create/${userId}` +
-      //   `/${encodeURIComponent(JSON.stringify(customer))}` +
-      //   `/${encodeURIComponent(JSON.stringify(items))}` +
-      //   `/${encodeURIComponent(JSON.stringify(shipping))}` +
-      //   `/${encodeURIComponent(JSON.stringify(payment))}` +
-      //   `/${finalTotal}` +
-      //   `/${encodeURIComponent(JSON.stringify(notes))}`;
-      // const orderResp = await axios.post(createUrl);
-      // const orderId = orderResp.data.order._id;
+      const createUrl = `${ORDER_API_URL}/create/${userId}` +
+        `/${encodeURIComponent(JSON.stringify(customer))}` +
+        `/${encodeURIComponent(JSON.stringify(items))}` +
+        `/${encodeURIComponent(JSON.stringify(shipping))}` +
+        `/${encodeURIComponent(JSON.stringify(payment))}` +
+        `/${finalTotal}` +
+        `/${encodeURIComponent(JSON.stringify(notes))}`;
+      const orderResp = await axios.post(createUrl);
+      const orderId = orderResp.data.order._id;
 
       // 3) Nếu chọn bank (Momo) → gọi service payment qua params
       if (paymentMethod === "bank") {
