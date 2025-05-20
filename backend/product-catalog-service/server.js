@@ -11,39 +11,37 @@ const port = process.env.PORT || 4004;
 // Kết nối DB
 connectDB();
 
-// Danh sách origin được phép
+// Danh sách origin được phép (bỏ dấu / cuối url nếu có)
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:2000",
-  process.env.FRONTEND_URL_2 || "http://localhost:5173",
+  (process.env.FRONTEND_URL || "http://localhost:2000").replace(/\/$/, ""),
+  (process.env.FRONTEND_URL_2 || "http://localhost:5173").replace(/\/$/, ""),
   "https://kt-tkpm-project.vercel.app",
   "https://kt-tkpm-project-asa09y0ei-phuc-ngos-projects-529e4a42.vercel.app"
 ];
 
-
 console.log("Allowed Origins:", allowedOrigins);
 
-// // Cấu hình CORS
-// app.use(
-//   cors({
-//     origin: function (origin, callback) {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("CORS policy does not allow this origin."));
-//       }
-//     },
-//     credentials: true,
-//   })
-// );
-
+// Cấu hình CORS đúng với credentials: true
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*", // Nếu không có biến môi trường, cho phép tất cả
+    origin: function (origin, callback) {
+      // Nếu không có origin (vd: Postman, server-to-server), cho phép luôn
+      if (!origin) return callback(null, true);
+
+      // Nếu origin có trong danh sách, cho phép
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Nếu không thuộc danh sách, trả lỗi CORS
+      return callback(new Error("CORS policy does not allow this origin."));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 // Middleware xử lý JSON
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
