@@ -79,7 +79,7 @@ app.use(
 
 app.use(
   "/api/cart",
-  authMiddleware,
+  // authMiddleware,
   createProxyMiddleware({
     ws: true,
     target: services.cart,
@@ -91,8 +91,8 @@ app.use(
 // Ví dụ chỉ admin mới được gọi notification
 app.use(
   "/api/notification",
-  authMiddleware,
-  roleMiddleware("user"),
+  // authMiddleware,
+  // roleMiddleware("user"),
   createProxyMiddleware({
     ws: true,
     target: services.notification,
@@ -103,8 +103,8 @@ app.use(
 
 app.use(
   "/api/orders",
-  authMiddleware,
-  roleMiddleware("admin"),
+  // authMiddleware,
+  // roleMiddleware("admin"),
   createProxyMiddleware({
     ws: true,
     target: services.orders,
