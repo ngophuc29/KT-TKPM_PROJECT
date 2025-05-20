@@ -2,11 +2,11 @@ const Inventory = require("../models/InventoryModels");
 const axios = require("axios");
 
 // URL của Product Service (đổi nếu cần)
-const PRODUCT_SERVICE_URL = "https://kt-tkpm-project-product-catalog-service.onrender.com/products";
-const PRODUCT_SERVICE_URLImport = "https://kt-tkpm-project-product-catalog-service.onrender.com/product";
-const PRODUCT_UPDATE_STOCK_URL = "https://kt-tkpm-project-product-catalog-service.onrender.com/update-stock";
-const CART_API_URL = "https://kt-tkpm-project-cart-service.onrender.com";
-const Order_api ='https://kt-tkpm-project-order-service.onrender.com'
+const PRODUCT_SERVICE_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/products";
+const PRODUCT_SERVICE_URLImport = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/product";
+const PRODUCT_UPDATE_STOCK_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/update-stock";
+const CART_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/cart";
+const Order_api ='https://kt-tkpm-project-api-getaway.onrender.com/api/orders'
 const LOW_STOCK_THRESHOLD = 5; // Ngưỡng cảnh báo tồn kho thấp
 
 // ------------------------------

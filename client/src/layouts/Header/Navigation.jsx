@@ -100,7 +100,7 @@ const Navigation = () => {
             params.set('limit', '5');
 
             const response = await axios.get(
-                `https://kt-tkpm-project-product-catalog-service.onrender.com/products-filters?${params.toString()}`
+                `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products-filters?${params.toString()}`
             );
             
             // Lọc kết quả để chỉ hiển thị sản phẩm có tên chứa từ khóa tìm kiếm

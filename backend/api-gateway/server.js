@@ -4,7 +4,9 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const allowedOrigins = ["http://localhost:2000", "http://localhost:5173","https://kt-tkpm-project-asa09y0ei-phuc-ngos-projects-529e4a42.vercel.app"];
+ 
+const allowedOrigins = ["http://localhost:2000", "http://localhost:5173","https://kt-tkpm-project.vercel.app"];
+ 
 
 console.log("Allowed Origins:", allowedOrigins);
 
@@ -32,6 +34,7 @@ const services = {
   notification: "https://kt-tkpm-project-notification-service.onrender.com",
   orders: 'https://kt-tkpm-project-order-service.onrender.com',
   payment: "https://kt-tkpm-project-payment-service.onrender.com",
+  // api-getaway:'https://kt-tkpm-project-api-getaway.onrender.com'
 };
 
 // Proxy cho tất cả request đến API Gateway

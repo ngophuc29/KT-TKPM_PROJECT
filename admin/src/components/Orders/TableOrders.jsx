@@ -15,7 +15,7 @@ import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
 
 // Đường dẫn API (sửa lại nếu cần)
-const ORDER_API_URL = "https://kt-tkpm-project-order-service.onrender.com";
+const ORDER_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/orders";
 
 // Data mẫu (bạn có thể thay bằng axios.get khi API đã ổn)
 const sampleData = [

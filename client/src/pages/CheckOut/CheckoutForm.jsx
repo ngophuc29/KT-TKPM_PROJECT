@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const ORDER_API_URL = "https://kt-tkpm-project-order-service.onrender.com";
-const INVENTORY_API = "https://kt-tkpm-project-inventory-service.onrender.com";
-const CART_API_URL = "https://kt-tkpm-project-cart-service.onrender.com";
+const ORDER_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/orders";
+const INVENTORY_API = "https://kt-tkpm-project-api-getaway.onrender.com/api/inventory";
+const CART_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/cart";
 
 const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
   const navigate = useNavigate();
@@ -74,7 +74,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           requestId: orderId,
           extraData: ""
         };
-        const payResp = await axios.get("https://kt-tkpm-project-payment-service.onrender.com/payment", { params });
+        const payResp = await axios.get("https://kt-tkpm-project-api-getaway.onrender.com/api/payment/payment", { params });
         if (payResp.data.payUrl) {
           localStorage.setItem("pendingOrderId", orderId);
           window.location.href = payResp.data.payUrl;
