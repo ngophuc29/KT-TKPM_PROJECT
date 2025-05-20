@@ -24,7 +24,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+// app.use(express.json());
 
 // Cấu hình các service - sử dụng tên service từ docker-compose thay vì localhost
 const services = {
