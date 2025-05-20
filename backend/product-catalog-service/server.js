@@ -22,20 +22,28 @@ const allowedOrigins = [
 
 console.log("Allowed Origins:", allowedOrigins);
 
-// Cấu hình CORS
+// // Cấu hình CORS
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("CORS policy does not allow this origin."));
+//       }
+//     },
+//     credentials: true,
+//   })
+// );
+
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS policy does not allow this origin."));
-      }
-    },
+    origin: process.env.FRONTEND_URL || "*", // Nếu không có biến môi trường, cho phép tất cả
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 // Middleware xử lý JSON
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
