@@ -1,12 +1,14 @@
+require("dotenv").config();
+
 const Inventory = require("../models/InventoryModels");
 const axios = require("axios");
 
 // URL của Product Service (đổi nếu cần)
-const PRODUCT_SERVICE_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/products";
-const PRODUCT_SERVICE_URLImport = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/product";
-const PRODUCT_UPDATE_STOCK_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/update-stock";
-const CART_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/cart";
-const Order_api ='https://kt-tkpm-project-api-getaway.onrender.com/api/orders'
+const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000/api/products/products";
+const PRODUCT_SERVICE_URLImport = process.env.PRODUCT_SERVICE_URLImport || "http://localhost:3000/api/products/product";
+const PRODUCT_UPDATE_STOCK_URL = process.env.PRODUCT_UPDATE_STOCK_URL || "http://localhost:3000/api/products/update-stock";
+const CART_API_URL = process.env.CART_API_URL || "http://localhost:3000/api/cart"    ;
+const Order_api = process.env.ORDER_API || 'http://localhost:3000/api/orders'
 const LOW_STOCK_THRESHOLD = 5; // Ngưỡng cảnh báo tồn kho thấp
 
 // ------------------------------
