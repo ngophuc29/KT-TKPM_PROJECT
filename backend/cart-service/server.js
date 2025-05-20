@@ -16,7 +16,7 @@ app.use(
 app.use(express.json());
 
 // Sử dụng routes cho Cart Service
-app.use( cartRoutes);
+app.use(cartRoutes);
 // app.use("/api/cart", cartRoutes);
 
 
