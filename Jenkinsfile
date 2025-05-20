@@ -187,7 +187,7 @@ pipeline {
 
                             if (!buildSuccessful) {
                                 echo "Failed to build Docker image for ${service} after ${buildAttempts} attempts. Skipping push."
-                                continue
+                                return  // Skip to next service in the each loop instead of continue// This will skip to the next service in the each loop
                             }
 
                             // Push image với retry
