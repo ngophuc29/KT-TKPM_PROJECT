@@ -116,56 +116,40 @@ pipeline {
                 script {
                     echo "Starting Docker build and push for services..."
 
-                    // Sử dụng bat thay vì sh cho Windows
+                    // Đăng nhập Docker
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
                                      usernameVariable: 'DOCKER_USER',
                                      passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-
-                        // Đăng nhập Docker phiên bản Windows
                         bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
                         echo "Docker Hub login successful"
                     }
 
-                    // Tối ưu hóa build Docker image - chỉ tạo một image với nhiều tag
                     def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
-                    def gitHash = powershell(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
+                    // Trước khi build, xóa tất cả images cũ để tránh lặp
+                    echo "Removing old Docker images for all services..."
+                    services.each { service ->
+                        // Thử xóa các image cũ (sẽ bỏ qua lỗi nếu không tìm thấy)
+                        bat "docker rmi -f ${DOCKER_HUB_USERNAME}/kttkpm:${service} || echo Image not found"
+                        bat "docker image prune -f || echo No dangling images"
+                    }
+
+                    // Build và push các service
                     services.each { service ->
                         def serviceDir = "backend/${service}"
 
                         if (fileExists("${serviceDir}/Dockerfile")) {
-                            echo "Building Docker image for ${service}..."
+                            echo "Building and pushing Docker image for ${service}..."
 
-                            // Tạo một single build command với nhiều tag
-                            def buildCmd = "docker build -t ${DOCKER_HUB_USERNAME}/kttkpm:${service}"
+                            // Chỉ tạo một tag "latest" để tránh lặp
+                            def imageName = "${DOCKER_HUB_USERNAME}/kttkpm:${service}"
 
-                            // Chỉ đặt tag phiên bản nếu là build từ nhánh chính
-                            if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
-                                buildCmd += " -t ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${BUILD_NUMBER}"
+                            // Build với một tag duy nhất
+                            bat "docker build -t ${imageName} ${serviceDir}"
 
-                                if (gitHash && gitHash.length() > 0) {
-                                    buildCmd += " -t ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
-                                }
-                            }
-
-                            // Thêm đường dẫn build
-                            buildCmd += " ${serviceDir}"
-
-                            // Thực thi lệnh build
-                            bat "${buildCmd}"
-
-                            // Đẩy image chính lên Docker Hub
-                            bat "docker push ${DOCKER_HUB_USERNAME}/kttkpm:${service}"
-
-                            // Đẩy các tag bổ sung (chỉ khi ở nhánh chính)
-                            if (env.BRANCH_NAME == 'main' || env.GIT_BRANCH == 'origin/main') {
-                                bat "docker push ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${BUILD_NUMBER}"
-
-                                if (gitHash && gitHash.length() > 0) {
-                                    bat "docker push ${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
-                                }
-                            }
+                            // Push tag "latest"
+                            bat "docker push ${imageName}"
 
                             echo "Completed build and push for ${service}"
                         } else {
@@ -227,14 +211,20 @@ pipeline {
 
     post {
         always {
-            // Sửa lệnh clean up cho Windows
             script {
                 try {
-                    echo "Cleaning up Docker images..."
-                    bat "docker system prune -f || exit 0"
+                    echo "Cleaning up Docker images and containers..."
+
+                    // Xóa các container dừng
+                    bat "docker container prune -f || echo No stopped containers"
+
+                    // Xóa các image dangling
+                    bat "docker image prune -f || echo No dangling images"
+
+                    // Thay vì 'system prune' để tránh xóa các image đang sử dụng
+                    echo "Docker cleanup completed"
                 } catch (Exception e) {
                     echo "Warning: Docker cleanup failed: ${e.message}"
-                    // Không làm failed pipeline nếu chỉ là cleanup không thành công
                 }
             }
         }
