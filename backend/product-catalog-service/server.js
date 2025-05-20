@@ -36,10 +36,10 @@ console.log("Allowed Origins:", allowedOrigins);
 //   })
 // );
 
-app.use(
+ app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*", // Nếu không có biến môi trường, cho phép tất cả
-    credentials: true,
+    origin: "*", // Cho phép mọi origin
+    credentials: false, // KHÔNG dùng credentials khi origin là "*"
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
