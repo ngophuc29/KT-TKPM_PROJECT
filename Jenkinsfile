@@ -114,15 +114,17 @@ pipeline {
         stage('Build & Push Docker Images') {
             steps {
                 script {
-                    // Thêm thông báo rõ ràng về bước đang thực hiện
                     echo "Starting Docker build and push for services..."
 
-                    // Đăng nhập vào Docker Hub sử dụng withCredentials cho bảo mật
+                    // Fix đăng nhập Docker sử dụng cú pháp Windows
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
                                      usernameVariable: 'DOCKER_USER',
                                      passwordVariable: 'DOCKER_PASS')]) {
                         echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        // Sử dụng powershell để xử lý đúng trên Windows
+                        powershell '''
+                            $env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin
+                        '''
                         echo "Docker Hub login successful"
                     }
 
@@ -200,8 +202,23 @@ pipeline {
 
     post {
         always {
-            // Cleanup Docker images to save space
-            sh "docker system prune -f"
+            // Sửa lệnh clean up cho Windows
+            script {
+                try {
+                    echo "Cleaning up Docker images..."
+                    // Sử dụng powershell hoặc kiểm tra trước khi prune
+                    powershell '''
+                        if (docker info) {
+                            docker system prune -f
+                        } else {
+                            Write-Host "Docker not available or not running"
+                        }
+                    '''
+                } catch (Exception e) {
+                    echo "Warning: Docker cleanup failed: ${e.message}"
+                    // Không làm failed pipeline nếu chỉ là cleanup không thành công
+                }
+            }
         }
         success {
             echo "Pipeline completed successfully!"
