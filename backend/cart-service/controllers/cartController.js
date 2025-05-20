@@ -3,7 +3,7 @@ const axios = require("axios");
 const redisClient = require("../utils/redisClient");
 
 // Get base API URL from environment variable or fallback to localhost for development
-const API_BASE_URL = "https://kt-tkpm-project-inventory-service.onrender.com";
+const API_BASE_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/inventory";
 
 
 const getCacheKey = (userId) => `cart:${userId}`;

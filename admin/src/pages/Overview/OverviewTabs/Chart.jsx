@@ -28,7 +28,7 @@ const Chart = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get("https://kt-tkpm-project-inventory-service.onrender.com/stats/revenue?period=month");
+        const response = await axios.get("https://kt-tkpm-project-api-getaway.onrender.com/api/inventory/stats/revenue?period=month");
         if (response.data && response.data.revenueByPeriod) {
           const { revenueByPeriod } = response.data;
           const labels = Object.keys(revenueByPeriod).map(date => {
