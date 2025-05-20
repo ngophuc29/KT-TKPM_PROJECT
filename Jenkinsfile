@@ -143,13 +143,11 @@ pipeline {
                             bat "docker push ${imageName}"
                             bat "docker push ${latestTag}"
 
-                            // Tag image với git hash - sửa lại cách lấy hash trên Windows
-                            def gitHashOutput = bat(script: "git rev-parse --short HEAD", returnStdout: true)
-                            // Xử lý output đúng cách trên Windows
-                            def gitHash = gitHashOutput.trim().readLines().drop(1).join(" ").trim()
+                            // Tag image với git hash - sử dụng PowerShell
+                            def gitHash = powershell(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                             echo "Git hash: ${gitHash}"
                             // Chỉ tạo tag nếu có hash hợp lệ
-                            if (gitHash) {
+                            if (gitHash && gitHash.length() > 0) {
                                 def gitTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
                                 bat "docker tag ${imageName} ${gitTag}"
                                 bat "docker push ${gitTag}"
