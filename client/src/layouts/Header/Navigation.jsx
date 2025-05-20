@@ -30,12 +30,9 @@ const Navigation = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
 
-    const categories = [
-        "Laptops",
-        "Desktop PCs",
-        "PC Parts",
-        "All Other Products",
-    ];
+        const categories = [
+            "Custome Builds", "MSI Laptops", "Desktops", "Gaming Monitors",
+        ];
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -187,14 +184,14 @@ const Navigation = () => {
                         <div style={{ display: "flex", gap: 20, flexGrow: 1, justifyContent: "center" }}>
                             {categories.map((cat, idx) => (
                                 <Link
-                                    to="/catalog"
+                                    to={`/catalog?category=${cat}`}
                                     key={idx}
                                     style={{ fontSize: 14, fontWeight: 600, color: "#000" }}
                                     onMouseOver={(e) => (e.target.style.color = "#007bff")}
                                     onMouseOut={(e) => (e.target.style.color = "#000")}
                                 >
                                     {cat}
-                                </Link>
+                                </Link>                        
                             ))}
                         </div>
                     ) : (
