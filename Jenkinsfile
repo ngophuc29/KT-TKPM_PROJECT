@@ -127,14 +127,20 @@ pipeline {
                             "kt-tkpm-project-api-gateway"
                         ]
 
-                        services.each { service ->
-                            echo "Triggering deployment for service: ${service}"
-                            sh """
-                                curl -X POST https://api.render.com/v1/services/${service}/deploys \\
-                                    -H "Authorization: Bearer ${RENDER_API_KEY}" \\
-                                    -H "Content-Type: application/json" || echo "Deployment request for ${service} failed but continuing"
-                            """
-                            echo "Deployment request sent for ${service}"
+                        // Sử dụng withCredentials để xử lý API key một cách an toàn
+                        withCredentials([string(credentialsId: 'render-api-key', variable: 'RENDER_KEY')]) {
+                            services.each { service ->
+                                echo "Triggering deployment for service: ${service}"
+
+                                // Sử dụng cú pháp an toàn cho curl với biến nhạy cảm
+                                sh '''
+                                    curl -X POST https://api.render.com/v1/services/''' + service + '''/deploys \
+                                        -H "Authorization: Bearer $RENDER_KEY" \
+                                        -H "Content-Type: application/json" || echo "Deployment request failed but continuing"
+                                '''
+
+                                echo "Deployment request sent for ${service}"
+                            }
                         }
                     } else {
                         echo "Warning: No Render API key found. Skipping deployment step."
