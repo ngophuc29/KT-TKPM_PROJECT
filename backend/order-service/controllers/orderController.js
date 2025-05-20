@@ -1,10 +1,10 @@
 const Order = require("../models/Order");
 const axios = require("axios");
 
-const CART_API_URL = "http://localhost:3000/api/cart";
-const INVENTORY_API = "http://localhost:3000/api/inventory";
+const CART_API_URL = "https://kt-tkpm-project-cart-service.onrender.com";
+const INVENTORY_API = "https://kt-tkpm-project-inventory-service.onrender.com";
 const PRODUCT_SERVICE_URLImport = "http://localhost:3000/api/product";
-const PRODUCT_UPDATE_STOCK_URL = "http://localhost:3000/api/products/update-stock";
+const PRODUCT_UPDATE_STOCK_URL = "https://kt-tkpm-project-product-catalog-service.onrender.com/update-stock";
 
 // 📌 Tạo đơn hàng
 
@@ -302,7 +302,7 @@ async function restoreInventoryWithRetry(items) {
             try {
                 // Shorter timeout (8s instead of 15s)
                 const response = await axios.post(
-                    `http://localhost:3000/api/inventory/restore/${item.productId}/${item.quantity}`,
+                    `https://kt-tkpm-project-inventory-service.onrender.com/restore/${item.productId}/${item.quantity}`,
                     {},
                     { timeout: 8000 }
                 );

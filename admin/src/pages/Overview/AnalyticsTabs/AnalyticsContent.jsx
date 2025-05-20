@@ -41,9 +41,9 @@ export const AnalyticsContent = () => {
     const fetchStats = async () => {
       try {
         const [generalRes, categoryRes, orderRes] = await Promise.all([
-          axios.get("http://localhost:3000/api/inventory/stats/general"),
-          axios.get("http://localhost:3000/api/inventory/stats/inventory-by-category"),
-          axios.get("http://localhost:3000/api/inventory/stats/order-status")
+          axios.get("https://kt-tkpm-project-inventory-service.onrender.com/stats/general"),
+          axios.get("https://kt-tkpm-project-inventory-service.onrender.com/stats/inventory-by-category"),
+          axios.get("https://kt-tkpm-project-inventory-service.onrender.com/stats/order-status")
         ]);
 
         console.log("General Stats Response:", generalRes.data);

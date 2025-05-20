@@ -5,8 +5,8 @@ import CartSummary from "./CartSummary";
 import { Link } from "react-router-dom";
 
 // Định nghĩa các API URL (điều chỉnh theo backend của bạn)
-const CART_API_URL = "http://localhost:3000/api/cart";
-const PRODUCT_API_URLGetInfo = "http://localhost:3000/api/products/product"; // Giả sử endpoint lấy thông tin sản phẩm
+const CART_API_URL = "https://kt-tkpm-project-cart-service.onrender.com";
+const PRODUCT_API_URLGetInfo = "https://kt-tkpm-project-product-catalog-service.onrender.com/product"; // Giả sử endpoint lấy thông tin sản phẩm
 // const fakeUserId = "user9999";
 const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
 

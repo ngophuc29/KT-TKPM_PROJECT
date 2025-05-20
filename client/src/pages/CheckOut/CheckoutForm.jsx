@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const ORDER_API_URL = "http://localhost:3000/api/orders";
-const INVENTORY_API = "http://localhost:3000/api/inventory";
-const CART_API_URL = "http://localhost:3000/api/cart";
+const ORDER_API_URL = "https://kt-tkpm-project-order-service.onrender.com";
+const INVENTORY_API = "https://kt-tkpm-project-inventory-service.onrender.com";
+const CART_API_URL = "https://kt-tkpm-project-cart-service.onrender.com";
 
 const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
   const navigate = useNavigate();
@@ -55,15 +55,15 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       }
 
       // 2) Tạo order trước
-      const createUrl = `${ORDER_API_URL}/create/${userId}` +
-        `/${encodeURIComponent(JSON.stringify(customer))}` +
-        `/${encodeURIComponent(JSON.stringify(items))}` +
-        `/${encodeURIComponent(JSON.stringify(shipping))}` +
-        `/${encodeURIComponent(JSON.stringify(payment))}` +
-        `/${finalTotal}` +
-        `/${encodeURIComponent(JSON.stringify(notes))}`;
-      const orderResp = await axios.post(createUrl);
-      const orderId = orderResp.data.order._id;
+      // const createUrl = `${ORDER_API_URL}/create/${userId}` +
+      //   `/${encodeURIComponent(JSON.stringify(customer))}` +
+      //   `/${encodeURIComponent(JSON.stringify(items))}` +
+      //   `/${encodeURIComponent(JSON.stringify(shipping))}` +
+      //   `/${encodeURIComponent(JSON.stringify(payment))}` +
+      //   `/${finalTotal}` +
+      //   `/${encodeURIComponent(JSON.stringify(notes))}`;
+      // const orderResp = await axios.post(createUrl);
+      // const orderId = orderResp.data.order._id;
 
       // 3) Nếu chọn bank (Momo) → gọi service payment qua params
       if (paymentMethod === "bank") {
@@ -74,7 +74,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           requestId: orderId,
           extraData: ""
         };
-        const payResp = await axios.get("http://localhost:3000/api/payment/payment", { params });
+        const payResp = await axios.get("https://kt-tkpm-project-payment-service.onrender.com/payment", { params });
         if (payResp.data.payUrl) {
           localStorage.setItem("pendingOrderId", orderId);
           window.location.href = payResp.data.payUrl;
