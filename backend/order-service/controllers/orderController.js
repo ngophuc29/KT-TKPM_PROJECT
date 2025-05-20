@@ -1,10 +1,12 @@
+require("dotenv").config();
+
 const Order = require("../models/Order");
 const axios = require("axios");
 
-const CART_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/cart";
-const INVENTORY_API = "https://kt-tkpm-project-api-getaway.onrender.com/api/inventory";
-const PRODUCT_SERVICE_URLImport = "http://localhost:3000/api/product";
-const PRODUCT_UPDATE_STOCK_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/update-stock";
+const CART_API_URL = process.env.CART_API_URL || "http://localhost:3000/api/cart";
+const INVENTORY_API = process.env.INVENTORY_API || "http://localhost:3000/api/inventory";
+const PRODUCT_SERVICE_URLImport = process.env.PRODUCT_SERVICE_URLImport || "http://localhost:3000/api/product";
+const PRODUCT_UPDATE_STOCK_URL = process.env.PRODUCT_UPDATE_STOCK_URL || "http://localhost:3000/api/products/update-stock";
 
 // 📌 Tạo đơn hàng
 
