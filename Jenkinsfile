@@ -116,13 +116,35 @@ pipeline {
                 script {
                     echo "Starting Docker build and push for services..."
 
-                    // Đăng nhập Docker
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
-                                     usernameVariable: 'DOCKER_USER',
-                                     passwordVariable: 'DOCKER_PASS')]) {
-                        echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-                        bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                        echo "Docker Hub login successful"
+                    // Đăng nhập Docker với retry logic
+                    def loginAttempts = 0
+                    def loginSuccessful = false
+
+                    while (!loginSuccessful && loginAttempts < 3) {
+                        loginAttempts++
+                        echo "Attempt ${loginAttempts} to log in to Docker Hub..."
+
+                        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
+                                        usernameVariable: 'DOCKER_USER',
+                                        passwordVariable: 'DOCKER_PASS')]) {
+                            try {
+                                def loginResult = bat(script: "docker login -u %DOCKER_USER% -p %DOCKER_PASS%", returnStatus: true)
+                                if (loginResult == 0) {
+                                    echo "Docker Hub login successful"
+                                    loginSuccessful = true
+                                } else {
+                                    echo "Docker login failed. Will retry in 10 seconds..."
+                                    sleep(time: 10, unit: "SECONDS")
+                                }
+                            } catch (Exception e) {
+                                echo "Exception during Docker login: ${e.message}. Will retry in 10 seconds..."
+                                sleep(time: 10, unit: "SECONDS")
+                            }
+                        }
+                    }
+
+                    if (!loginSuccessful) {
+                        error "Failed to log in to Docker Hub after ${loginAttempts} attempts. Skipping build and push."
                     }
 
                     def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
@@ -135,23 +157,72 @@ pipeline {
                         bat "docker image prune -f || echo No dangling images"
                     }
 
-                    // Build và push các service
+                    // Build và push các service với retry logic
                     services.each { service ->
                         def serviceDir = "backend/${service}"
 
                         if (fileExists("${serviceDir}/Dockerfile")) {
-                            echo "Building and pushing Docker image for ${service}..."
-
-                            // Chỉ tạo một tag "latest" để tránh lặp
+                            echo "Building Docker image for ${service}..."
                             def imageName = "${DOCKER_HUB_USERNAME}/kttkpm:${service}"
 
-                            // Build với một tag duy nhất
-                            bat "docker build -t ${imageName} ${serviceDir}"
+                            // Build với retry
+                            def buildAttempts = 0
+                            def buildSuccessful = false
 
-                            // Push tag "latest"
-                            bat "docker push ${imageName}"
+                            while (!buildSuccessful && buildAttempts < 2) {
+                                buildAttempts++
+                                try {
+                                    def buildResult = bat(script: "docker build -t ${imageName} ${serviceDir}", returnStatus: true)
+                                    if (buildResult == 0) {
+                                        buildSuccessful = true
+                                    } else {
+                                        echo "Docker build failed for ${service}. Attempt ${buildAttempts}/2"
+                                        if (buildAttempts < 2) sleep(time: 5, unit: "SECONDS")
+                                    }
+                                } catch (Exception e) {
+                                    echo "Exception during Docker build for ${service}: ${e.message}"
+                                    if (buildAttempts < 2) sleep(time: 5, unit: "SECONDS")
+                                }
+                            }
 
-                            echo "Completed build and push for ${service}"
+                            if (!buildSuccessful) {
+                                echo "Failed to build Docker image for ${service} after ${buildAttempts} attempts. Skipping push."
+                                continue
+                            }
+
+                            // Push image với retry
+                            echo "Pushing Docker image for ${service}..."
+                            def pushAttempts = 0
+                            def pushSuccessful = false
+
+                            while (!pushSuccessful && pushAttempts < 3) {
+                                pushAttempts++
+                                try {
+                                    def pushResult = bat(script: "docker push ${imageName}", returnStatus: true)
+                                    if (pushResult == 0) {
+                                        pushSuccessful = true
+                                        echo "Successfully pushed ${imageName}"
+                                    } else {
+                                        echo "Docker push failed for ${service}. Attempt ${pushAttempts}/3"
+                                        if (pushAttempts < 3) {
+                                            echo "Waiting 20 seconds before retrying..."
+                                            sleep(time: 20, unit: "SECONDS")
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    echo "Exception during Docker push for ${service}: ${e.message}"
+                                    if (pushAttempts < 3) {
+                                        echo "Waiting 20 seconds before retrying..."
+                                        sleep(time: 20, unit: "SECONDS")
+                                    }
+                                }
+                            }
+
+                            if (pushSuccessful) {
+                                echo "Completed build and push for ${service}"
+                            } else {
+                                echo "Failed to push Docker image for ${service} after ${pushAttempts} attempts."
+                            }
                         } else {
                             echo "Skipping Docker build for ${service} - Dockerfile not found."
                         }
