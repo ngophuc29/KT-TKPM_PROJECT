@@ -13,7 +13,7 @@ import EditUserModal from "../../pages/User/EditUserModal";
 import OrderModal from "../../pages/User/OrderModal";
 import axios from "axios";
 import authorizedAxiosInstance from '../../utils/authorizedAxios';
-
+import { handleLogoutAPI } from "../../apis";
 const Navigation = () => {
     const [showSearch, setShowSearch] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -34,10 +34,16 @@ const Navigation = () => {
     const categories = [
         "Custome Builds", "MSI Laptops", "Desktops", "Gaming Monitors",
     ];
-
+    const fetchUserInfo = async () => {
+        try {
+            const res = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
+            setUser(res.data);
+        } catch (err) {
+            console.error("Lỗi lấy thông tin user:", err);
+        }
+    };
     const handleLogout = () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        handleLogoutAPI();
         setShowUserMenu(false);
         navigate("/login");
     };
