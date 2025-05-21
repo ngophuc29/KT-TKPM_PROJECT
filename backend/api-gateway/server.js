@@ -48,7 +48,7 @@ const services = {
 
 const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 phút
-  max: 5, // tối đa 20 request mỗi phút cho mỗi IP
+  max: 50, // tối đa 20 request mỗi phút cho mỗi IP
   message: { message: "Bạn gọi API quá nhanh, vui lòng thử lại sau!" }
 });
 // Proxy cho tất cả request đến API Gateway
