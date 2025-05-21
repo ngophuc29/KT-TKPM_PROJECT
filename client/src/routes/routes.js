@@ -1,6 +1,6 @@
 import Home from "@/pages/Home/Home";
 import Login from "@/pages/Login/Login";
-//import Signup from "../pages/Signup/Signup";
+import Signup from "../pages/Signup/Signup";
 import Cart from "../pages/Cart/Cart";
 import CheckoutPage from "../pages/CheckOut/CheckoutPage";
 import Catalog from "../pages/Catalog/Catalog";
@@ -8,7 +8,7 @@ import ProductDetailsAll from "../pages/Details/ProductDetailsAll";
 import ContactUs from "../pages/ContactUs/ContactUs";
 import UserAccount from "../pages/UserAccount/UserAccount";
 import AboutUs from "../pages/AboutUs/AboutUs";
-import Signup from "@/pages/Signup/Signup";
+
 const publicRoutes = [
   { path: "/home", component: Home },
   { path: "/login", component: Login },
