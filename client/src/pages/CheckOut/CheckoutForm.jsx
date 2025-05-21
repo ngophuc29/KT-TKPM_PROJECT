@@ -20,6 +20,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalT
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [customerNote, setCustomerNote] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load user info when component mounts
   useEffect(() => {
@@ -129,6 +130,8 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalT
       return;
     }
 
+    setIsSubmitting(true); // Bắt đầu loading
+
     const customer = { name: `${firstName} ${lastName}`, address, phone, email };
     const items = selectedItems.map((i) => ({
       productId: i.productId,
@@ -204,6 +207,8 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalT
       const msg = err.response?.data?.message || err.message;
       toast.error("Lỗi khi xử lý đơn hàng: " + msg);
       console.error(err);
+    } finally {
+      setIsSubmitting(false); // Kết thúc loading
     }
   };
 
@@ -420,18 +425,19 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalT
       <button
         type="button"
         onClick={handleOrderSubmit}
+        disabled={isSubmitting}
         style={{
-          backgroundColor: "#C94D3F",
+          backgroundColor: isSubmitting ? "#ccc" : "#C94D3F",
           color: "#FFF",
           borderRadius: "4px",
           border: "none",
           height: "50px",
           fontWeight: "600",
           fontSize: "14px",
-          cursor: "pointer",
+          cursor: isSubmitting ? "not-allowed" : "pointer",
         }}
       >
-        Confirm Order
+        {isSubmitting ? "Đang xử lý..." : "Confirm Order"}
       </button>
     </form>
   );

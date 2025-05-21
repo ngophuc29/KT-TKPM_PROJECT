@@ -133,7 +133,7 @@ app.post('/callback', async (req, res) => {
     });
     try {
       await axios.put(
-        ` ${ORDER_API}/update/${extraData}/${encodeURIComponent(updateData)}`
+        `${ORDER_API}/update/${extraData}/${encodeURIComponent(updateData)}`
       );
       console.log('✅ Order set to failed');
     } catch (err) {

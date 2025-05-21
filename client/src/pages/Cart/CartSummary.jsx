@@ -75,7 +75,7 @@ const CartSummary = ({ subtotal,   total, selectedCartItems }) => {
                 Proceed to Checkout
             </button>
 
-            <button
+            {/* <button
                 style={{
                     width: "100%",
                     padding: "15px",
@@ -102,9 +102,9 @@ const CartSummary = ({ subtotal,   total, selectedCartItems }) => {
                         height: "auto",
                     }}
                 />
-            </button>
+            </button> */}
 
-            <button
+            {/* <button
                 style={{
                     width: "100%",
                     padding: "15px",
@@ -118,7 +118,7 @@ const CartSummary = ({ subtotal,   total, selectedCartItems }) => {
                 }}
             >
                 Check Out with Multiple Addresses
-            </button>
+            </button> */}
         </div>
     );
 };

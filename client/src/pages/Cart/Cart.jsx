@@ -4,6 +4,7 @@ import CartItem from "./CartItem";
 import CartSummary from "./CartSummary";
 import { Link } from "react-router-dom";
 import { getUserId } from "../../utils/getUserId";
+import authorizedAxiosInstance from "../../utils/authorizedAxios";
 
 // Định nghĩa các API URL (điều chỉnh theo backend của bạn)
 const CART_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/cart`;
@@ -29,7 +30,7 @@ const Cart = () => {
                 setError("Vui lòng đăng nhập để xem giỏ hàng");
                 return;
             }
-            const res = await axios.get(`${CART_API_URL}/${userId}`);
+            const res = await authorizedAxiosInstance.get(`${CART_API_URL}/${userId}`);
             const cartData = res.data;
             setCart(cartData);
 
@@ -79,7 +80,7 @@ const Cart = () => {
                 return;
             }
             // Thay vì gửi qua body, chuyển userId, productId, quantity vào URL
-            const res = await axios.put(`${CART_API_URL}/update/${userId}/${productId}/${newQuantity}`);
+            const res = await authorizedAxiosInstance.put(`${CART_API_URL}/update/${userId}/${productId}/${newQuantity}`);
             setCart(res.data.cart);
             // Dispatch cart update event to sync with Navigation
             window.dispatchEvent(new Event('cartUpdated'));
@@ -100,7 +101,7 @@ const Cart = () => {
                 return;
             }
             // Truyền userId và productId trực tiếp qua URL
-            const res = await axios.delete(`${CART_API_URL}/remove/${userId}/${productId}`);
+            const res = await authorizedAxiosInstance.delete(`${CART_API_URL}/remove/${userId}/${productId}`);
             setCart(res.data.cart);
             setSelectedItems(prev => {
                 const newSelected = { ...prev };
@@ -125,7 +126,7 @@ const Cart = () => {
                 setError("Vui lòng đăng nhập để xóa giỏ hàng");
                 return;
             }
-            const res = await axios.delete(`${CART_API_URL}/clear/${userId}`);
+            const res = await authorizedAxiosInstance.delete(`${CART_API_URL}/clear/${userId}`);
             setCart(res.data.cart);
             setSelectedItems({});
             // Dispatch cart update event to sync with Navigation
