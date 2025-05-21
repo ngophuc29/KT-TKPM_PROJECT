@@ -2,12 +2,13 @@ require("dotenv").config();
 
 const Inventory = require("../models/InventoryModels");
 const axios = require("axios");
+const { callApiWithRetry } = require("../utils/apiRetry");
 
 // URL của Product Service (đổi nếu cần)
 const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || "http://localhost:3000/api/products/products";
 const PRODUCT_SERVICE_URLImport = process.env.PRODUCT_SERVICE_URLImport || "http://localhost:3000/api/products/product";
 const PRODUCT_UPDATE_STOCK_URL = process.env.PRODUCT_UPDATE_STOCK_URL || "http://localhost:3000/api/products/update-stock";
-const CART_API_URL = process.env.CART_API_URL || "http://localhost:3000/api/cart"    ;
+const CART_API_URL = process.env.CART_API_URL || "http://localhost:3000/api/cart";
 const Order_api = process.env.ORDER_API || 'http://localhost:3000/api/orders'
 const LOW_STOCK_THRESHOLD = 5; // Ngưỡng cảnh báo tồn kho thấp
 
@@ -15,7 +16,10 @@ const LOW_STOCK_THRESHOLD = 5; // Ngưỡng cảnh báo tồn kho thấp
 // Hàm helper dùng để lấy dữ liệu sản phẩm từ Product Service
 // ------------------------------
 const fetchProductsData = async () => {
-    const response = await axios.get(PRODUCT_SERVICE_URL);
+    const response = await callApiWithRetry({
+        method: 'get',
+        url: PRODUCT_SERVICE_URL
+    });
     const products = response.data.data;
     if (!Array.isArray(products)) {
         throw new Error("Dữ liệu không hợp lệ từ Product Service");
@@ -325,7 +329,7 @@ exports.getGeneralStats = async (req, res) => {
         const totalOrders = orders.data.length;
         const totalInventory = inventory.reduce((sum, item) => sum + item.quantity, 0);
         const totalRevenue = orders.data.reduce((sum, order) => sum + order.finalTotal, 0);
-        
+
         // Thống kê theo trạng thái đơn hàng
         const orderStatusStats = orders.data.reduce((acc, order) => {
             acc[order.status] = (acc[order.status] || 0) + 1;
@@ -375,16 +379,16 @@ exports.getRevenueStats = async (req, res) => {
     try {
         const { period = 'month' } = req.query; // period: 'day', 'week', 'month', 'year'
         const orders = await axios.get(Order_api);
-        
+
         // Lọc các đơn hàng đã hoàn thành
         const completedOrders = orders.data.filter(order => order.status === 'completed');
-        
+
         // Nhóm doanh thu theo thời gian
         const revenueByPeriod = completedOrders.reduce((acc, order) => {
             const date = new Date(order.createdAt);
             let periodKey;
-            
-            switch(period) {
+
+            switch (period) {
                 case 'day':
                     periodKey = date.toISOString().split('T')[0];
                     break;
@@ -402,15 +406,15 @@ exports.getRevenueStats = async (req, res) => {
                 default:
                     periodKey = date.toISOString().split('T')[0];
             }
-            
+
             acc[periodKey] = (acc[periodKey] || 0) + order.finalTotal;
             return acc;
         }, {});
 
         // Tính toán các chỉ số
         const totalRevenue = Object.values(revenueByPeriod).reduce((sum, val) => sum + val, 0);
-        const averageRevenue = Object.values(revenueByPeriod).length > 0 
-            ? totalRevenue / Object.values(revenueByPeriod).length 
+        const averageRevenue = Object.values(revenueByPeriod).length > 0
+            ? totalRevenue / Object.values(revenueByPeriod).length
             : 0;
 
         res.json({
@@ -434,7 +438,7 @@ exports.getTopSellingProducts = async (req, res) => {
     try {
         const { limit = 10 } = req.query;
         const orders = await axios.get(Order_api);
-        
+
         // Tính toán số lượng bán của từng sản phẩm
         const productSales = orders.data.reduce((acc, order) => {
             if (order.status === 'completed') {
@@ -504,13 +508,13 @@ exports.getInventoryByCategory = async (req, res) => {
                         products: []
                     };
                 }
-                
+
                 acc[category].totalProducts++;
                 acc[category].totalStock += item.quantity;
                 if (item.quantity <= LOW_STOCK_THRESHOLD) {
                     acc[category].lowStockCount++;
                 }
-                
+
                 acc[category].products.push({
                     productId: item.productId,
                     name: item.name,
@@ -548,7 +552,7 @@ exports.getInventoryByCategory = async (req, res) => {
 exports.getOrderStatusStats = async (req, res) => {
     try {
         const orders = await axios.get(Order_api);
-        
+
         // Thống kê theo trạng thái
         const statusStats = orders.data.reduce((acc, order) => {
             acc[order.status] = (acc[order.status] || 0) + 1;
@@ -594,7 +598,7 @@ exports.getProductRevenueStats = async (req, res) => {
     try {
         const orders = await axios.get(Order_api);
         const products = await axios.get(PRODUCT_SERVICE_URL);
-        
+
         // Tạo map sản phẩm để dễ truy xuất
         const productMap = products.data.data.reduce((acc, product) => {
             acc[product._id] = product;
@@ -616,7 +620,7 @@ exports.getProductRevenueStats = async (req, res) => {
                             orders: 0
                         };
                     }
-                    
+
                     acc[item.productId].totalSold += item.quantity;
                     acc[item.productId].totalRevenue += item.price * item.quantity;
                     acc[item.productId].orders += 1;
@@ -679,8 +683,8 @@ exports.getDetailedStats = async (req, res) => {
                 return acc;
             }, {}),
             revenue: orders.data.reduce((sum, order) => sum + order.finalTotal, 0),
-            averageOrderValue: orders.data.length > 0 
-                ? orders.data.reduce((sum, order) => sum + order.finalTotal, 0) / orders.data.length 
+            averageOrderValue: orders.data.length > 0
+                ? orders.data.reduce((sum, order) => sum + order.finalTotal, 0) / orders.data.length
                 : 0
         };
 
