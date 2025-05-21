@@ -3,7 +3,7 @@ import './ChatBot.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = `${import.meta.env.VITE_APP_PRODUCT_API}`;
+const API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products`;
 
 const ChatBot = () => {
   const navigate = useNavigate();
@@ -120,7 +120,7 @@ const ChatBot = () => {
       const isNew = product.new ? '🆕' : '';
 
       return {
-        text: `📱 *${product.name}*  
+        text: `📱 *${product.name}*
 💰 ${product.price.toLocaleString('vi-VN')}đ${discount}
 🏷️ ${product.brand} | ${product.category} ${isNew}
 ${stock}

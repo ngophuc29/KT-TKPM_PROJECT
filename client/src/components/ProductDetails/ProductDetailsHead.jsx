@@ -12,8 +12,8 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
       fontFamily: "Poppins, sans-serif",
       textAlign: "center",
       margin: "8px auto",
-       
-      
+
+
     },
     activeTab: { color: "#000", borderBottom: "2px solid #0156FF", cursor: "pointer" },
     tab: { borderBottom: "2px solid transparent", cursor: "pointer" },
@@ -38,7 +38,7 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const { data } = await axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/${id}`);
+        const { data } = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory/${id}`);
         setInventoryInfo(data);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin tồn kho", error);
@@ -47,18 +47,18 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
     if (id) fetchInventory();
   }, [id]);
 
-   
-  
+
+
   // UserId giả dùng cho demo
   // const fakeUserId = "user9999";
   // const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12"
   // Định nghĩa API URL add to cart với URL params
-  const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}/add`;
+  const CART_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/cart/add`;
 
   // Xử lý thêm sản phẩm vào giỏ hàng qua API
   const handleAddToCart = async () => {
     console.log("Thêm vào giỏ hàng với ID:", id);
-    
+
     if (!id) {
       alert("Product ID is not defined!");
       return;
@@ -127,7 +127,7 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
               style={{
                 opacity: isOutOfStock ? 0.5 : 1,
                 pointerEvents: isOutOfStock ? "none" : "auto",
-                fontSize: 14, 
+                fontSize: 14,
                 padding: "8px 0px",
                 margin: "0 10px",
               }}
@@ -150,6 +150,6 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   );
 }
 
- 
+
 
 export default ProductDetailsHead;

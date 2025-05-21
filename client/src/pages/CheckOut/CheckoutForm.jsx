@@ -1,15 +1,15 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getUserId } from "../../utils/getUserId";
-import authorizedAxiosInstance from '../../utils/authorizedAxios';
+import authorizedAxiosInstance from "../../utils/authorizedAxios";
 
-const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
-const INVENTORY_API = `${import.meta.env.VITE_APP_INVENTORY_API}`;
-const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}`;
+const ORDER_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders`;
+const INVENTORY_API = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory`;
+const CART_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/cart`;
 
-const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
+const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalTotal }) => {
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
@@ -30,22 +30,22 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           setLoading(false);
           return;
         }
-        const response = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
+        const response = await authorizedAxiosInstance.get("http://localhost:3000/auth/users");
         const userData = response.data;
-        
+
         // Split fullName into firstName and lastName
-        const nameParts = userData.fullName?.split(' ') || [];
-        const lastName = nameParts.pop() || '';
-        const firstName = nameParts.join(' ') || '';
-        
+        const nameParts = userData.fullName?.split(" ") || [];
+        const lastName = nameParts.pop() || "";
+        const firstName = nameParts.join(" ") || "";
+
         setFirstName(firstName);
         setLastName(lastName);
-        setEmail(userData.email || '');
-        setPhone(userData.phone || '');
-        setAddress(userData.address || '');
+        setEmail(userData.email || "");
+        setPhone(userData.phone || "");
+        setAddress(userData.address || "");
       } catch (error) {
-        console.error('Error fetching user info:', error);
-        toast.error('Không thể tải thông tin người dùng');
+        console.error("Error fetching user info:", error);
+        toast.error("Không thể tải thông tin người dùng");
       } finally {
         setLoading(false);
       }
@@ -53,6 +53,56 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
 
     fetchUserInfo();
   }, []);
+
+  const handleNotification = async (orderId) => {
+    try {
+      const userId = getUserId();
+      if (!userId || !orderId) return;
+
+      // Gửi thông báo với dữ liệu thực từ đơn hàng
+      const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`, {
+        userId: userId,
+        orderId: orderId,
+        orderStatus: "pending",
+      });
+      console.log("Notification sent: ", response.data);
+    } catch (error) {
+      console.log("Error sending notification: ", error);
+    }
+  };
+
+  const handleOrderEmail = async (orderId) => {
+    try {
+      // Gửi email xác nhận đơn hàng
+      await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-order-email`, {
+        orderData: {
+          orderNumber: orderId,
+          customer: {
+            name: `${firstName} ${lastName}`,
+            email: email,
+            phone: phone,
+            address: address,
+          },
+          items: selectedItems.map((item) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+          totalAmount: finalTotal,
+          shipping: {
+            method: shippingMethod,
+            fee: shippingMethod === "standard" ? 30000 : 50000,
+          },
+          payment: {
+            method: paymentMethod,
+          },
+        },
+      });
+      console.log("Order confirmation email sent");
+    } catch (error) {
+      console.error("Error sending order email:", error);
+    }
+  };
 
   const handleOrderSubmit = async () => {
     // Validate
@@ -72,23 +122,27 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
     }
 
     const customer = { name: `${firstName} ${lastName}`, address, phone, email };
-    const items = selectedItems.map(i => ({
-      productId: i.productId, name: i.name, quantity: i.quantity, price: i.price
+    const items = selectedItems.map((i) => ({
+      productId: i.productId,
+      name: i.name,
+      quantity: i.quantity,
+      price: i.price,
     }));
     const shipping = {
       method: shippingMethod,
       fee: shippingMethod === "standard" ? 30000 : 50000,
-      status: "processing", trackingNumber: ""
+      status: "processing",
+      trackingNumber: "",
     };
     const payment = { method: paymentMethod, status: "pending" };
     const notes = { customerNote, sellerNote: "" };
 
     try {
       // 1) Check tồn kho
-      const idsParam = items.map(i => i.productId).join(",");
+      const idsParam = items.map((i) => i.productId).join(",");
       const { data: inv } = await axios.get(`${INVENTORY_API}/bulk/${idsParam}`);
       for (let it of items) {
-        const stockItem = inv.find(x => x.productId === it.productId);
+        const stockItem = inv.find((x) => x.productId === it.productId);
         if (!stockItem || stockItem.stock < it.quantity) {
           toast.error(`Sản phẩm ${it.name} không đủ hàng`);
           return;
@@ -96,7 +150,8 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       }
 
       // 2) Tạo order trước
-      const createUrl = `${ORDER_API_URL}/create/${userId}` +
+      const createUrl =
+        `${ORDER_API_URL}/create/${userId}` +
         `/${encodeURIComponent(JSON.stringify(customer))}` +
         `/${encodeURIComponent(JSON.stringify(items))}` +
         `/${encodeURIComponent(JSON.stringify(shipping))}` +
@@ -106,6 +161,13 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       const orderResp = await axios.post(createUrl);
       const orderId = orderResp.data.order._id;
 
+      // Gửi thông báo với orderId thực
+      await handleNotification(orderId);
+
+      // Gửi email xác nhận đơn hàng
+      await handleOrderEmail(orderId, orderResp.data.order);
+      console.log("Order email sent", orderResp.data.order);
+
       // 3) Nếu chọn bank (Momo) → gọi service payment qua params
       if (paymentMethod === "bank") {
         const params = {
@@ -113,9 +175,9 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           orderInfo: `Thanh toán đơn ${orderId}`,
           orderId,
           requestId: orderId,
-          extraData: ""
+          extraData: "",
         };
-        const payResp = await axios.get(`${import.meta.env.VITE_APP_PAYMENT_API}/payment`, { params });
+        const payResp = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/payment/payment`, { params });
         if (payResp.data.payUrl) {
           localStorage.setItem("pendingOrderId", orderId);
           window.location.href = payResp.data.payUrl;
@@ -130,21 +192,10 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       toast.success("Đặt hàng thành công!");
       navigate("/home", { state: { order: orderResp.data.order } });
       await axios.delete(`${CART_API_URL}/clear/${userId}`);
-
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
       toast.error("Lỗi khi xử lý đơn hàng: " + msg);
       console.error(err);
-    }
-  };
-
-  const handleNotification = async() => {
-    try {
-      // Test gửi nên gửi thẳng dữ liệu
-      const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`);
-      console.log("Notification sent: ", response.data);
-    } catch (error) {
-      console.log("Error sending notification: ", error);
     }
   };
 
@@ -341,9 +392,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
 
       {/* Order Note */}
       <div>
-        <label style={{ display: "block", marginBottom: "5px" }}>
-          Order Note (optional)
-        </label>
+        <label style={{ display: "block", marginBottom: "5px" }}>Order Note (optional)</label>
         <textarea
           id="customerNote"
           name="customerNote"
@@ -362,7 +411,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       {/* Confirm Order Button */}
       <button
         type="button"
-        onClick={() => { handleOrderSubmit(); handleNotification(); }}
+        onClick={handleOrderSubmit}
         style={{
           backgroundColor: "#C94D3F",
           color: "#FFF",

@@ -6,38 +6,37 @@ import OutplayCompetition from "./OutplayCompetition";
 import ImageDisplay from "./ImageDisplay";
 import Features from "../../pages/Home/Features";
 import FeaturesDetails from "./FeaturesDetails";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 
 const ProductDetailsAll = () => {
   const [activeTab, setActiveTab] = useState("about");
-  // const id = useLocation().pathname.split("/")[2];
   const { id } = useParams();
   const [product, setProduct] = useState({});
-  
+
   useEffect(() => {
     const fetchNewProducts = async () => {
       try {
-        const URL = `${import.meta.env.VITE_APP_PRODUCT_API}/product/${id}`;
+        const URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/product/${id}`;
         const response = await axios.get(URL, { withCredentials: true });
 
         setProduct(response?.data?.data);
         console.log(product._id);
-        
+
       } catch (error) {
         console.log("Error fetching new products: ", error);
       }
     };
     fetchNewProducts();
     console.log("Extracted id:", id);
-  }, [id]);
+  }, [id, product._id]);
 
   return (
     <>
       {/* Truyền activeTab và setActiveTab xuống ProductDetailsHead */}
       <ProductDetailsHead activeTab={activeTab} setActiveTab={setActiveTab} price={product.price} />
-      
-     
+
+
 
       {/* Breadcrumb */}
       <div className="container">

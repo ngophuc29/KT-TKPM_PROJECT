@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import CardItem from "./CardItem";
 import { FaShoppingCart, FaBox, FaExclamationTriangle, FaMoneyBillWave } from "react-icons/fa";
@@ -14,7 +14,7 @@ const Card = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/detailed`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory/stats/detailed`);
         setStats(response.data);
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -53,16 +53,16 @@ const Card = () => {
       }).format(stats.revenueStats?.total || 0),
       icon: <FaMoneyBillWave className="text-yellow-500" />,
       details: [
-        { 
-          label: "Tháng này", 
+        {
+          label: "Tháng này",
           value: new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND',
             maximumFractionDigits: 0
           }).format(stats.revenueStats?.thisMonth || 0)
         },
-        { 
-          label: "Tháng trước", 
+        {
+          label: "Tháng trước",
           value: new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND',
@@ -77,8 +77,8 @@ const Card = () => {
       icon: <FaExclamationTriangle className="text-red-500" />,
       details: [
         { label: "Tổng số lượng", value: stats.inventoryStats?.totalItems || 0 },
-        { 
-          label: "Tổng giá trị", 
+        {
+          label: "Tổng giá trị",
           value: new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND',

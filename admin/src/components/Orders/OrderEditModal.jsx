@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Update the API URLs with correct endpoints
-const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
-const PRODUCT_API_URL = `${import.meta.env.VITE_APP_PRODUCT_API}/products`;
-const INVENTORY_API_URL = `${import.meta.env.VITE_APP_INVENTORY_API}`; // Add Inventory API URL
+const ORDER_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders`;
+const PRODUCT_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products`;
+const INVENTORY_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory`;
 
 export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const [order, setOrder] = useState(null);
@@ -17,7 +17,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [saveProgress, setSaveProgress] = useState(0);
-    
+
     // Form state
     const [customerInfo, setCustomerInfo] = useState({
         name: "",
@@ -67,10 +67,10 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 const response = await axios.get(`${ORDER_API_URL}/${orderId}`);
                 const orderData = response.data;
                 setOrder(orderData);
-                
+
                 // Store original items for inventory comparison
                 setOriginalOrderItems(JSON.parse(JSON.stringify(orderData.items || [])));
-                
+
                 // Initialize form state with current values
                 setCustomerInfo({
                     name: orderData.customer?.name || "",
@@ -78,26 +78,26 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     phone: orderData.customer?.phone || "",
                     email: orderData.customer?.email || ""
                 });
-                
+
                 setShippingInfo({
                     method: orderData.shipping?.method || "",
                     fee: orderData.shipping?.fee || 0,
                     status: orderData.shipping?.status || "",
                     trackingNumber: orderData.shipping?.trackingNumber || ""
                 });
-                
+
                 setPaymentInfo({
                     method: orderData.payment?.method || "",
                     status: orderData.payment?.status || ""
                 });
-                
+
                 setOrderStatus(orderData.status || "");
-                
+
                 setNotes({
                     customerNote: orderData.notes?.customerNote || "",
                     sellerNote: orderData.notes?.sellerNote || ""
                 });
-                
+
                 // Initialize order items
                 setOrderItems(orderData.items || []);
                 setOriginalTotal(orderData.finalTotal || 0);
@@ -108,16 +108,16 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 setLoading(false);
             }
         };
-        
+
         fetchOrderDetail();
     }, [orderId]);
 
     // Function to handle quantity change
     const handleItemQuantityChange = (itemId, newQuantity) => {
         if (newQuantity < 1) newQuantity = 1;
-        
-        setOrderItems(items => 
-            items.map(item => 
+
+        setOrderItems(items =>
+            items.map(item =>
                 item._id === itemId ? { ...item, quantity: parseInt(newQuantity) } : item
             )
         );
@@ -129,7 +129,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             setError("Đơn hàng phải có ít nhất một sản phẩm");
             return;
         }
-        
+
         setOrderItems(items => items.filter(item => item._id !== itemId));
     };
 
@@ -142,21 +142,21 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     // Function to calculate inventory changes
     const calculateInventoryChanges = () => {
         const changes = [];
-        
+
         // Map of original items by productId for quick lookup
         const originalItemsMap = new Map(
             originalOrderItems.map(item => [item.productId, item])
         );
-        
+
         // Map of current items by productId for quick lookup
         const currentItemsMap = new Map(
             orderItems.map(item => [item.productId, item])
         );
-        
+
         // Check for items whose quantity changed or were removed
         originalOrderItems.forEach(originalItem => {
             const currentItem = currentItemsMap.get(originalItem.productId);
-            
+
             if (!currentItem) {
                 // Item was completely removed, restore inventory
                 changes.push({
@@ -183,7 +183,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 });
             }
         });
-        
+
         // Check for new items added to the order
         orderItems.forEach(currentItem => {
             if (!originalItemsMap.has(currentItem.productId)) {
@@ -196,7 +196,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 });
             }
         });
-        
+
         return changes;
     };
 
@@ -204,17 +204,17 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const applyInventoryChanges = async (changes) => {
         const results = [];
         let success = true;
-        
+
         console.log("Applying inventory changes:", changes);
-        
+
         // Add a visual notification that inventory is being updated
         const inventoryUpdateNotification = (message) => {
             // If needed, you can implement a toast notification here
             console.log("Inventory Update:", message);
         };
-        
+
         inventoryUpdateNotification("Đang cập nhật tồn kho sản phẩm...");
-        
+
         for (const change of changes) {
             try {
                 if (change.operation === 'restore') {
@@ -224,7 +224,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         {},
                         { timeout: 5000 }
                     );
-                    
+
                     // Also update the product stock in the product catalog
                     try {
                         // First get current product stock
@@ -240,7 +240,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         console.error(`Failed to update product stock for ${change.productId}:`, productUpdateError);
                         // Continue with the process even if product update fails
                     }
-                    
+
                     results.push({
                         productId: change.productId,
                         success: true,
@@ -251,9 +251,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     console.log(`Restored ${change.restoreQuantity} items for product ${change.name} (${change.productId})`);
                 } else if (change.operation === 'deduct') {
                     // Confirm order (deduct quantity)
-                    const items = [{ 
-                        productId: change.productId, 
-                        quantity: change.deductQuantity 
+                    const items = [{
+                        productId: change.productId,
+                        quantity: change.deductQuantity
                     }];
                     const encodedItems = encodeURIComponent(JSON.stringify(items));
                     const response = await axios.post(
@@ -261,7 +261,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         {},
                         { timeout: 5000 }
                     );
-                    
+
                     // Also update the product stock in the product catalog
                     try {
                         // First get current product stock
@@ -277,7 +277,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         console.error(`Failed to update product stock for ${change.productId}:`, productUpdateError);
                         // Continue with the process even if product update fails
                     }
-                    
+
                     results.push({
                         productId: change.productId,
                         success: true,
@@ -299,17 +299,17 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 success = false;
             }
         }
-        
+
         // Notify about the results
         if (success) {
             inventoryUpdateNotification("Cập nhật tồn kho thành công");
         } else {
             inventoryUpdateNotification("Một số thay đổi tồn kho không thành công, vui lòng kiểm tra logs");
         }
-        
+
         return { success, results };
     };
-    
+
     // Completely rewritten Admin-specific save function with multiple fallback strategies
     const handleAdminSave = async () => {
         try {
@@ -317,24 +317,24 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             setError("");
             setSaving(true);
             setSaveProgress(10);
-            
+
             // Validation
             const validationErrors = [];
             if (!customerInfo.phone.trim()) validationErrors.push("Số điện thoại không được để trống");
             if (!customerInfo.address.trim()) validationErrors.push("Địa chỉ không được để trống");
             if (orderItems.length === 0) validationErrors.push("Đơn hàng phải có ít nhất một sản phẩm");
-            
+
             if (validationErrors.length > 0) {
                 setError(validationErrors.join(", "));
                 setSaving(false);
                 setSaveProgress(0);
                 return;
             }
-            
+
             // Calculate inventory changes needed
             const inventoryChanges = calculateInventoryChanges();
             console.log("Inventory changes needed:", inventoryChanges);
-            
+
             // Check product stock availability before proceeding
             if (inventoryChanges.some(change => change.operation === 'deduct')) {
                 setSaveProgress(15);
@@ -342,11 +342,11 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     // Check stock for all products that need quantity deducted
                     const deductChanges = inventoryChanges.filter(change => change.operation === 'deduct');
                     const productIds = deductChanges.map(change => change.productId).join(',');
-                    
+
                     if (productIds.length > 0) {
                         const stockResponse = await axios.get(`${INVENTORY_API_URL}/bulk/${productIds}`);
                         const stockData = stockResponse.data;
-                        
+
                         // Check if there's enough stock for each product
                         for (const change of deductChanges) {
                             const stockItem = stockData.find(item => item.productId === change.productId);
@@ -363,18 +363,18 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     return;
                 }
             }
-            
+
             // Calculate updated final total
             const updatedTotal = calculateUpdatedTotal();
-            
+
             // Clean the items array to prevent MongoDB casting errors
             const cleanedItems = orderItems.map(item => {
                 // For items with temporary IDs (newly added), convert to proper format
                 const isNewItem = typeof item._id === 'string' && (
-                    item._id.startsWith('new-') || 
+                    item._id.startsWith('new-') ||
                     item._id === item.productId
                 );
-                
+
                 return {
                     // If it's a new item, omit _id to let MongoDB generate one
                     ...(isNewItem ? {} : { _id: item._id }),
@@ -384,40 +384,40 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     price: Number(item.price)
                 };
             });
-            
+
             // STRATEGY 1: Dot notation format with fixed items array
             const dotNotationData = {
                 'customer.name': order.customer.name,
                 'customer.address': customerInfo.address,
                 'customer.phone': customerInfo.phone,
                 'customer.email': customerInfo.email,
-                
+
                 'shipping.method': shippingInfo.method,
                 'shipping.fee': Number(shippingInfo.fee),
                 'shipping.status': shippingInfo.status,
                 'shipping.trackingNumber': shippingInfo.trackingNumber,
-                
+
                 'payment.method': paymentInfo.method,
                 'payment.status': paymentInfo.status,
-                
+
                 'status': orderStatus,
-                
+
                 'notes.customerNote': notes.customerNote,
                 'notes.sellerNote': notes.sellerNote,
-                
+
                 // Use the cleaned items array to prevent casting errors
                 'items': cleanedItems,
                 'finalTotal': Number(updatedTotal)
             };
-            
+
             setSaveProgress(25);
             console.log("Attempt 1: Using dot notation format with cleaned items", dotNotationData);
-            
+
             try {
                 // First attempt: Standard update with dot notation
                 const updateDataString = JSON.stringify(dotNotationData);
                 const encodedData = encodeURIComponent(updateDataString);
-                
+
                 // Update the order in the database
                 const response = await axios({
                     method: 'put',
@@ -425,25 +425,25 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     timeout: 8000,
                     headers: { 'Content-Type': 'application/json' }
                 });
-                
+
                 console.log("Order update successful:", response.data);
                 setSaveProgress(60);
-                
+
                 // Apply inventory changes
                 if (inventoryChanges.length > 0) {
                     const inventoryResult = await applyInventoryChanges(inventoryChanges);
                     console.log("Inventory update result:", inventoryResult);
-                    
+
                     if (!inventoryResult.success) {
                         console.warn("Some inventory updates failed, but order was saved", inventoryResult.results);
                     }
                 }
-                
+
                 // Add special handling for order cancellation
                 // Check if order status was changed to cancelled
                 if (orderStatus === "cancelled" && order.status !== "cancelled") {
                     console.log("Order status changed to cancelled, restoring all inventory");
-                    
+
                     // For cancelled orders, restore all quantities for all items
                     const cancelInventoryChanges = orderItems.map(item => ({
                         productId: item.productId,
@@ -451,7 +451,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         operation: 'restore',
                         name: item.name
                     }));
-                    
+
                     if (cancelInventoryChanges.length > 0) {
                         console.log("Applying cancel-specific inventory changes:", cancelInventoryChanges);
                         const cancelResult = await applyInventoryChanges(cancelInventoryChanges);
@@ -471,10 +471,10 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 }
 
                 setSaveProgress(100);
-                
+
                 // Update the original items with the new set for future comparisons
                 setOriginalOrderItems(JSON.parse(JSON.stringify(orderItems)));
-                
+
                 if (onOrderUpdated) onOrderUpdated();
                 alert("Đơn hàng đã được cập nhật thành công!");
                 onClose();
@@ -482,7 +482,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             } catch (error1) {
                 console.error("Strategy 1 failed:", error1);
                 setSaveProgress(40);
-                
+
                 // STRATEGY 2: Nested object format
                 try {
                     console.log("Attempt 2: Using nested object format");
@@ -511,19 +511,19 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         items: cleanedItems,
                         finalTotal: Number(updatedTotal)
                     };
-                    
+
                     setSaveProgress(55);
-                    
+
                     // Try direct PUT without encoding
                     const response2 = await axios.put(
                         `${ORDER_API_URL}/${orderId}`,
                         nestedData,
-                        { 
+                        {
                             timeout: 8000,
                             headers: { 'Content-Type': 'application/json' }
                         }
                     );
-                    
+
                     console.log("Update successful with approach 2:", response2.data);
                     if (onOrderUpdated) onOrderUpdated();
                     alert("Đơn hàng đã được cập nhật thành công!");
@@ -532,11 +532,11 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 } catch (error2) {
                     console.error("Strategy 2 failed:", error2);
                     setSaveProgress(70);
-                    
+
                     // STRATEGY 3: Admin-specific endpoint with POST
                     try {
                         console.log("Attempt 3: Using admin endpoint with POST");
-                        
+
                         // Simple data format with minimal nesting
                         const simpleData = {
                             orderId: orderId,
@@ -544,16 +544,16 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                             customerAddress: customerInfo.address,
                             customerPhone: orderInfo.phone,
                             customerEmail: customerInfo.email,
-                            
+
                             shippingMethod: shippingInfo.method,
                             shippingFee: Number(shippingInfo.fee),
                             shippingStatus: shippingInfo.status,
                             trackingNumber: shippingInfo.trackingNumber,
-                            
+
                             orderStatus: orderStatus,
                             customerNote: notes.customerNote,
                             sellerNote: notes.sellerNote,
-                            
+
                             orderItems: orderItems.map(item => ({
                                 id: item._id,
                                 productId: item.productId,
@@ -563,16 +563,16 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                             })),
                             totalAmount: Number(updatedTotal)
                         };
-                        
+
                         setSaveProgress(85);
-                        
+
                         // Try POST to admin endpoint as last resort
                         const response3 = await axios.post(
                             `${ORDER_API_URL}/admin/${orderId}`,
                             simpleData,
                             { timeout: 8000 }
                         );
-                        
+
                         console.log("Update successful with approach 3:", response3.data);
                         if (onOrderUpdated) onOrderUpdated();
                         alert("Đơn hàng đã được cập nhật thành công!");
@@ -587,10 +587,10 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         } catch (error) {
             console.error("Final error:", error);
             setSaveProgress(0);
-            
+
             // Generate detailed error message with actionable advice
             let errorMessage = "Không thể lưu đơn hàng: ";
-            
+
             if (error.response?.data?.message) {
                 errorMessage += error.response.data.message;
             } else if (error.message.includes("timeout")) {
@@ -600,7 +600,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             } else {
                 errorMessage += error.message;
             }
-            
+
             setError(errorMessage);
         } finally {
             setSaving(false);
@@ -612,7 +612,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         setSelectedProducts(prev => {
             // Check if product is already selected
             const isSelected = prev.some(p => p._id === product._id);
-            
+
             if (isSelected) {
                 // Remove product if already selected
                 return prev.filter(p => p._id !== product._id);
@@ -630,13 +630,13 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         }
 
         const newOrderItems = [...orderItems];
-        
+
         // Process each selected product
         selectedProducts.forEach(product => {
             // Check if product already exists in order
-            const existingItemIndex = newOrderItems.findIndex(item => 
+            const existingItemIndex = newOrderItems.findIndex(item =>
                 item.productId === product._id);
-            
+
             if (existingItemIndex >= 0) {
                 // Increase quantity if product already exists
                 newOrderItems[existingItemIndex].quantity += 1;
@@ -652,10 +652,10 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 });
             }
         });
-        
+
         // Update order items
         setOrderItems(newOrderItems);
-        
+
         // Clear selection and close modal
         setSelectedProducts([]);
         setShowProductModal(false);
@@ -670,22 +670,22 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             } else {
                 setIsLoadingMore(true);
             }
-            
+
             console.log("Fetching products from:", PRODUCT_API_URL);
-            
+
             // Simple request first - we'll focus on getting any data
             const response = await axios.get(PRODUCT_API_URL, {
                 timeout: 15000
             });
-            
+
             // Log the raw response to debug what we're getting
             console.log("API response:", response);
-            
+
             // Check if we have data and process it
             if (response.data) {
                 // Handle different response formats - try to locate the products array
                 let productsArray = null;
-                
+
                 if (Array.isArray(response.data)) {
                     productsArray = response.data;
                 } else if (response.data.data && Array.isArray(response.data.data)) {
@@ -693,7 +693,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 } else if (response.data.products && Array.isArray(response.data.products)) {
                     productsArray = response.data.products;
                 }
-                
+
                 if (!productsArray) {
                     console.error("Could not locate products array in response:", response.data);
                     setProductLoadError("Không thể xác định định dạng dữ liệu sản phẩm từ API");
@@ -701,9 +701,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     setSearchResults([]);
                     return;
                 }
-                
+
                 console.log(`Found ${productsArray.length} products`);
-                
+
                 // Format products to ensure all required fields exist
                 const formattedProducts = productsArray.map(product => ({
                     _id: product._id || '',
@@ -717,7 +717,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     description: product.description || '',
                     details: Array.isArray(product.details) ? product.details : []
                 }));
-                
+
                 if (page === 1) {
                     // Replace data on first page
                     setAvailableProducts(formattedProducts);
@@ -730,10 +730,10 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         const uniqueNewProducts = formattedProducts.filter(p => !existingIds.has(p._id));
                         return [...prev, ...uniqueNewProducts];
                     });
-                    
+
                     // Update search results if there's a search term
                     if (searchTerm.trim()) {
-                        const filteredNew = formattedProducts.filter(product => 
+                        const filteredNew = formattedProducts.filter(product =>
                             product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             product._id.includes(searchTerm) ||
                             (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -744,7 +744,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         setSearchResults(prev => [...prev, ...formattedProducts]);
                     }
                 }
-                
+
                 // Determine if more products can be loaded
                 setHasMore(formattedProducts.length >= limit);
                 setCurrentPage(page);
@@ -759,7 +759,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             }
         } catch (err) {
             console.error("Error fetching products:", err);
-            
+
             // Detailed error logging
             if (err.response) {
                 // The request was made and the server responded with a status code
@@ -774,25 +774,25 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 // Something happened in setting up the request that triggered an Error
                 console.error("Error message:", err.message);
             }
-            
+
             // Try alternate API endpoint if first one fails
             if (page === 1 && err.message.includes("404")) {
                 console.log("Trying alternate API endpoint...");
                 try {
                     // Try another common endpoint pattern
-                    const alternateResponse = await axios.get(`${import.meta.env.VITE_APP_PRODUCT_API}`, {
+                    const alternateResponse = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/products`, {
                         timeout: 10000
                     });
-                    
-                    if (alternateResponse.data && (Array.isArray(alternateResponse.data) || 
+
+                    if (alternateResponse.data && (Array.isArray(alternateResponse.data) ||
                         (alternateResponse.data.data && Array.isArray(alternateResponse.data.data)))) {
-                        
+
                         console.log("Alternate API endpoint succeeded:", alternateResponse);
-                        
+
                         // Process data from alternate endpoint (similar to above)
-                        const altProductsArray = Array.isArray(alternateResponse.data) ? 
+                        const altProductsArray = Array.isArray(alternateResponse.data) ?
                             alternateResponse.data : alternateResponse.data.data;
-                        
+
                         const formattedProducts = altProductsArray.map(product => ({
                             _id: product._id || '',
                             name: product.name || 'Unnamed Product',
@@ -805,7 +805,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                             description: product.description || '',
                             details: Array.isArray(product.details) ? product.details : []
                         }));
-                        
+
                         setAvailableProducts(formattedProducts);
                         setSearchResults(formattedProducts);
                         setHasMore(false); // Don't try pagination with alternate endpoint
@@ -818,15 +818,15 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     console.error("Alternate API endpoint also failed:", altErr);
                 }
             }
-            
+
             // More detailed error message for the user
             const errorMessage = err.response?.status === 404 ? "Không tìm thấy API sản phẩm. Vui lòng kiểm tra đường dẫn API." :
                                err.code === 'ECONNABORTED' ? "Quá thời gian tải dữ liệu sản phẩm. Mạng có thể chậm." :
                                err.message.includes('Network Error') ? "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet." :
                                `Lỗi khi tải dữ liệu sản phẩm: ${err.message}`;
-            
+
             setProductLoadError(errorMessage);
-            
+
             // Try a limited set of dummy data as last resort
             if (page === 1) {
                 console.log("Using fallback dummy data");
@@ -859,14 +859,14 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     // Comprehensive search function
     const handleSearch = (term) => {
         setSearchTerm(term);
-        
+
         if (!term.trim()) {
             setSearchResults(availableProducts);
             return;
         }
-        
+
         // Enhanced search with multiple fields
-        const filtered = availableProducts.filter(product => 
+        const filtered = availableProducts.filter(product =>
             product.name?.toLowerCase().includes(term.toLowerCase()) ||
             product._id?.includes(term) ||
             product.category?.toLowerCase().includes(term.toLowerCase()) ||
@@ -882,22 +882,22 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         setSearchTerm("");       // Reset search term
         setCurrentPage(1);       // Reset to first page
         setHasMore(true);        // Reset more flag
-        
+
         // Always show the modal immediately
         setShowProductModal(true);
-        
+
         // Check if we need to load products
         if (!productInitialized || availableProducts.length === 0) {
             // Start with a simple API check before full product load
             try {
                 const testEndpoints = [
-                    `${import.meta.env.VITE_APP_PRODUCT_API}/products`,
-                    `${import.meta.env.VITE_APP_PRODUCT_API}`,
-                    `${import.meta.env.VITE_APP_PRODUCT_API}/product`, // Some APIs use singular endpoint
+                    `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/products`,
+                    `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products`,
+                    `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/product`, // Some APIs use singular endpoint
                 ];
-                
+
                 let apiFound = false;
-                
+
                 for (const endpoint of testEndpoints) {
                     try {
                         console.log(`Testing API endpoint: ${endpoint}`);
@@ -915,7 +915,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                         console.log(`Endpoint ${endpoint} failed:`, err.message);
                     }
                 }
-                
+
                 if (!apiFound) {
                     console.error("No working API endpoints found");
                     fetchProducts(1); // Try the original approach as fallback
@@ -935,9 +935,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         try {
             setIsSearching(true);
             const response = await axios.get(endpoint, { timeout: 10000 });
-            
+
             let productsArray = null;
-            
+
             if (Array.isArray(response.data)) {
                 productsArray = response.data;
             } else if (response.data.data && Array.isArray(response.data.data)) {
@@ -945,7 +945,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             } else if (response.data.products && Array.isArray(response.data.products)) {
                 productsArray = response.data.products;
             }
-            
+
             if (productsArray) {
                 const formattedProducts = productsArray.map(product => ({
                     _id: product._id || '',
@@ -959,7 +959,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     description: product.description || '',
                     details: Array.isArray(product.details) ? product.details : []
                 }));
-                
+
                 setAvailableProducts(formattedProducts);
                 setSearchResults(formattedProducts);
                 setHasMore(false); // Don't try pagination for now
@@ -1016,8 +1016,8 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {saveProgress > 0 && saveProgress < 100 && (
                         <div className="mb-4">
                             <div className="h-2 bg-gray-200 rounded-full">
-                                <div 
-                                    className="h-full bg-blue-600 rounded-full" 
+                                <div
+                                    className="h-full bg-blue-600 rounded-full"
                                     style={{ width: `${saveProgress}%` }}
                                 ></div>
                             </div>
@@ -1034,7 +1034,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Customer Information */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Thông tin khách hàng</legend>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <Label htmlFor="customerName">Tên khách hàng</Label>
@@ -1046,7 +1046,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Không thể chỉnh sửa tên khách hàng</p>
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="customerPhone">Số điện thoại</Label>
                                 <Input
@@ -1056,7 +1056,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="mb-4">
                             <Label htmlFor="customerEmail">Email</Label>
                             <Input
@@ -1066,7 +1066,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 onChange={e => setCustomerInfo({...customerInfo, email: e.target.value})}
                             />
                         </div>
-                        
+
                         <div>
                             <Label htmlFor="customerAddress">Địa chỉ</Label>
                             <Textarea
@@ -1081,11 +1081,11 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Shipping Information */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Thông tin giao hàng</legend>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <Label htmlFor="shippingMethod">Phương thức</Label>
-                                <Select 
+                                <Select
                                     value={shippingInfo.method}
                                     onValueChange={(value) => setShippingInfo({...shippingInfo, method: value})}
                                 >
@@ -1098,7 +1098,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="shippingFee">Phí vận chuyển</Label>
                                 <Input
@@ -1106,17 +1106,17 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     type="number"
                                     value={shippingInfo.fee}
                                     onChange={e => setShippingInfo({
-                                        ...shippingInfo, 
+                                        ...shippingInfo,
                                         fee: parseInt(e.target.value) || 0
                                     })}
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="shippingStatus">Trạng thái vận chuyển</Label>
-                                <Select 
+                                <Select
                                     value={shippingInfo.status}
                                     onValueChange={(value) => setShippingInfo({...shippingInfo, status: value})}
                                 >
@@ -1132,14 +1132,14 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="trackingNumber">Mã vận đơn</Label>
                                 <Input
                                     id="trackingNumber"
                                     value={shippingInfo.trackingNumber}
                                     onChange={e => setShippingInfo({
-                                        ...shippingInfo, 
+                                        ...shippingInfo,
                                         trackingNumber: e.target.value
                                     })}
                                 />
@@ -1150,22 +1150,22 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Payment Information (Read-only) */}
                     <fieldset className="border rounded-md p-4 mb-6 bg-gray-50">
                         <legend className="text-lg font-medium px-2">Thông tin thanh toán (Không thể chỉnh sửa)</legend>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="paymentMethod">Phương thức</Label>
-                                <Input 
+                                <Input
                                     id="paymentMethod"
-                                    value={paymentInfo.method === "cod" ? "COD" : 
-                                           paymentInfo.method === "bank_transfer" ? "Chuyển khoản" : 
-                                           paymentInfo.method === "credit_card" ? "Thẻ tín dụng" : 
-                                           paymentInfo.method === "e_wallet" ? "Ví điện tử" : 
+                                    value={paymentInfo.method === "cod" ? "COD" :
+                                           paymentInfo.method === "bank_transfer" ? "Chuyển khoản" :
+                                           paymentInfo.method === "credit_card" ? "Thẻ tín dụng" :
+                                           paymentInfo.method === "e_wallet" ? "Ví điện tử" :
                                            paymentInfo.method}
                                     readOnly
                                     className="bg-gray-100 cursor-not-allowed"
                                 />
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="paymentStatus">Trạng thái thanh toán</Label>
                                 <Input
@@ -1188,7 +1188,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Order Status */}
                     <div className="mb-6">
                         <Label htmlFor="orderStatus">Trạng thái đơn hàng</Label>
-                        <Select 
+                        <Select
                             value={orderStatus}
                             onValueChange={setOrderStatus}
                         >
@@ -1207,7 +1207,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Notes */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Ghi chú</legend>
-                        
+
                         <div className="mb-4">
                             <Label htmlFor="customerNote">Ghi chú của khách hàng</Label>
                             <Textarea
@@ -1217,7 +1217,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 rows={2}
                             />
                         </div>
-                        
+
                         <div>
                             <Label htmlFor="sellerNote">Ghi chú của nhà bán</Label>
                             <Textarea
@@ -1232,16 +1232,16 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Order Items (Now Editable with Add Product feature) */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Sản phẩm trong đơn hàng</legend>
-                        
+
                         <div className="mb-4 flex justify-end">
-                            <Button 
-                                onClick={openProductModal} 
+                            <Button
+                                onClick={openProductModal}
                                 className="bg-blue-600 hover:bg-blue-700"
                             >
                                 Thêm sản phẩm
                             </Button>
                         </div>
-                        
+
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-full">
                                 <thead>
@@ -1353,7 +1353,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     <Button variant="outline" onClick={onClose} disabled={saving}>
                         Hủy bỏ
                     </Button>
-                    <Button 
+                    <Button
                         onClick={handleAdminSave}
                         disabled={saving}
                         className="bg-green-600 hover:bg-green-700 font-medium"
@@ -1369,14 +1369,14 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
                         <div className="p-4 border-b flex justify-between items-center">
                             <h3 className="text-xl font-semibold">Chọn sản phẩm cho đơn hàng</h3>
-                            <button 
+                            <button
                                 onClick={() => setShowProductModal(false)}
                                 className="text-2xl text-gray-500 hover:text-gray-700"
                             >
                                 &times;
                             </button>
                         </div>
-                        
+
                         <div className="p-4 border-b">
                             <div className="flex items-center mb-2">
                                 <Input
@@ -1386,7 +1386,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     onChange={(e) => handleSearch(e.target.value)}
                                     className="w-full"
                                 />
-                                <Button 
+                                <Button
                                     className="ml-2 whitespace-nowrap"
                                     variant="outline"
                                     onClick={() => {
@@ -1407,8 +1407,8 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 </span>
                             </div>
                         </div>
-                        
-                        <div 
+
+                        <div
                             className="overflow-y-auto flex-grow p-4"
                             onScroll={(e) => {
                                 // Load more when scrolling near bottom
@@ -1421,9 +1421,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                             {productLoadError && (
                                 <div className="mb-4 p-3 bg-red-50 text-red-600 rounded border border-red-200">
                                     {productLoadError}
-                                    <Button 
+                                    <Button
                                         size="sm"
-                                        variant="outline" 
+                                        variant="outline"
                                         className="ml-2"
                                         onClick={() => {
                                             setProductLoadError("");
@@ -1434,7 +1434,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     </Button>
                                 </div>
                             )}
-                            
+
                             {isSearching ? (
                                 <div className="p-8 text-center text-gray-500">
                                     <div className="animate-spin inline-block w-6 h-6 border-2 border-t-transparent border-blue-600 rounded-full mb-2"></div>
@@ -1451,13 +1451,13 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                             const isSelected = selectedProducts.some(p => p._id === product._id);
                                             const isInOrder = orderItems.some(item => item.productId === product._id);
                                             const existingItemQuantity = orderItems.find(item => item.productId === product._id)?.quantity || 0;
-                                            
+
                                             return (
-                                                <div 
-                                                    key={product._id} 
+                                                <div
+                                                    key={product._id}
                                                     className={`border rounded p-3 cursor-pointer hover:shadow-md transition-all duration-200 ${
-                                                        isSelected ? 'bg-blue-50 border-blue-300' : 
-                                                        isInOrder ? 'bg-green-50 border-green-300' : 
+                                                        isSelected ? 'bg-blue-50 border-blue-300' :
+                                                        isInOrder ? 'bg-green-50 border-green-300' :
                                                         'hover:bg-gray-50'
                                                     }`}
                                                     onClick={() => toggleProductSelection(product)}
@@ -1466,8 +1466,8 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                                         {/* Product Image */}
                                                         <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded overflow-hidden">
                                                             {product.image ? (
-                                                                <img 
-                                                                    src={product.image} 
+                                                                <img
+                                                                    src={product.image}
                                                                     alt={product.name}
                                                                     className="w-full h-full object-cover"
                                                                     onError={(e) => {
@@ -1481,40 +1481,40 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        
+
                                                         <div className="flex-grow">
                                                             <div className="flex items-start justify-between">
                                                                 <div className="flex-grow">
                                                                     <div className="font-medium text-base line-clamp-2">
                                                                         {product.name}
                                                                     </div>
-                                                                    
+
                                                                     <div className="mt-1 text-sm text-gray-500 flex flex-wrap gap-x-3">
                                                                         <span title={product._id}>Mã: {product._id.substring(0, 8)}...</span>
-                                                                        
+
                                                                         {product.category && (
                                                                             <span>Loại: {product.category}</span>
                                                                         )}
-                                                                        
+
                                                                         {product.brand && (
                                                                             <span>Nhãn hiệu: {product.brand}</span>
                                                                         )}
                                                                     </div>
                                                                 </div>
-                                                                
-                                                                <input 
-                                                                    type="checkbox" 
+
+                                                                <input
+                                                                    type="checkbox"
                                                                     checked={isSelected}
                                                                     onChange={() => {}} // Controlled component
                                                                     className="h-4 w-4 text-blue-600 mt-1 ml-2 flex-shrink-0"
                                                                 />
                                                             </div>
-                                                            
+
                                                             {product.color && product.color.length > 0 && (
                                                                 <div className="mt-1 flex items-center gap-1">
                                                                     <span className="text-xs text-gray-500">Màu:</span>
                                                                     {product.color.slice(0, 3).map((color, i) => (
-                                                                        <span 
+                                                                        <span
                                                                             key={i}
                                                                             className="inline-block w-4 h-4 rounded-full border border-gray-300"
                                                                             style={{ backgroundColor: color }}
@@ -1526,7 +1526,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                                                     )}
                                                                 </div>
                                                             )}
-                                                            
+
                                                             <div className="mt-2 flex justify-between items-center">
                                                                 <div className="font-semibold text-blue-600">
                                                                     {new Intl.NumberFormat("vi-VN", {
@@ -1534,16 +1534,16 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                                                         currency: "VND",
                                                                     }).format(product.price)}
                                                                 </div>
-                                                                
+
                                                                 <div className={`text-sm ${
-                                                                    product.stock > 10 ? 'text-green-600' : 
-                                                                    product.stock > 0 ? 'text-orange-500' : 
+                                                                    product.stock > 10 ? 'text-green-600' :
+                                                                    product.stock > 0 ? 'text-orange-500' :
                                                                     'text-red-500'
                                                                 }`}>
                                                                     {product.stock > 0 ? `Còn lại: ${product.stock}` : 'Hết hàng'}
                                                                 </div>
                                                             </div>
-                                                            
+
                                                             {isInOrder && (
                                                                 <div className="mt-1 text-xs text-green-600">
                                                                     * Đã có trong đơn hàng (SL: {existingItemQuantity})
@@ -1555,7 +1555,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                             );
                                         })}
                                     </div>
-                                    
+
                                     {isLoadingMore && (
                                         <div className="text-center my-4">
                                             <div className="animate-spin inline-block w-5 h-5 border-2 border-t-transparent border-blue-600 rounded-full"></div>
@@ -1565,7 +1565,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 </>
                             )}
                         </div>
-                        
+
                         <div className="p-4 border-t flex justify-between items-center">
                             <div className="text-sm">
                                 {selectedProducts.length > 0 ? (
@@ -1575,13 +1575,13 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 )}
                             </div>
                             <div className="flex gap-2">
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={() => setShowProductModal(false)}
                                 >
                                     Hủy
                                 </Button>
-                                <Button 
+                                <Button
                                     onClick={addSelectedProductsToOrder}
                                     disabled={selectedProducts.length === 0}
                                     className="bg-green-600 hover:bg-green-700"
