@@ -5,11 +5,11 @@ import { toast } from "react-toastify";
 import { getUserId } from "../../utils/getUserId";
 import authorizedAxiosInstance from "../../utils/authorizedAxios";
 
-const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
-const INVENTORY_API = `${import.meta.env.VITE_APP_INVENTORY_API}`;
-const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}`;
+const ORDER_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders`;
+const INVENTORY_API = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory`;
+const CART_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/cart`;
 
-const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtotal, finalTotal }) => {
+const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalTotal }) => {
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
@@ -60,7 +60,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       if (!userId || !orderId) return;
 
       // Gửi thông báo với dữ liệu thực từ đơn hàng
-      const response = await axios.post(`http://localhost:3000/api/notification/send-notification`, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`, {
         userId: userId,
         orderId: orderId,
         orderStatus: "pending",
@@ -71,10 +71,10 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
     }
   };
 
-  const handleOrderEmail = async (orderId, orderData) => {
+  const handleOrderEmail = async (orderId) => {
     try {
       // Gửi email xác nhận đơn hàng
-      await axios.post(`http://localhost:3000/api/notification/send-order-email`, {
+      await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-order-email`, {
         orderData: {
           orderNumber: orderId,
           customer: {
@@ -177,7 +177,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           requestId: orderId,
           extraData: "",
         };
-        const payResp = await axios.get(`${import.meta.env.VITE_APP_PAYMENT_API}/payment`, { params });
+        const payResp = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/payment/payment`, { params });
         if (payResp.data.payUrl) {
           localStorage.setItem("pendingOrderId", orderId);
           window.location.href = payResp.data.payUrl;

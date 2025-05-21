@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 const RecentSales = () => {
@@ -9,7 +9,7 @@ const RecentSales = () => {
         const fetchTopProducts = async () => {
             setIsLoading(true);
             try {
-                const response = await axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/product-revenue`);
+                const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory/stats/product-revenue`);
                 if (response.data && response.data.productStats) {
                     setTopProducts(response.data.productStats.slice(0, 5));
                 }

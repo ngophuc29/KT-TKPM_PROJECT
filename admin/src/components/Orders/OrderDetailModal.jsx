@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function OrderDetailModal({ orderId, onClose }) {
@@ -9,7 +9,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
     useEffect(() => {
         const fetchOrderDetail = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_APP_ORDER_API}/${orderId}`);
+                const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders/${orderId}`);
                 setOrderDetail(response.data);
             } catch (err) {
                 setError("Lỗi khi lấy chi tiết đơn hàng");

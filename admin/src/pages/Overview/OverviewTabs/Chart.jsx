@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Chart as ChartJS,
@@ -28,7 +28,7 @@ const Chart = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/revenue?period=month`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory/stats/revenue?period=month`);
         if (response.data && response.data.revenueByPeriod) {
           const { revenueByPeriod } = response.data;
           const labels = Object.keys(revenueByPeriod).map(date => {

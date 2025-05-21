@@ -43,7 +43,6 @@ const services = {
   notification: process.env.NOTIFICATION || "http://localhost:4001",
   orders: process.env.ORDERS || 'http://localhost:4009',
   payment: process.env.PAYMENT || "http://localhost:4545",
-  // api-getaway:'https://kt-tkpm-project-api-getaway.onrender.com'
   auth: "http://localhost:5000",
 };
 // Proxy cho tất cả request đến API Gateway

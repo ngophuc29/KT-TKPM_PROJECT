@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
+const ORDER_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders`;
 
 export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const [order, setOrder] = useState(null);
@@ -14,7 +14,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [saveProgress, setSaveProgress] = useState(0);
-    
+
     // Form state
     const [customerInfo, setCustomerInfo] = useState({
         name: "",
@@ -49,7 +49,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 const response = await axios.get(`${ORDER_API_URL}/${orderId}`);
                 const orderData = response.data;
                 setOrder(orderData);
-                
+
                 // Initialize form state with current values
                 setCustomerInfo({
                     name: orderData.customer?.name || "",
@@ -57,21 +57,21 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     phone: orderData.customer?.phone || "",
                     email: orderData.customer?.email || ""
                 });
-                
+
                 setShippingInfo({
                     method: orderData.shipping?.method || "",
                     fee: orderData.shipping?.fee || 0,
                     status: orderData.shipping?.status || "",
                     trackingNumber: orderData.shipping?.trackingNumber || ""
                 });
-                
+
                 setPaymentInfo({
                     method: orderData.payment?.method || "",
                     status: orderData.payment?.status || ""
                 });
-                
+
                 setOrderStatus(orderData.status || "");
-                
+
                 setNotes({
                     customerNote: orderData.notes?.customerNote || "",
                     sellerNote: orderData.notes?.sellerNote || ""
@@ -87,14 +87,14 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 setLoading(false);
             }
         };
-        
+
         fetchOrderDetail();
     }, [orderId]);
 
     const handleSave = async () => {
         try {
             setSaving(true);
-            
+
             // Prepare updated order data
             const updatedOrder = {
                 customer: customerInfo,
@@ -103,15 +103,15 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 status: orderStatus,
                 notes: notes
             };
-            
+
             // Send update request
             await axios.put(`${ORDER_API_URL}/admin/edit/${orderId}`, updatedOrder);
-            
+
             // Notify parent component
             if (onOrderUpdated) {
                 onOrderUpdated();
             }
-            
+
             // Close modal
             onClose();
         } catch (err) {
@@ -125,9 +125,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     // Add function to handle item quantity change
     const handleItemQuantityChange = (itemId, newQuantity) => {
         if (newQuantity < 1) newQuantity = 1;
-        
-        setOrderItems(items => 
-            items.map(item => 
+
+        setOrderItems(items =>
+            items.map(item =>
                 item._id === itemId ? { ...item, quantity: parseInt(newQuantity) } : item
             )
         );
@@ -139,7 +139,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             setError("Đơn hàng phải có ít nhất một sản phẩm");
             return;
         }
-        
+
         setOrderItems(items => items.filter(item => item._id !== itemId));
     };
 
@@ -155,7 +155,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         setError("");
         setSaving(true);
         setSaveProgress(10);
-        
+
         // Validate required fields
         if (!customerInfo.phone.trim()) {
             setError("Số điện thoại không được để trống");
@@ -181,17 +181,17 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
         try {
             setSaveProgress(30);
             console.log("Admin đang chỉnh sửa đơn hàng:", orderId);
-            
+
             // Add admin metadata for tracking changes
             const adminMetadata = {
                 editedBy: "admin",
                 editedAt: new Date().toISOString(),
                 previousStatus: order.status
             };
-            
+
             // Calculate the updated total
             const updatedTotal = calculateUpdatedTotal();
-            
+
             // Prepare updated order data - include admin metadata
             // Keep original customer name and don't include payment info
             const updateData = {
@@ -207,13 +207,13 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 // Don't include payment to preserve original values
                 adminMeta: adminMetadata
             };
-            
+
             setSaveProgress(50);
-            
+
             // Convert to the format expected by the API
             const updateDataString = JSON.stringify(updateData);
             const encodedData = encodeURIComponent(updateDataString);
-            
+
             // Try the update API endpoint with the encoded data
             try {
                 await axios.put(`${ORDER_API_URL}/update/${orderId}/${encodedData}`);
@@ -223,9 +223,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 // Fallback to admin edit endpoint if the first one fails
                 await axios.put(`${ORDER_API_URL}/admin/edit/${orderId}`, updateData);
             }
-            
+
             setSaveProgress(80);
-            
+
             // Special handling for status transitions
             if (orderStatus === "completed" && order.status !== "completed") {
                 try {
@@ -239,24 +239,24 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     // Continue with the process, this is just an enhancement
                 }
             }
-            
+
             setSaveProgress(90);
-            
+
             // Notify parent component
             if (onOrderUpdated) {
                 onOrderUpdated();
             }
-            
+
             setSaveProgress(100);
-            
+
             // Show success message
             alert("Đơn hàng đã được cập nhật thành công!");
-            
+
             // Close modal after a short delay to show 100% progress
             setTimeout(() => {
                 onClose();
             }, 500);
-            
+
         } catch (err) {
             console.error("Chi tiết lỗi:", err.response?.data || err.message);
             setError(`Lỗi khi cập nhật đơn hàng: ${err.response?.data?.message || err.message}`);
@@ -303,8 +303,8 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {saveProgress > 0 && saveProgress < 100 && (
                         <div className="mb-4">
                             <div className="h-2 bg-gray-200 rounded-full">
-                                <div 
-                                    className="h-full bg-blue-600 rounded-full transition-all duration-300" 
+                                <div
+                                    className="h-full bg-blue-600 rounded-full transition-all duration-300"
                                     style={{ width: `${saveProgress}%` }}
                                 ></div>
                             </div>
@@ -321,7 +321,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Customer Information */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Thông tin khách hàng</legend>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <Label htmlFor="customerName">Tên khách hàng</Label>
@@ -333,7 +333,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Không thể chỉnh sửa tên khách hàng</p>
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="customerPhone">Số điện thoại</Label>
                                 <Input
@@ -343,7 +343,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="mb-4">
                             <Label htmlFor="customerEmail">Email</Label>
                             <Input
@@ -353,7 +353,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 onChange={e => setCustomerInfo({...customerInfo, email: e.target.value})}
                             />
                         </div>
-                        
+
                         <div>
                             <Label htmlFor="customerAddress">Địa chỉ</Label>
                             <Textarea
@@ -368,11 +368,11 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Shipping Information */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Thông tin giao hàng</legend>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <Label htmlFor="shippingMethod">Phương thức</Label>
-                                <Select 
+                                <Select
                                     value={shippingInfo.method}
                                     onValueChange={(value) => setShippingInfo({...shippingInfo, method: value})}
                                 >
@@ -385,7 +385,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="shippingFee">Phí vận chuyển</Label>
                                 <Input
@@ -393,17 +393,17 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     type="number"
                                     value={shippingInfo.fee}
                                     onChange={e => setShippingInfo({
-                                        ...shippingInfo, 
+                                        ...shippingInfo,
                                         fee: parseInt(e.target.value) || 0
                                     })}
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="shippingStatus">Trạng thái vận chuyển</Label>
-                                <Select 
+                                <Select
                                     value={shippingInfo.status}
                                     onValueChange={(value) => setShippingInfo({...shippingInfo, status: value})}
                                 >
@@ -417,14 +417,14 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="trackingNumber">Mã vận đơn</Label>
                                 <Input
                                     id="trackingNumber"
                                     value={shippingInfo.trackingNumber}
                                     onChange={e => setShippingInfo({
-                                        ...shippingInfo, 
+                                        ...shippingInfo,
                                         trackingNumber: e.target.value
                                     })}
                                 />
@@ -435,22 +435,22 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Payment Information (Read-only) */}
                     <fieldset className="border rounded-md p-4 mb-6 bg-gray-50">
                         <legend className="text-lg font-medium px-2">Thông tin thanh toán (Không thể chỉnh sửa)</legend>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="paymentMethod">Phương thức</Label>
-                                <Input 
+                                <Input
                                     id="paymentMethod"
-                                    value={paymentInfo.method === "cod" ? "COD" : 
-                                           paymentInfo.method === "bank_transfer" ? "Chuyển khoản" : 
-                                           paymentInfo.method === "credit_card" ? "Thẻ tín dụng" : 
-                                           paymentInfo.method === "e_wallet" ? "Ví điện tử" : 
+                                    value={paymentInfo.method === "cod" ? "COD" :
+                                           paymentInfo.method === "bank_transfer" ? "Chuyển khoản" :
+                                           paymentInfo.method === "credit_card" ? "Thẻ tín dụng" :
+                                           paymentInfo.method === "e_wallet" ? "Ví điện tử" :
                                            paymentInfo.method}
                                     readOnly
                                     className="bg-gray-100 cursor-not-allowed"
                                 />
                             </div>
-                            
+
                             <div>
                                 <Label htmlFor="paymentStatus">Trạng thái thanh toán</Label>
                                 <Input
@@ -473,7 +473,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Order Status */}
                     <div className="mb-6">
                         <Label htmlFor="orderStatus">Trạng thái đơn hàng</Label>
-                        <Select 
+                        <Select
                             value={orderStatus}
                             onValueChange={setOrderStatus}
                         >
@@ -492,7 +492,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Notes */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Ghi chú</legend>
-                        
+
                         <div className="mb-4">
                             <Label htmlFor="customerNote">Ghi chú của khách hàng</Label>
                             <Textarea
@@ -502,7 +502,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                                 rows={2}
                             />
                         </div>
-                        
+
                         <div>
                             <Label htmlFor="sellerNote">Ghi chú của nhà bán</Label>
                             <Textarea
@@ -517,7 +517,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     {/* Order Items (Now Editable) */}
                     <fieldset className="border rounded-md p-4 mb-6">
                         <legend className="text-lg font-medium px-2">Sản phẩm trong đơn hàng</legend>
-                        
+
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-full">
                                 <thead>
@@ -618,7 +618,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                     <Button variant="outline" onClick={onClose} disabled={saving}>
                         Hủy bỏ
                     </Button>
-                    <Button 
+                    <Button
                         onClick={handleAdminEdit}
                         disabled={saving}
                         className="bg-green-600 hover:bg-green-700 font-medium"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     Modal,
     Button,
@@ -21,7 +21,7 @@ export default function OrderDetailModal({ show, onHide, orderId }) {
         setLoading(true);
         setError("");
         axios
-            .get(`${import.meta.env.VITE_APP_ORDER_API}/${orderId}`)
+            .get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders/${orderId}`)
             .then((res) => setOrderDetail(res.data))
             .catch(() => setError("Lỗi khi lấy chi tiết đơn hàng"))
             .finally(() => setLoading(false));

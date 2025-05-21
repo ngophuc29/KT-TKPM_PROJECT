@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, Spinner, Row, Col, Alert } from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Modal, Button, Form, Spinner, Alert } from "react-bootstrap";
 import axios from "axios";
 
 export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
@@ -20,7 +20,7 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
         setLoading(true);
         setError("");
         axios
-            .get(`${import.meta.env.VITE_APP_ORDER_API}/${orderId}`)
+            .get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders/${orderId}`)
             .then((res) => {
                 const d = res.data;
                 setFormData({
@@ -55,13 +55,13 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
                     customerNote: formData.customerNote,
                 },
             };
-            
+
             // Convert the update data to a JSON string and encode for URL
             const encodedUpdateData = encodeURIComponent(JSON.stringify(updateData));
-            
+
             // Use the correct endpoint with URL parameters
-            await axios.put(`${import.meta.env.VITE_APP_ORDER_API}/update/${orderId}/${encodedUpdateData}`);
-            
+            await axios.put(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders/update/${orderId}/${encodedUpdateData}`);
+
             onUpdated();
             onHide();
         } catch (error) {
@@ -77,26 +77,26 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
         if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
             return;
         }
-        
+
         setCancelling(true);
         setError("");
-        
+
         try {
             // Set timeout to abort after 10 seconds
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
-            
-            const response = await fetch(`${import.meta.env.VITE_APP_ORDER_API}/cancel/${orderId}`, {
+
+            const response = await fetch(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders/cancel/${orderId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 signal: controller.signal
             });
-            
+
             clearTimeout(timeoutId);
-            
+
             // Pre-update UI immediately for better perceived performance
             setOrderStatus("cancelled");
-            
+
             // Parse response in background
             response.json().then(responseData => {
                 console.log("Cancel response:", responseData);
@@ -119,15 +119,15 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
             setCancelling(false);
         }
     };
-    
+
     // Create a separate cancel button component that's completely detached from the form
     const CancelOrderButton = () => {
         if (orderStatus !== "pending") return null;
-        
+
         return (
             <div className="mb-4">
-                <Button 
-                    variant="danger" 
+                <Button
+                    variant="danger"
                     onClick={handleCancelOrder}
                     disabled={cancelling}
                     className="w-100"
@@ -154,7 +154,7 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
                 ) : (
                     <>
                         {error && <Alert variant="danger">{error}</Alert>}
-                        
+
                         <div className="mb-4 p-3 bg-light rounded">
                             <h5 className="mb-1">Mã đơn hàng:</h5>
                             <div className="d-flex align-items-center">
@@ -164,14 +164,14 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
                             <div className="mt-2">
                                 <span className="me-2">Trạng thái:</span>
                                 <span className={`badge ${
-                                    orderStatus === "pending" ? "bg-warning" : 
-                                    orderStatus === "confirmed" ? "bg-info" : 
-                                    orderStatus === "shipping" ? "bg-primary" : 
-                                    orderStatus === "completed" ? "bg-success" : 
-                                    orderStatus === "cancelled" ? "bg-danger" : 
+                                    orderStatus === "pending" ? "bg-warning" :
+                                    orderStatus === "confirmed" ? "bg-info" :
+                                    orderStatus === "shipping" ? "bg-primary" :
+                                    orderStatus === "completed" ? "bg-success" :
+                                    orderStatus === "cancelled" ? "bg-danger" :
                                     "bg-secondary"
                                 }`}>
-                                    {orderStatus === "pending" ? "Chờ xác nhận" : 
+                                    {orderStatus === "pending" ? "Chờ xác nhận" :
                                      orderStatus === "confirmed" ? "Đã xác nhận" :
                                      orderStatus === "shipping" ? "Đang vận chuyển" :
                                      orderStatus === "completed" ? "Hoàn thành" :
@@ -245,10 +245,10 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
                                     >
                                         Đóng
                                     </Button>
-                                    
-                                    <Button 
-                                        type="submit" 
-                                        variant="primary" 
+
+                                    <Button
+                                        type="submit"
+                                        variant="primary"
                                         disabled={saving || cancelling}
                                     >
                                         {saving ? "Đang lưu..." : "Lưu thay đổi"}
@@ -256,7 +256,7 @@ export function OrderEditModal({ show, onHide, orderId, onUpdated }) {
                                 </div>
                             </Form>
                         )}
-                        
+
                         {/* Show a message if the order is cancelled */}
                         {orderStatus === "cancelled" && (
                             <div className="text-center p-3 border rounded bg-light">
