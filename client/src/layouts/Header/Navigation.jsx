@@ -12,6 +12,7 @@ import UserInfoModal from "../../pages/User/UserInfoModal";
 import EditUserModal from "../../pages/User/EditUserModal";
 import OrderModal from "../../pages/User/OrderModal";
 import axios from "axios";
+import authorizedAxiosInstance from '../../utils/authorizedAxios';
 
 const Navigation = () => {
     const [showSearch, setShowSearch] = useState(false);
@@ -19,16 +20,16 @@ const Navigation = () => {
     const [showUserInfoModal, setShowUserInfoModal] = useState(false);
     const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [showOrderModal, setShowOrderModal] = useState(false);
-    
+
     // States cho chức năng tìm kiếm
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
     const [loading, setLoading] = useState(false);
-    
+
     const searchRef = useRef(null);
     const navigate = useNavigate();
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("accessToken");
 
     const categories = [
         "Laptops",
@@ -36,9 +37,19 @@ const Navigation = () => {
         "PC Parts",
         "All Other Products",
     ];
-
+    const fetchUserInfo = async () => {
+        try {
+            const res = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
+            setUser(res.data);
+            // Nếu là user thường, backend trả về 1 user; nếu là admin, trả về mảng user
+            console.log("User info:", res.data);
+        } catch (err) {
+            console.error("Lỗi lấy thông tin user:", err);
+        }
+    };
     const handleLogout = () => {
-        localStorage.removeItem("token");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         setShowUserMenu(false);
         navigate("/login");
     };
@@ -52,15 +63,15 @@ const Navigation = () => {
         setShowOrderModal(false);
     };
 
-    const sampleUser = {
-        id: 1,
-        name: "Nguyễn Văn A",
-        email: "nguyenvana@example.com",
-        phone: "0912345678",
-        address: "123 Đường Lê Lợi, Q.1, TP.HCM",
-        avatar: "https://i.pravatar.cc/150?img=1",
-    };
-    const [user, setUser] = useState(sampleUser);
+    // const sampleUser = {
+    //     id: 1,
+    //     name: "Nguyễn Văn A",
+    //     email: "nguyenvana@example.com",
+    //     phone: "0912345678",
+    //     address: "123 Đường Lê Lợi, Q.1, TP.HCM",
+    //     avatar: "https://i.pravatar.cc/150?img=1",
+    // };
+    const [user, setUser] = useState();
 
     // Xử lý click bên ngoài kết quả tìm kiếm
     useEffect(() => {
@@ -94,7 +105,7 @@ const Navigation = () => {
     const performSearch = async () => {
         try {
             setLoading(true);
-            
+
             const params = new URLSearchParams();
             params.set('name', searchTerm);
             params.set('limit', '5');
@@ -102,10 +113,10 @@ const Navigation = () => {
             const response = await axios.get(
                 `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products-filters?${params.toString()}`
             );
-            
+
             // Lọc kết quả để chỉ hiển thị sản phẩm có tên chứa từ khóa tìm kiếm
             const filteredResults = response.data.data || [];
-            
+
             setSearchResults(filteredResults);
             setShowResults(true);
             setLoading(false);
@@ -120,7 +131,7 @@ const Navigation = () => {
     const handleInputChange = (e) => {
         const value = e.target.value;
         setSearchTerm(value);
-        
+
         // Chỉ hiển thị kết quả và loading khi có ít nhất 1 ký tự
         if (value.trim().length > 0) {
             setLoading(true);
@@ -146,12 +157,24 @@ const Navigation = () => {
             setShowSearch(false);
         }
     };
-
-    const handleSaveUser = (updatedUser) => {
-        setUser(updatedUser);
-        setShowEditUserModal(false);
+    const handleSaveUser = async (form) => {
+        try {
+            const res = await authorizedAxiosInstance.put(
+                'http://localhost:3000/auth/user',
+                {
+                    fullName: form.fullName,
+                    email: form.email,
+                    phone: form.phone,
+                    // address: form.address, // nếu backend có trường này
+                }
+            );
+            setUser(res.data.user || form);
+            alert("Cập nhật thành công!");
+            // Cập nhật lại state user nếu cần
+        } catch (err) {
+            alert(err.response?.data?.message || "Cập nhật thất bại!");
+        }
     };
-
     return (
         <>
             <div
@@ -232,7 +255,7 @@ const Navigation = () => {
                                     fontSize: 14,
                                 }}
                             />
-                            
+
                             {/* Dropdown kết quả tìm kiếm */}
                             {showResults && (
                                 <div className="search-results-dropdown">
@@ -249,8 +272,8 @@ const Navigation = () => {
                                             </div>
                                             <ul className="results-list">
                                                 {searchResults.map(product => (
-                                                    <li 
-                                                        key={product._id} 
+                                                    <li
+                                                        key={product._id}
                                                         className="result-item"
                                                         onClick={() => handleProductClick(product._id)}
                                                     >
@@ -286,15 +309,15 @@ const Navigation = () => {
                     {/* Icons */}
                     <div style={{ display: "flex", alignItems: "center", gap: 20, marginLeft: 20 }}>
                         {showSearch ? (
-                            <AiOutlineClose 
-                                size={24} 
-                                color="#007bff" 
+                            <AiOutlineClose
+                                size={24}
+                                color="#007bff"
                                 onClick={() => {
                                     setShowSearch(false);
                                     setSearchTerm("");
                                     setShowResults(false);
-                                }} 
-                                style={{ cursor: "pointer" }} 
+                                }}
+                                style={{ cursor: "pointer" }}
                             />
                         ) : (
                             <CiSearch size={24} onClick={() => setShowSearch(true)} style={{ cursor: "pointer" }} />
@@ -324,8 +347,9 @@ const Navigation = () => {
                                 >
                                     <div
                                         className="user-menu-item"
-                                        onClick={() => {
+                                        onClick={async () => {
                                             setShowUserMenu(false);
+                                            await fetchUserInfo()
                                             setShowUserInfoModal(true);
                                         }}
                                     >

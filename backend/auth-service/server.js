@@ -5,7 +5,15 @@ require('dotenv').config();
 const cors = require("cors");
 const app = express();
 app.use(express.json());
-
+app.use(cors({
+    origin: [
+        "http://localhost:2000",
+        "http://localhost:5173",
+        "https://kt-tkpm-project.vercel.app"
+    ],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error(err));

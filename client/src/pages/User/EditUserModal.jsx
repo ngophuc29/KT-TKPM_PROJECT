@@ -1,9 +1,15 @@
 // src/components/EditUserModal.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 
 const EditUserModal = ({ show, onHide, user, onSave, onBack }) => {
     const [form, setForm] = useState({ ...user });
+
+    useEffect(() => {
+        if (show) {
+            setForm({ ...user });
+        }
+    }, [user, show]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,7 +30,7 @@ const EditUserModal = ({ show, onHide, user, onSave, onBack }) => {
                 <Form>
                     <Form.Group className="mb-3">
                         <Form.Label>Họ tên</Form.Label>
-                        <Form.Control type="text" name="name" value={form.name} onChange={handleChange} />
+                        <Form.Control type="text" name="fullName" value={form.fullName} onChange={handleChange} />
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>Email</Form.Label>

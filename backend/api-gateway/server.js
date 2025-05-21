@@ -11,7 +11,10 @@ const allowedOrigins = ["http://localhost:2000", "http://localhost:5173", "https
 
 
 console.log("Allowed Origins:", allowedOrigins);
-
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
 // Cấu hình CORS
 app.use(
   cors({
@@ -23,10 +26,15 @@ app.use(
       }
     },
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
 
 
+app.use((req, res, next) => {
+  console.log("Gateway Authorization:", req.headers.authorization);
+  next();
+});
 // Cấu hình các service - sử dụng tên service từ docker-compose thay vì localhost
 const services = {
   products: "https://kt-tkpm-project-product-catalog-service.onrender.com",
@@ -36,7 +44,7 @@ const services = {
   orders: 'https://kt-tkpm-project-order-service.onrender.com',
   payment: "https://kt-tkpm-project-payment-service.onrender.com",
   // api-getaway:'https://kt-tkpm-project-api-getaway.onrender.com'
-  auth: "https://localhost:5000",
+  auth: "http://localhost:5000",
 };
 // Proxy cho tất cả request đến API Gateway
 app.use(
@@ -54,7 +62,6 @@ app.use(
     }
   })
 );
-
 
 // Proxy các service còn lại
 app.use(
@@ -104,7 +111,6 @@ app.use(
 app.use(
   "/api/orders",
   authMiddleware,
-  roleMiddleware("admin"),
   createProxyMiddleware({
     ws: true,
     target: services.orders,
