@@ -30,7 +30,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalT
           setLoading(false);
           return;
         }
-        const response = await authorizedAxiosInstance.get("http://localhost:3000/auth/users");
+        const response = await authorizedAxiosInstance.get("http://localhost:3000/api/auth/users");
         const userData = response.data;
 
         // Split fullName into firstName and lastName

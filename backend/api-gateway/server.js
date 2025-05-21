@@ -6,7 +6,7 @@ const cors = require("cors");
 const authMiddleware = require("./middlewares/authMiddleware");
 const roleMiddleware = require("./middlewares/roleMiddleware");
 const app = express();
-
+const rateLimit = require('express-rate-limit');
 const allowedOrigins = ["http://localhost:2000", "http://localhost:5173", "https://kt-tkpm-project.vercel.app"];
 
 
@@ -45,14 +45,23 @@ const services = {
   payment: process.env.PAYMENT || "http://localhost:4545",
   auth: "http://localhost:5000",
 };
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 phút
+  max: 5, // tối đa 20 request mỗi phút cho mỗi IP
+  message: { message: "Bạn gọi API quá nhanh, vui lòng thử lại sau!" }
+});
 // Proxy cho tất cả request đến API Gateway
+app.use("/api/auth", authLimiter);
+const productsLimiter = rateLimit({ windowMs: 60 * 1000, max: 50, message: { message: "Bạn gọi API quá nhanh, vui lòng thử lại sau!" } });
+app.use("/api/products", productsLimiter);
 app.use(
-  "/auth",
+  "/api/auth",
   createProxyMiddleware({
     ws: true,
     target: services.auth,
     changeOrigin: true,
-    pathRewrite: { "^/auth": "" },
+    pathRewrite: { "^/api/auth": "" },
     onProxyReq: (proxyReq, req, res) => {
       console.log("Proxying request:", req.method, req.url);
     },
