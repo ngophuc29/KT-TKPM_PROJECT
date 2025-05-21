@@ -4,25 +4,25 @@ import ICONS from "../constants/icons";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getUserId } from "../utils/getUserId";
 
 const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
   const [hover, setHover] = useState(false);
   // Use environment variable for API URL instead of hardcoded URL
   const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}/add`;
 
-  // UserId giả dùng cho demo
-  // const fakeUserId = "user9999";
-  const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
-
   // Calculate final price
   const finalPrice = price - (price * discount) / 100;
   // Xử lý thêm sản phẩm vào giỏ hàng
   const handleAddToCart = async (productId) => {
     try {
-      await axios.post(`${CART_API_URL}/${fakeUserId}/${productId}/1`);
+      const userId = getUserId();
+      if (!userId) {
+        toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng");
+        return;
+      }
+      await axios.post(`${CART_API_URL}/${userId}/${productId}/1`);
       toast.success("🛒Thêm vào giỏ hàng thành công");
-
-      // Có thể hiển thị thông báo thành công cho người dùng tại đây
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng", error.response?.data || error.message);
       toast.error("Không thể thêm vào giỏ hàng: " + (error.response?.data?.message || error.message));
