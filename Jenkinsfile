@@ -5,8 +5,6 @@ pipeline {
         DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
         RENDER_API_KEY = credentials('render-api-key')
         DOCKER_HUB_USERNAME = 'giahuyyy'
-
-        // Cố định giá trị nhánh
         GITHUB_BRANCH = 'main'
     }
 
