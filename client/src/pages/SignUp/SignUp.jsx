@@ -7,7 +7,7 @@ import { createRateLimiter } from "../../utils/rateLimiter";
 import { toast } from "react-toastify";
 import VerifyEmail from "../../components/VerifyEmail"; // Import component xác thực email
 
-const RegisterForm = () => {
+const SignUp = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState(""); // Thêm state phone
@@ -187,4 +187,4 @@ const RegisterForm = () => {
   );
 };
 
-export default RegisterForm;
+export default SignUp;
