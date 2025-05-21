@@ -10,7 +10,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "*", // Nếu không có biến môi trường, cho phép tất cả
+    origin: [process.env.FRONTEND_URL, process.env.FRONTEND_URL_2, 'http://localhost:2000', 'http://localhost:5173'],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
