@@ -71,6 +71,8 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
       }
       const res = await axios.post(`${CART_API_URL}/${userId}/${id}/1`);
       toast.success("🛒Thêm vào giỏ hàng thành công");
+      // Dispatch cart update event
+      window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng", error.response?.data || error.message);
     }

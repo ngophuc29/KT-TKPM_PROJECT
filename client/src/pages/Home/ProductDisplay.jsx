@@ -8,7 +8,6 @@ import ProductFeatures from "../../components/ProductDisplay/ProductFeatures";
 import ICONS from "../../constants/icons";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import io from "socket.io-client";
 
 const ProductDisplay = () => {
   const [newProducts, setNewProducts] = useState([]);
@@ -16,7 +15,6 @@ const ProductDisplay = () => {
   const [desktops, setDesktops] = useState([]);
   const [gamingMonitors, setGamingMonitors] = useState([]);
   const [MSILaptops, setMSILaptops] = useState([]);
-  const [uriSocket, setUriSocket] = useState("");
 
   useEffect(() => {
     const fetchNewProducts = async () => {
@@ -132,37 +130,6 @@ const ProductDisplay = () => {
       date: "01.09.2020",
     },
   ];
-
-  useEffect(() => {
-    const fetchUriSocket = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/base-url`);
-        setUriSocket(response.data.baseUrl);
-      } catch (error) {
-        console.log("Error fetching socket URL: ", error);
-      }
-    };
-    fetchUriSocket();
-  }, []);
-
-  let socket;
-  if (uriSocket) {
-    socket = io(uriSocket, {
-      withCredentials: true,
-      transports: ["websocket"],
-    });
-    console.log("Socket connected: ", socket);
-  }
-
-  const handleNotification = async() => {
-    try {
-      // Test gửi nên gửi thẳng dữ liệu
-      const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`);
-      console.log("Notification sent: ", response.data);
-    } catch (error) {
-      console.log("Error sending notification: ", error);
-    }
-  };
 
   return (
     <div className="container-fluid bg-light py-5">
@@ -292,16 +259,6 @@ const ProductDisplay = () => {
       <TestimonialCard />
 
       <ProductFeatures />
-
-      <div className="position-fixed bottom-0 end-0 mx-2 my-4">
-        <button
-          className="btn btn-primary rounded-circle"
-          style={{ width: "50px", height: "50px" }}
-          onClick={handleNotification}
-        >
-          <img src={ICONS.Message} alt="" className="img-fluid" />
-        </button>
-      </div>
     </div>
   );
 };

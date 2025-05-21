@@ -81,6 +81,8 @@ const Cart = () => {
             // Thay vì gửi qua body, chuyển userId, productId, quantity vào URL
             const res = await axios.put(`${CART_API_URL}/update/${userId}/${productId}/${newQuantity}`);
             setCart(res.data.cart);
+            // Dispatch cart update event to sync with Navigation
+            window.dispatchEvent(new Event('cartUpdated'));
         } catch (err) {
             setError(err.response?.data?.message || err.message);
             console.error("Lỗi khi cập nhật số lượng:", err.message);
@@ -105,6 +107,8 @@ const Cart = () => {
                 delete newSelected[productId];
                 return newSelected;
             });
+            // Dispatch cart update event to sync with Navigation
+            window.dispatchEvent(new Event('cartUpdated'));
         } catch (err) {
             setError(err.response?.data?.message || err.message);
             console.error("Lỗi khi xóa sản phẩm:", err.message);
@@ -124,6 +128,8 @@ const Cart = () => {
             const res = await axios.delete(`${CART_API_URL}/clear/${userId}`);
             setCart(res.data.cart);
             setSelectedItems({});
+            // Dispatch cart update event to sync with Navigation
+            window.dispatchEvent(new Event('cartUpdated'));
         } catch (err) {
             setError(err.response?.data?.message || err.message);
             console.error("Lỗi khi xóa toàn bộ giỏ hàng:", err.message);
@@ -211,7 +217,7 @@ const Cart = () => {
                         )}
 
                         <div className="d-flex justify-content-between mt-5 mb-5">
-                            <button className="btn btn-outline-secondary">Continue Shopping</button>
+                            <Link to="/home" className="btn btn-outline-secondary">Continue Shopping</Link>
                             <button className="btn btn-dark" onClick={handleClearCart}>Clear Shopping Cart</button>
                         </div>
                     </div>

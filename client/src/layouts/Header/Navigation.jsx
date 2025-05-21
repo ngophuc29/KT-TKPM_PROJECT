@@ -14,12 +14,14 @@ import OrderModal from "../../pages/User/OrderModal";
 import axios from "axios";
 import authorizedAxiosInstance from '../../utils/authorizedAxios';
 import { handleLogoutAPI } from "../../apis";
+import { getUserId } from "../../utils/getUserId";
 const Navigation = () => {
     const [showSearch, setShowSearch] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [showUserInfoModal, setShowUserInfoModal] = useState(false);
     const [showEditUserModal, setShowEditUserModal] = useState(false);
     const [showOrderModal, setShowOrderModal] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
 
     // States cho chức năng tìm kiếm
     const [searchTerm, setSearchTerm] = useState("");
@@ -67,6 +69,49 @@ const Navigation = () => {
     // };
     const [user, setUser] = useState();
 
+    // Fetch cart data when component mounts or token changes
+    const fetchCartData = async () => {
+        if (!token) {
+            console.log("No token found, setting cart count to 0");
+            setCartCount(0);
+            return;
+        }
+        try {
+            const userId = getUserId();
+            console.log("Fetching cart for userId:", userId);
+            if (!userId) {
+                console.log("No userId found in token");
+                return;
+            }
+            const res = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/cart/${userId}`);
+            console.log("Cart data received:", res.data);
+            const totalItems = res.data.items.reduce((sum, item) => sum + item.quantity, 0);
+            console.log("Total items in cart:", totalItems);
+            setCartCount(totalItems);
+        } catch (err) {
+            console.error("Error fetching cart data:", err);
+            setCartCount(0);
+        }
+    };
+
+    // Listen for cart updates
+    useEffect(() => {
+        const handleCartUpdate = () => {
+            fetchCartData();
+        };
+
+        // Add event listener for cart updates
+        window.addEventListener('cartUpdated', handleCartUpdate);
+
+        // Initial fetch
+        fetchCartData();
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('cartUpdated', handleCartUpdate);
+        };
+    }, [token]);
+
     // Xử lý click bên ngoài kết quả tìm kiếm
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -105,7 +150,7 @@ const Navigation = () => {
             params.set('limit', '5');
 
             const response = await axios.get(
-                `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products-filters?${params.toString()}`
+                `https://kt-tkpm-project-api-gateway-v1.onrender.com/api/products/products-filters?${params.toString()}`
             );
 
             // Lọc kết quả để chỉ hiển thị sản phẩm có tên chứa từ khóa tìm kiếm
@@ -317,13 +362,43 @@ const Navigation = () => {
                             <CiSearch size={24} onClick={() => setShowSearch(true)} style={{ cursor: "pointer" }} />
                         )}
 
-                        <FiShoppingCart size={24} onClick={() => navigate("/cart")} style={{ cursor: "pointer" }} />
+                        <div style={{ position: "relative" }}>
+                            <FiShoppingCart size={24} onClick={() => navigate("/cart")} style={{ cursor: "pointer" }} />
+                            {cartCount > 0 && (
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: -8,
+                                        right: -8,
+                                        backgroundColor: "#007bff",
+                                        color: "white",
+                                        borderRadius: "50%",
+                                        width: "18px",
+                                        height: "18px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "12px",
+                                        fontWeight: "bold",
+                                        zIndex: 1000
+                                    }}
+                                >
+                                    {cartCount}
+                                </div>
+                            )}
+                        </div>
 
                         <div style={{ position: "relative" }}>
                             <BiUser
                                 size={24}
                                 color="#007bff"
-                                onClick={() => setShowUserMenu((m) => !m)}
+                                onClick={() => {
+                                    if (!token) {
+                                        navigate('/login');
+                                    } else {
+                                        setShowUserMenu((m) => !m);
+                                    }
+                                }}
                                 style={{ cursor: "pointer" }}
                             />
                             {showUserMenu && (
