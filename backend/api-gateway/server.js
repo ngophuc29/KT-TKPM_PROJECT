@@ -31,10 +31,10 @@ app.use(
 );
 
 
-app.use((req, res, next) => {
-  console.log("Gateway Authorization:", req.headers.authorization);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("Gateway Authorization:", req.headers.authorization);
+//   next();
+// });
 // Cấu hình các service - sử dụng tên service từ docker-compose thay vì localhost
 const services = {
   products: process.env.PRODUCTS || "http://localhost:4004",

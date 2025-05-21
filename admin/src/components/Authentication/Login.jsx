@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import axios from "axios";
 import { Button } from "@/components/ui/button";
+import { getUserRole } from "@/utils/getUserRole";
 import {
     Form,
     FormControl,
@@ -31,10 +32,23 @@ function Login() {
         },
     });
 
-    function onSubmit(values) {
-        console.log("Login form data:", values);
-        // Gọi API đăng nhập ở đây nếu cần
-        navigate("/");  
+    async function onSubmit(values) {
+        try {
+            const res = await axios.post("http://localhost:3000/auth/login", values);
+            const { accessToken, refreshToken } = res.data;
+            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
+
+            const role = getUserRole();
+            if (role !== "admin") {
+                alert("Chỉ tài khoản admin mới được đăng nhập!");
+                return;
+            }
+
+            navigate("/");
+        } catch (err) {
+            alert(err.response?.data?.message || "Đăng nhập thất bại!");
+        }
     }
 
     return (
