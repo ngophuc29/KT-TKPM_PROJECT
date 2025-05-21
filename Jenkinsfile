@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
         RENDER_API_KEY = credentials('render-api-key')
-        DOCKER_HUB_USERNAME = 'ngophuc29'
+        DOCKER_HUB_USERNAME = 'giahuyyy'
         GITHUB_BRANCH = 'main'
     }
 
@@ -181,8 +181,19 @@ pipeline {
                     echo "Removing old Docker images for all services..."
                     services.each { service ->
                         // Thử xóa các image cũ (sẽ bỏ qua lỗi nếu không tìm thấy)
-                        bat "docker rmi -f ${DOCKER_HUB_USERNAME}/kttkpm:${service} || echo Image not found"
-                        bat "docker image prune -f || echo No dangling images"
+                        bat "docker rmi -f ${DOCKER_HUB_USERNAME}/kttkpm:${service} || echo Image not found - continuing build"
+                        // Kiểm tra và xóa image một cách an toàn hơn
+                        bat """
+                            for /f %%i in ('docker images -q ${DOCKER_HUB_USERNAME}/kttkpm:${service} 2^>nul') do (
+                                if not "%%i"=="" (
+                                    echo Removing image ${DOCKER_HUB_USERNAME}/kttkpm:${service}
+                                    docker rmi -f %%i
+                                ) else (
+                                    echo No existing image found for ${DOCKER_HUB_USERNAME}/kttkpm:${service}
+                                )
+                            )
+                        """
+                        bat "docker image prune -f || echo No dangling images to remove"
                     }
 
                     // Build và push các service với retry logic
