@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import { getUserId } from "../../utils/getUserId";
 
 // Định nghĩa các API URL (điều chỉnh theo backend của bạn)
-const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}`;
-const PRODUCT_API_URLGetInfo = `${import.meta.env.VITE_APP_PRODUCT_API}/product`; // Giả sử endpoint lấy thông tin sản phẩm
+const CART_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/cart`;
+const PRODUCT_API_URLGetInfo = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/products/product`; // Giả sử endpoint lấy thông tin sản phẩm
 
 const Cart = () => {
     const [cart, setCart] = React.useState(null);

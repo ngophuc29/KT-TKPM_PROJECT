@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   Card,
@@ -41,9 +41,9 @@ export const AnalyticsContent = () => {
     const fetchStats = async () => {
       try {
         const [generalRes, categoryRes, orderRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/general`),
-          axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/inventory-by-category`),
-          axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/order-status`)
+          axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory/stats/general`),
+          axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory/stats/inventory-by-category`),
+          axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/inventory/stats/order-status`)
         ]);
 
         console.log("General Stats Response:", generalRes.data);
@@ -269,4 +269,4 @@ export const AnalyticsContent = () => {
   );
 };
 
-export default AnalyticsContent; 
+export default AnalyticsContent;

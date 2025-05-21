@@ -15,7 +15,7 @@ import OrderDetailModal from "./OrderDetailModal";
 import OrderEditModal from "./OrderEditModal";
 
 // Đường dẫn API (sửa lại nếu cần)
-const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
+const ORDER_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders`;
 
 // Data mẫu (bạn có thể thay bằng axios.get khi API đã ổn)
 const sampleData = [
@@ -142,7 +142,7 @@ export default function TableOrders() {
       }
     }
   };
-  
+
 
   const handleViewDetail = (orderId) => {
     setModalOrderId(orderId);
@@ -374,7 +374,7 @@ export default function TableOrders() {
           onClose={() => setModalOrderId(null)}
         />
       )}
-      
+
       {editModalOrderId && (
         <OrderEditModal
           orderId={editModalOrderId}

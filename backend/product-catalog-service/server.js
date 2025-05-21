@@ -15,8 +15,6 @@ connectDB();
 const allowedOrigins = [
   (process.env.FRONTEND_URL || "http://localhost:2000").replace(/\/$/, ""),
   (process.env.FRONTEND_URL_2 || "http://localhost:5173").replace(/\/$/, ""),
-  "https://kt-tkpm-project.vercel.app",
-  "https://kt-tkpm-project-asa09y0ei-phuc-ngos-projects-529e4a42.vercel.app"
 ];
 
 console.log("Allowed Origins:", allowedOrigins);

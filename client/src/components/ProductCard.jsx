@@ -9,7 +9,7 @@ import { getUserId } from "../utils/getUserId";
 const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
   const [hover, setHover] = useState(false);
   // Use environment variable for API URL instead of hardcoded URL
-  const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}/add`;
+  const CART_API_URL = `${import.meta.env.VITE_APP_API_GATEWAY_URL}/cart/add`;
 
   // Calculate final price
   const finalPrice = price - (price * discount) / 100;

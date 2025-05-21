@@ -1,5 +1,4 @@
-// OrderModal.jsx
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { Modal, Button, ListGroup, Badge, Spinner } from "react-bootstrap";
 import { OrderEditModal } from "./OrderEditModal";
 import OrderDetailModal from "./OrderDetailModal";
@@ -47,7 +46,7 @@ export default function OrderModal({ show, onHide }) {
                 setError("Vui lòng đăng nhập để xem đơn hàng");
                 return;
             }
-            const res = await fetch(`${import.meta.env.VITE_APP_ORDER_API}/user/${userId}`);
+            const res = await fetch(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders/user/${userId}`);
             if (!res.ok) throw new Error("Lỗi khi lấy dữ liệu đơn hàng");
             const data = await res.json();
             setOrders(data);
@@ -67,7 +66,7 @@ export default function OrderModal({ show, onHide }) {
         if (!window.confirm("Bạn có chắc chắn muốn hủy đơn này không?")) return;
         setCancelingId(orderId);
         try {
-            const res = await fetch(`${import.meta.env.VITE_APP_ORDER_API}/cancel/${orderId}`, {
+            const res = await fetch(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/orders/cancel/${orderId}`, {
                 method: "POST",
             });
             if (!res.ok) throw new Error("Hủy đơn thất bại");
