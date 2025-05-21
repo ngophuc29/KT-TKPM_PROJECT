@@ -3,6 +3,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Features from "../Home/Features";
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { createRateLimiter } from "../../utils/rateLimiter";
+import { toast } from "react-toastify";
+import VerifyEmail from "../../components/VerifyEmail"; // Import component xác thực email
 
 const RegisterForm = () => {
   const [fullName, setFullName] = useState("");
@@ -10,27 +13,37 @@ const RegisterForm = () => {
   const [phone, setPhone] = useState(""); // Thêm state phone
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showVerify, setShowVerify] = useState(false);
   const navigate = useNavigate();
-
+  const canSignup = createRateLimiter(5, 60000);
   const handleRegister = async (e) => {
     e.preventDefault();
+    const result = canSignup();
+    if (!result.allowed) {
+      toast.warning(`Bạn thao tác quá nhanh, vui lòng thử lại sau ${result.secondsLeft} giây!`);
+      return;
+    }
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
     try {
-      await axios.post("http://localhost:3000/auth/register", {
+      await axios.post("http://localhost:3000/api/auth/register", {
         fullName,
         email,
         phone, // Gửi phone lên backend
         password,
       });
-      alert("Đăng ký thành công!");
-      navigate("/login");
+      toast.success("Đăng ký thành công! Vui lòng kiểm tra email để xác thực.");
+      setShowVerify(true); // Hiện form xác thực
     } catch (err) {
-      alert(err.response?.data?.message || "Đăng ký thất bại!");
+      toast.error(err.response?.data?.message || "Đăng ký thất bại!");
     }
   };
+
+  if (showVerify) {
+    return <VerifyEmail email={email} onVerified={() => navigate("/login")} />;
+  }
 
   return (
     <>
