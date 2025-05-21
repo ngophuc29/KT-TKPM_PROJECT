@@ -14,7 +14,7 @@ const Card = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get("https://kt-tkpm-project-api-getaway.onrender.com/api/inventory/stats/detailed");
+        const response = await axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/detailed`);
         setStats(response.data);
       } catch (error) {
         console.error("Error fetching stats:", error);

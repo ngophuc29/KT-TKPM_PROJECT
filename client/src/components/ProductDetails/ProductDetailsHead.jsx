@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import {    toast } from 'react-toastify';
+import { getUserId } from "../../utils/getUserId";
 
 function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   const { id } = useParams();
@@ -37,7 +38,7 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const { data } = await axios.get(`https://kt-tkpm-project-api-getaway.onrender.com/api/inventory/${id}`);
+        const { data } = await axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/${id}`);
         setInventoryInfo(data);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin tồn kho", error);
@@ -50,9 +51,9 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
   
   // UserId giả dùng cho demo
   // const fakeUserId = "user9999";
-  const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12"
+  // const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12"
   // Định nghĩa API URL add to cart với URL params
-  const CART_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/cart/add";
+  const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}/add`;
 
   // Xử lý thêm sản phẩm vào giỏ hàng qua API
   const handleAddToCart = async () => {
@@ -63,9 +64,12 @@ function ProductDetailsHead({ activeTab, setActiveTab, price  }) {
       return;
     }
     try {
-      const res = await axios.post(`${CART_API_URL}/${fakeUserId}/${id}/1`);
-      // console.log("Thêm vào giỏ hàng thành công", res.data);
-      
+      const userId = getUserId();
+      if (!userId) {
+        toast.error("Vui lòng đăng nhập để thêm vào giỏ hàng");
+        return;
+      }
+      const res = await axios.post(`${CART_API_URL}/${userId}/${id}/1`);
       toast.success("🛒Thêm vào giỏ hàng thành công");
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng", error.response?.data || error.message);

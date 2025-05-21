@@ -3,13 +3,11 @@ import axios from "axios";
 import CartItem from "./CartItem";
 import CartSummary from "./CartSummary";
 import { Link } from "react-router-dom";
+import { getUserId } from "../../utils/getUserId";
 
 // Định nghĩa các API URL (điều chỉnh theo backend của bạn)
-const CART_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/cart";
-const PRODUCT_API_URLGetInfo = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/product"; // Giả sử endpoint lấy thông tin sản phẩm
-// const fakeUserId = "user9999";
-const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
-
+const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}`;
+const PRODUCT_API_URLGetInfo = `${import.meta.env.VITE_APP_PRODUCT_API}/product`; // Giả sử endpoint lấy thông tin sản phẩm
 
 const Cart = () => {
     const [cart, setCart] = React.useState(null);
@@ -26,7 +24,12 @@ const Cart = () => {
     const fetchCart = async () => {
         try {
             setError("");
-            const res = await axios.get(`${CART_API_URL}/${fakeUserId}`);
+            const userId = getUserId();
+            if (!userId) {
+                setError("Vui lòng đăng nhập để xem giỏ hàng");
+                return;
+            }
+            const res = await axios.get(`${CART_API_URL}/${userId}`);
             const cartData = res.data;
             setCart(cartData);
 
@@ -70,8 +73,13 @@ const Cart = () => {
     const handleUpdateQuantity = async (productId, newQuantity) => {
         try {
             setError("");
+            const userId = getUserId();
+            if (!userId) {
+                setError("Vui lòng đăng nhập để cập nhật giỏ hàng");
+                return;
+            }
             // Thay vì gửi qua body, chuyển userId, productId, quantity vào URL
-            const res = await axios.put(`${CART_API_URL}/update/${fakeUserId}/${productId}/${newQuantity}`);
+            const res = await axios.put(`${CART_API_URL}/update/${userId}/${productId}/${newQuantity}`);
             setCart(res.data.cart);
         } catch (err) {
             setError(err.response?.data?.message || err.message);
@@ -84,8 +92,13 @@ const Cart = () => {
         if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?")) return;
         try {
             setError("");
+            const userId = getUserId();
+            if (!userId) {
+                setError("Vui lòng đăng nhập để xóa sản phẩm khỏi giỏ hàng");
+                return;
+            }
             // Truyền userId và productId trực tiếp qua URL
-            const res = await axios.delete(`${CART_API_URL}/remove/${fakeUserId}/${productId}`);
+            const res = await axios.delete(`${CART_API_URL}/remove/${userId}/${productId}`);
             setCart(res.data.cart);
             setSelectedItems(prev => {
                 const newSelected = { ...prev };
@@ -103,7 +116,12 @@ const Cart = () => {
         if (!window.confirm("Bạn có chắc muốn xóa toàn bộ giỏ hàng?")) return;
         try {
             setError("");
-            const res = await axios.delete(`${CART_API_URL}/clear/${fakeUserId}`);
+            const userId = getUserId();
+            if (!userId) {
+                setError("Vui lòng đăng nhập để xóa giỏ hàng");
+                return;
+            }
+            const res = await axios.delete(`${CART_API_URL}/clear/${userId}`);
             setCart(res.data.cart);
             setSelectedItems({});
         } catch (err) {

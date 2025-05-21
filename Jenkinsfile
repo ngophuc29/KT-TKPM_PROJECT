@@ -5,8 +5,6 @@ pipeline {
         DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
         RENDER_API_KEY = credentials('render-api-key')
         DOCKER_HUB_USERNAME = 'giahuyyy'
-
-        // Cố định giá trị nhánh
         GITHUB_BRANCH = 'main'
     }
 
@@ -73,6 +71,21 @@ pipeline {
                     }
                     steps {
                         dir('backend/order-service') {
+                            bat 'npm install'
+                            bat 'npm test || exit 0'
+                        }
+                    }
+                }
+
+                stage('Payment Service') {
+                    when {
+                        anyOf {
+                            changeset "backend/payment-service/**"
+                            expression { return params.FORCE_BUILD_ALL }
+                        }
+                    }
+                    steps {
+                        dir('backend/payment-service') {
                             bat 'npm install'
                             bat 'npm test || exit 0'
                         }
@@ -147,7 +160,7 @@ pipeline {
                         error "Failed to log in to Docker Hub after ${loginAttempts} attempts. Skipping build and push."
                     }
 
-                    def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
+                    def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "payment-service", "api-gateway"]
 
                     // Trước khi build, xóa tất cả images cũ để tránh lặp
                     echo "Removing old Docker images for all services..."
@@ -253,7 +266,8 @@ pipeline {
                             "kt-tkpm-project-cart-service",
                             "kt-tkpm-project-notification-service",
                             "kt-tkpm-project-order-service",
-                            "kt-tkpm-project-api-gateway"
+                            "kt-tkpm-project-payment-service",
+                            "kt-tkpm-project-api-gateway-v1"
                         ]
 
                         services.each { service ->
