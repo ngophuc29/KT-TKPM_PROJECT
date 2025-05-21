@@ -8,7 +8,7 @@ const VerifyEmail = ({ email, onVerified }) => {
     const handleVerify = async (e) => {
         e.preventDefault();
         try {
-            await axios.post("http://localhost:3000/api/auth/verify-email", { email, code });
+            await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/verify-email`, { email, code });
             toast.success("Xác thực email thành công! Bạn có thể đăng nhập.");
             onVerified();
         } catch (err) {
@@ -18,7 +18,7 @@ const VerifyEmail = ({ email, onVerified }) => {
 
     const handleResend = async () => {
         try {
-            await axios.post("http://localhost:3000/api/auth/resend-verify-email", { email });
+            await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/resend-verify-email`, { email });
             toast.success("Đã gửi lại mã xác thực!");
         } catch (err) {
             toast.error(err.response?.data?.message || "Gửi lại mã thất bại!");

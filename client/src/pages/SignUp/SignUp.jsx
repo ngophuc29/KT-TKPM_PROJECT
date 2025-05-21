@@ -28,7 +28,7 @@ const RegisterForm = () => {
       return;
     }
     try {
-      await axios.post("http://localhost:3000/api/auth/register", {
+      await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/register`, {
         fullName,
         email,
         phone, // Gửi phone lên backend

@@ -43,7 +43,7 @@ const services = {
   notification: process.env.NOTIFICATION || "http://localhost:4001",
   orders: process.env.ORDERS || 'http://localhost:4009',
   payment: process.env.PAYMENT || "http://localhost:4545",
-  auth: "http://localhost:5000",
+  auth: process.env.AUTH || "http://localhost:5000"
 };
 
 const authLimiter = rateLimit({
