@@ -25,8 +25,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 // API endpoints
-const API_BASE = "http://localhost:4004";
-const CLOUDINARY_UPLOAD_API = "http://localhost:4004/productsImage";
+//const API_BASE = "http://localhost:4004";
+//const CLOUDINARY_UPLOAD_API = "http://localhost:4004/productsImage";
+const API_BASE = "https://kt-tkpm-project-product-catalog-service-vuz3.onrender.com";
+const CLOUDINARY_UPLOAD_API = "https://kt-tkpm-project-cloudinary-upload-service.onrender.com/productsImage";
 
 // Schema dùng Zod (đã thêm field details và chuyển color thành mảng)
 const ProductSchema = z.object({
