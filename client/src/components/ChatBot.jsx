@@ -3,7 +3,7 @@ import './ChatBot.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'https://kt-tkpm-project-api-getaway.onrender.com/api/products';
+const API_URL = `${import.meta.env.VITE_APP_PRODUCT_API}`;
 
 const ChatBot = () => {
   const navigate = useNavigate();

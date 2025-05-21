@@ -9,7 +9,7 @@ const RecentSales = () => {
         const fetchTopProducts = async () => {
             setIsLoading(true);
             try {
-                const response = await axios.get("https://kt-tkpm-project-api-getaway.onrender.com/api/inventory/stats/product-revenue");
+                const response = await axios.get(`${import.meta.env.VITE_APP_INVENTORY_API}/stats/product-revenue`);
                 if (response.data && response.data.productStats) {
                     setTopProducts(response.data.productStats.slice(0, 5));
                 }

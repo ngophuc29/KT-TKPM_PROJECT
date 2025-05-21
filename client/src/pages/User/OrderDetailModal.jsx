@@ -21,7 +21,7 @@ export default function OrderDetailModal({ show, onHide, orderId }) {
         setLoading(true);
         setError("");
         axios
-            .get(`https://kt-tkpm-project-api-getaway.onrender.com/api/orders/${orderId}`)
+            .get(`${import.meta.env.VITE_APP_ORDER_API}/${orderId}`)
             .then((res) => setOrderDetail(res.data))
             .catch(() => setError("Lỗi khi lấy chi tiết đơn hàng"))
             .finally(() => setLoading(false));

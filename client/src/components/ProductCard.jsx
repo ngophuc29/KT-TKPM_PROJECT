@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
   const [hover, setHover] = useState(false);
   // Use environment variable for API URL instead of hardcoded URL
-  const CART_API_URL = `https://kt-tkpm-project-api-getaway.onrender.com/api/cart/add`;
+  const CART_API_URL = `${import.meta.env.VITE_APP_CART_API}/add`;
 
   // UserId giả dùng cho demo
   // const fakeUserId = "user9999";
