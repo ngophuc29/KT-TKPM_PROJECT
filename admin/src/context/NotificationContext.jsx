@@ -60,7 +60,8 @@ export const NotificationProvider = ({ children }) => {
         return data.baseUrl;
       } catch (error) {
         console.error("Error getting socket URL:", error);
-        return "http://localhost:4001"; // Fallback URL
+        //return "http://localhost:4001"; // Fallback URL
+        return "https://kt-tkpm-project-product-catalog-service-vuz3.onrender.com"; // Fallback URL
       }
     };
 
