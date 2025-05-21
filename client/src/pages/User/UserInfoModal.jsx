@@ -11,7 +11,7 @@ const UserInfoModal = ({ show, onHide, user, onEdit }) => {
                 <Modal.Title>Thông tin cá nhân</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p><strong>Họ tên:</strong> {user.name}</p>
+                <p><strong>Họ tên:</strong> {user.fullName}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>SĐT:</strong> {user.phone}</p>
                 <p><strong>Địa chỉ:</strong> {user.address}</p>

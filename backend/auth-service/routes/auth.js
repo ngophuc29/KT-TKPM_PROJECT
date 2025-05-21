@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
+const authController = require('../controllers/authController');
 require('dotenv').config();
 const {
   ACCESS_TOKEN_SECRET,
@@ -9,19 +10,10 @@ const {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN
 } = process.env;
-
+const authMiddleware = require('../middlewares/authMiddleware');
 const refreshTokens = new Map(); // Lưu refresh token tạm thời
 
-router.post('/register', async (req, res) => {
-  const { email, password, fullName } = req.body;
-  try {
-    const user = new User({ email, password, fullName });
-    await user.save();
-    res.status(201).json({ message: 'User created' });
-  } catch (err) {
-    res.status(400).json({ message: 'Registration error', error: err.message });
-  }
-});
+router.post('/register', authController.register);
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -55,4 +47,17 @@ router.post('/refresh', (req, res) => {
   }
 });
 
+router.post('/logout', (req, res) => {
+  const { refreshToken } = req.body;
+  if (refreshToken && refreshTokens.has(refreshToken)) {
+    refreshTokens.delete(refreshToken);
+  }
+  res.json({ message: 'Logged out successfully' });
+});
+
+router.put('/user', authMiddleware, authController.updateUser);
+// Xoá user (yêu cầu đăng nhập)
+router.delete('/user', authMiddleware, authController.deleteUser);
+
+router.get('/users', authMiddleware, authController.getUsers);
 module.exports = router;

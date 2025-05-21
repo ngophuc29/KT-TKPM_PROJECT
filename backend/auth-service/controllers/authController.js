@@ -12,11 +12,11 @@ const generateToken = (payload, secret, expiresIn) => {
 
 exports.register = async (req, res) => {
     try {
-        const { email, fullName, password } = req.body;
+        const { email, fullName, password, phone } = req.body; // Thêm phone
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(409).json({ message: 'Email already exists' });
 
-        const user = new User({ email, fullName, password, role: 'user' });
+        const user = new User({ email, fullName, password, phone, role: 'user' }); // Thêm phone
         await user.save();
 
         res.status(201).json({ message: 'User created successfully' });
@@ -53,5 +53,45 @@ exports.refreshToken = (req, res) => {
         res.json({ accessToken: newAccessToken });
     } catch (err) {
         res.status(403).json({ message: 'Invalid refresh token' });
+    }
+};
+exports.updateUser = async (req, res) => {
+    try {
+        const userId = req.user.sub;
+        const { fullName, email, phone } = req.body; // Thêm phone
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { fullName, email, phone }, // Thêm phone
+            { new: true, runValidators: true }
+        );
+        res.json({ message: "User updated", user: updatedUser });
+    } catch (err) {
+        res.status(400).json({ message: "Update failed", error: err.message });
+    }
+};
+
+// Xoá user
+exports.deleteUser = async (req, res) => {
+    try {
+        const userId = req.user.sub; // Lấy từ middleware xác thực JWT
+        await User.findByIdAndDelete(userId);
+        res.json({ message: "User deleted" });
+    } catch (err) {
+        res.status(400).json({ message: "Delete failed", error: err.message });
+    }
+};
+exports.getUsers = async (req, res) => {
+    try {
+        // Nếu là admin, trả về tất cả user
+        if (req.user.role === 'admin') {
+            const users = await User.find().select('-password');
+            return res.json(users);
+        }
+        // Nếu là user thường, chỉ trả về thông tin của chính họ
+        const user = await User.findById(req.user.sub).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 };

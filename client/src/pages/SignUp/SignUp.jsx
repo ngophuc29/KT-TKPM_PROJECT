@@ -1,9 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Features from "../Home/Features";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const RegisterForm = () => {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState(""); // Thêm state phone
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+    try {
+      await axios.post("http://localhost:3000/auth/register", {
+        fullName,
+        email,
+        phone, // Gửi phone lên backend
+        password,
+      });
+      alert("Đăng ký thành công!");
+      navigate("/login");
+    } catch (err) {
+      alert(err.response?.data?.message || "Đăng ký thất bại!");
+    }
+  };
+
   return (
     <>
       <div className="container mt-5" style={{ maxWidth: "1279px" }}>
@@ -20,7 +48,11 @@ const RegisterForm = () => {
         </h1>
 
         {/* Main Content */}
-        <form className="p-5 shadow-sm" style={{ borderRadius: "12px", backgroundColor: '#F5F7FF' }}>
+        <form
+          className="p-5 shadow-sm"
+          style={{ borderRadius: "12px", backgroundColor: '#F5F7FF' }}
+          onSubmit={handleRegister}
+        >
           <h2 className="text-dark mb-4" style={{ fontWeight: 600, fontSize: "22px" }}>
             Create New Account
           </h2>
@@ -36,6 +68,8 @@ const RegisterForm = () => {
               className="form-control"
               placeholder="Your Full Name"
               style={{ fontWeight: 300, fontSize: "15px", padding: "12px 15px", borderRadius: "8px" }}
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
               required
             />
           </div>
@@ -51,7 +85,25 @@ const RegisterForm = () => {
               className="form-control"
               placeholder="Your Email"
               style={{ fontWeight: 300, fontSize: "15px", padding: "12px 15px", borderRadius: "8px" }}
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
+            />
+          </div>
+
+          {/* Phone Input */}
+          <div className="mb-4">
+            <label htmlFor="phone" className="form-label text-dark" style={{ fontSize: "16px", fontWeight: 600 }}>
+              Phone
+            </label>
+            <input
+              type="text"
+              id="phone"
+              className="form-control"
+              placeholder="Your Phone Number"
+              style={{ fontWeight: 300, fontSize: "15px", padding: "12px 15px", borderRadius: "8px" }}
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
             />
           </div>
 
@@ -66,6 +118,8 @@ const RegisterForm = () => {
               className="form-control"
               placeholder="Create Password"
               style={{ fontWeight: 300, fontSize: "15px", padding: "12px 15px", borderRadius: "8px" }}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
               required
             />
           </div>
@@ -81,6 +135,8 @@ const RegisterForm = () => {
               className="form-control"
               placeholder="Confirm Password"
               style={{ fontWeight: 300, fontSize: "15px", padding: "12px 15px", borderRadius: "8px" }}
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
               required
             />
           </div>

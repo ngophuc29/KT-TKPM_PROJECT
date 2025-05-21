@@ -3,6 +3,7 @@ const { ACCESS_TOKEN_SECRET } = process.env;
 
 module.exports = (req, res, next) => {
     const authHeader = req.headers.authorization;
+    console.log('authHeader', authHeader);
     if (!authHeader?.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'Missing token' });
     }
@@ -13,9 +14,11 @@ module.exports = (req, res, next) => {
         req.user = payload;
         next();
     } catch (err) {
-
         if (err.name === 'TokenExpiredError') {
-            return res.status(410).json({ message: 'Token expired' });
+            return res.status(410).set({
+                'Cache-Control': 'no-store',
+                'Pragma': 'no-cache'
+            }).json({ message: 'Token expired' });
         }
         res.status(401).json({ message: 'Invalid token' });
     }
