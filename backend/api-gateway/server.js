@@ -7,7 +7,7 @@ const authMiddleware = require("./middlewares/authMiddleware");
 const roleMiddleware = require("./middlewares/roleMiddleware");
 const app = express();
 const rateLimit = require('express-rate-limit');
-const allowedOrigins = ["http://localhost:2000", "http://localhost:5173", "https://kt-tkpm-project.vercel.app"];
+const allowedOrigins = ["http://localhost:2000", "http://localhost:5173", "https://kt-tkpm-project.vercel.app", "https://kt-tkpm-project-kmr6.vercel.app"];
 
 
 console.log("Allowed Origins:", allowedOrigins);
