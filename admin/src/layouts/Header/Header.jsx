@@ -12,13 +12,27 @@ import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "@/compon
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { handleLogoutAPI } from "@/apis";
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const getLinkClass = (path) => {
     return `${navigationMenuTriggerStyle()} ${location.pathname === path ? "text-white" : ""}`;
+  };
+
+  const handleLogout = async () => {
+    try {
+      await handleLogoutAPI();
+    } catch (err) {
+      // Có thể bỏ qua lỗi logout
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      navigate("/login");
+    }
   };
 
   return (
@@ -37,7 +51,12 @@ export default function Header() {
               <DropdownMenuItem className="cursor-pointer">Team</DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">Subscription</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer hover:text-red-500">Logout</DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer hover:text-red-500"
+                onClick={handleLogout}
+              >
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

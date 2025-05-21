@@ -4,7 +4,7 @@ import { routes } from "@/routes/routes";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import GlobalProvider from "./context/GlobalProvider";
 import Login from "./components/Authentication/Login";
-
+import { PrivateRoute, PublicRoute } from "./components/AuthRoute";
 
 function App() {
   return (
@@ -13,7 +13,24 @@ function App() {
         <Router>
           <div className="h-screen">
             <Routes>
-              <Route path="/" element={<Navigate to="/overview" />} />
+              {/* Public route: chỉ vào login nếu chưa đăng nhập */}
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+              {/* Private routes: phải có token mới vào được */}
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Navigate to="/overview" />
+                  </PrivateRoute>
+                }
+              />
               {routes.map((route, index) => {
                 const Page = route.component;
                 return (
@@ -21,14 +38,15 @@ function App() {
                     key={index}
                     path={route.path}
                     element={
-                      <DefaultLayout>
-                        <Page />
-                      </DefaultLayout>
+                      <PrivateRoute>
+                        <DefaultLayout>
+                          <Page />
+                        </DefaultLayout>
+                      </PrivateRoute>
                     }
                   />
                 );
               })}
-              <Route path="/login" element={<Login />} />
             </Routes>
           </div>
         </Router>
