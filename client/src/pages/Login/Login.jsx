@@ -3,16 +3,27 @@ import axios from "axios";
 import { NavLink, useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 import Features from "../Home/Features";
+import { toast } from "react-toastify";
+import { createRateLimiter } from "../../utils/rateLimiter"; // Import rate limiter
+import VerifyEmail from "../../components/VerifyEmail";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showVerify, setShowVerify] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState("");
   const navigate = useNavigate();
-
+  const canLogin = createRateLimiter(5, 1000 * 60);
   const handleLogin = async (e) => {
     e.preventDefault();
+    const result = canLogin();
+    if (!result.allowed) {
+      toast.warning(`Bạn thao tác quá nhanh, vui lòng thử lại sau ${result.secondsLeft} giây!`);
+      console.log(`Bạn thao tác quá nhanh, vui lòng thử lại sau ${result.secondsLeft} giây!`);
+      return;
+    }
     try {
-      const res = await axios.post("http://localhost:3000/auth/login", {
+      const res = await axios.post("http://localhost:3000/api/auth/login", {
         email,
         password,
       });
@@ -22,9 +33,22 @@ const LoginForm = () => {
       // Chuyển hướng hoặc cập nhật UI
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      if (err.response?.status === 403) {
+        toast.error("Tài khoản của bạn chưa xác thực email. Vui lòng kiểm tra email để xác thực hoặc bấm 'Gửi lại mã xác thực' khi đăng ký!");
+        setVerifyEmail(email); // Lưu email để truyền sang màn hình xác thực
+        setShowVerify(true);   // Hiện màn hình xác thực
+        return;
+      }
+      toast.error(err.response?.data?.message || "Login failed");
     }
   };
+
+  if (showVerify) {
+    return <VerifyEmail email={verifyEmail} onVerified={() => {
+      setShowVerify(false);
+      toast.success("Xác thực thành công! Bạn có thể đăng nhập.");
+    }} />;
+  }
 
   return (
     <>

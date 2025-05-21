@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 // Schema xác thực với Zod
 const loginSchema = z.object({
@@ -34,17 +35,18 @@ function Login() {
 
     async function onSubmit(values) {
         try {
-            const res = await axios.post("http://localhost:3000/auth/login", values);
-            const { accessToken, refreshToken } = res.data;
-            localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("refreshToken", refreshToken);
+            const res = await axios.post("http://localhost:3000/api/auth/login", values);
 
-            const role = getUserRole();
-            if (role !== "admin") {
+            const { accessToken, refreshToken, payload } = res.data;
+            if (payload.role !== "admin") {
                 alert("Chỉ tài khoản admin mới được đăng nhập!");
                 return;
             }
+            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
 
+
+            alert("Đăng nhập thành công!");
             navigate("/");
         } catch (err) {
             alert(err.response?.data?.message || "Đăng nhập thất bại!");

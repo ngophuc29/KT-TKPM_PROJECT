@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+const nodemailer = require('nodemailer'); // npm install nodemailer
+require('dotenv').config();
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'access_secret';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'refresh_secret';
 const ACCESS_TOKEN_EXPIRES_IN = '15m';
@@ -10,16 +11,45 @@ const generateToken = (payload, secret, expiresIn) => {
     return jwt.sign(payload, secret, { expiresIn });
 };
 
+function generateCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 số
+}
+
 exports.register = async (req, res) => {
     try {
         const { email, fullName, password, phone } = req.body; // Thêm phone
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(409).json({ message: 'Email already exists' });
 
-        const user = new User({ email, fullName, password, phone, role: 'user' }); // Thêm phone
+        const code = generateCode();
+        const codeExpires = new Date(Date.now() + 10 * 60 * 1000); // hết hạn sau 10 phút
+
+        const user = new User({
+            email, fullName, password, phone,
+            role: 'user',
+            isVerified: false,
+            verifyCode: code,
+            verifyCodeExpires: codeExpires
+        });
         await user.save();
 
-        res.status(201).json({ message: 'User created successfully' });
+        // Gửi email
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+
+        });
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Mã xác thực tài khoản",
+            text: `Mã xác thực của bạn là: ${code}`
+        });
+
+        res.status(201).json({ message: 'User created. Please verify your email.' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

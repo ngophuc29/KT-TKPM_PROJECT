@@ -38,7 +38,7 @@ const Navigation = () => {
     ];
     const fetchUserInfo = async () => {
         try {
-            const res = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
+            const res = await authorizedAxiosInstance.get('http://localhost:3000/api/auth/users');
             setUser(res.data);
         } catch (err) {
             console.error("Lỗi lấy thông tin user:", err);
@@ -199,7 +199,7 @@ const Navigation = () => {
     const handleSaveUser = async (form) => {
         try {
             const res = await authorizedAxiosInstance.put(
-                'http://localhost:3000/auth/user',
+                'http://localhost:3000/api/auth/user',
                 {
                     fullName: form.fullName,
                     email: form.email,
