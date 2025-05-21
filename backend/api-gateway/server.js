@@ -37,12 +37,12 @@ app.use((req, res, next) => {
 });
 // Cấu hình các service - sử dụng tên service từ docker-compose thay vì localhost
 const services = {
-  products: "https://kt-tkpm-project-product-catalog-service.onrender.com",
-  inventory: "https://kt-tkpm-project-inventory-service.onrender.com",
-  cart: "https://kt-tkpm-project-cart-service.onrender.com",
-  notification: "https://kt-tkpm-project-notification-service.onrender.com",
-  orders: 'https://kt-tkpm-project-order-service.onrender.com',
-  payment: "https://kt-tkpm-project-payment-service.onrender.com",
+  products: process.env.PRODUCTS || "http://localhost:4004",
+  inventory: process.env.INVENTORY || "http://localhost:4000",
+  cart: process.env.CART || "http://localhost:4005",
+  notification: process.env.NOTIFICATION || "http://localhost:4001",
+  orders: process.env.ORDERS || 'http://localhost:4009',
+  payment: process.env.PAYMENT || "http://localhost:4545",
   // api-getaway:'https://kt-tkpm-project-api-getaway.onrender.com'
   auth: "http://localhost:5000",
 };
@@ -86,7 +86,7 @@ app.use(
 
 app.use(
   "/api/cart",
-  authMiddleware,
+  // authMiddleware,
   createProxyMiddleware({
     ws: true,
     target: services.cart,
@@ -98,8 +98,8 @@ app.use(
 // Ví dụ chỉ admin mới được gọi notification
 app.use(
   "/api/notification",
-  authMiddleware,
-  roleMiddleware("user"),
+  // authMiddleware,
+  // roleMiddleware("user"),
   createProxyMiddleware({
     ws: true,
     target: services.notification,
@@ -110,7 +110,8 @@ app.use(
 
 app.use(
   "/api/orders",
-  authMiddleware,
+  // authMiddleware,
+  // roleMiddleware("admin"),
   createProxyMiddleware({
     ws: true,
     target: services.orders,

@@ -116,43 +116,112 @@ pipeline {
                 script {
                     echo "Starting Docker build and push for services..."
 
-                    // Sử dụng bat thay vì sh cho Windows
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
-                                     usernameVariable: 'DOCKER_USER',
-                                     passwordVariable: 'DOCKER_PASS')]) {
-                        echo "Logging in to Docker Hub as ${DOCKER_USER}..."
+                    // Đăng nhập Docker với retry logic
+                    def loginAttempts = 0
+                    def loginSuccessful = false
 
-                        // Đăng nhập Docker phiên bản Windows
-                        bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
-                        echo "Docker Hub login successful"
+                    while (!loginSuccessful && loginAttempts < 3) {
+                        loginAttempts++
+                        echo "Attempt ${loginAttempts} to log in to Docker Hub..."
+
+                        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
+                                        usernameVariable: 'DOCKER_USER',
+                                        passwordVariable: 'DOCKER_PASS')]) {
+                            try {
+                                def loginResult = bat(script: "docker login -u %DOCKER_USER% -p %DOCKER_PASS%", returnStatus: true)
+                                if (loginResult == 0) {
+                                    echo "Docker Hub login successful"
+                                    loginSuccessful = true
+                                } else {
+                                    echo "Docker login failed. Will retry in 10 seconds..."
+                                    sleep(time: 10, unit: "SECONDS")
+                                }
+                            } catch (Exception e) {
+                                echo "Exception during Docker login: ${e.message}. Will retry in 10 seconds..."
+                                sleep(time: 10, unit: "SECONDS")
+                            }
+                        }
                     }
 
-                    // Kiểm tra những service nào cần build mới
+                    if (!loginSuccessful) {
+                        error "Failed to log in to Docker Hub after ${loginAttempts} attempts. Skipping build and push."
+                    }
+
                     def services = ["product-catalog-service", "inventory-service", "cart-service", "notification-service", "order-service", "api-gateway"]
 
+                    // Trước khi build, xóa tất cả images cũ để tránh lặp
+                    echo "Removing old Docker images for all services..."
+                    services.each { service ->
+                        // Thử xóa các image cũ (sẽ bỏ qua lỗi nếu không tìm thấy)
+                        bat "docker rmi -f ${DOCKER_HUB_USERNAME}/kttkpm:${service} || echo Image not found"
+                        bat "docker image prune -f || echo No dangling images"
+                    }
+
+                    // Build và push các service với retry logic
                     services.each { service ->
                         def serviceDir = "backend/${service}"
-                        def imageName = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${BUILD_NUMBER}"
-                        def latestTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}"
 
                         if (fileExists("${serviceDir}/Dockerfile")) {
-                            // Build Docker image (sử dụng bat cho Windows)
-                            bat "docker build -t ${imageName} -t ${latestTag} ${serviceDir}"
+                            echo "Building Docker image for ${service}..."
+                            def imageName = "${DOCKER_HUB_USERNAME}/kttkpm:${service}"
 
-                            // Push Docker image
-                            bat "docker push ${imageName}"
-                            bat "docker push ${latestTag}"
+                            // Build với retry
+                            def buildAttempts = 0
+                            def buildSuccessful = false
 
-                            // Tag image với git hash - sử dụng PowerShell
-                            def gitHash = powershell(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                            echo "Git hash: ${gitHash}"
-                            // Chỉ tạo tag nếu có hash hợp lệ
-                            if (gitHash && gitHash.length() > 0) {
-                                def gitTag = "${DOCKER_HUB_USERNAME}/kttkpm:${service}-${gitHash}"
-                                bat "docker tag ${imageName} ${gitTag}"
-                                bat "docker push ${gitTag}"
+                            while (!buildSuccessful && buildAttempts < 2) {
+                                buildAttempts++
+                                try {
+                                    def buildResult = bat(script: "docker build -t ${imageName} ${serviceDir}", returnStatus: true)
+                                    if (buildResult == 0) {
+                                        buildSuccessful = true
+                                    } else {
+                                        echo "Docker build failed for ${service}. Attempt ${buildAttempts}/2"
+                                        if (buildAttempts < 2) sleep(time: 5, unit: "SECONDS")
+                                    }
+                                } catch (Exception e) {
+                                    echo "Exception during Docker build for ${service}: ${e.message}"
+                                    if (buildAttempts < 2) sleep(time: 5, unit: "SECONDS")
+                                }
+                            }
+
+                            if (!buildSuccessful) {
+                                echo "Failed to build Docker image for ${service} after ${buildAttempts} attempts. Skipping push."
+                                return  // Skip to next service in the each loop instead of continue// This will skip to the next service in the each loop
+                            }
+
+                            // Push image với retry
+                            echo "Pushing Docker image for ${service}..."
+                            def pushAttempts = 0
+                            def pushSuccessful = false
+
+                            while (!pushSuccessful && pushAttempts < 3) {
+                                pushAttempts++
+                                try {
+                                    def pushResult = bat(script: "docker push ${imageName}", returnStatus: true)
+                                    if (pushResult == 0) {
+                                        pushSuccessful = true
+                                        echo "Successfully pushed ${imageName}"
+                                    } else {
+                                        echo "Docker push failed for ${service}. Attempt ${pushAttempts}/3"
+                                        if (pushAttempts < 3) {
+                                            echo "Waiting 20 seconds before retrying..."
+                                            sleep(time: 20, unit: "SECONDS")
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    echo "Exception during Docker push for ${service}: ${e.message}"
+                                    if (pushAttempts < 3) {
+                                        echo "Waiting 20 seconds before retrying..."
+                                        sleep(time: 20, unit: "SECONDS")
+                                    }
+                                }
+                            }
+
+                            if (pushSuccessful) {
+                                echo "Completed build and push for ${service}"
                             } else {
-                                echo "Warning: Could not get git hash, skipping git tag creation"
+                                echo "Failed to push Docker image for ${service} after ${pushAttempts} attempts."
                             }
                         } else {
                             echo "Skipping Docker build for ${service} - Dockerfile not found."
@@ -179,7 +248,7 @@ pipeline {
 
                         // Đối với mỗi service đã được định nghĩa trong Render
                         def services = [
-                            "kt-tkpm-project-product-catalog-service",
+                            "kt-tkpm-project-product-catalog-service", // Tên chính xác của dịch vụ trên Render
                             "kt-tkpm-project-inventory-service",
                             "kt-tkpm-project-cart-service",
                             "kt-tkpm-project-notification-service",
@@ -213,14 +282,20 @@ pipeline {
 
     post {
         always {
-            // Sửa lệnh clean up cho Windows
             script {
                 try {
-                    echo "Cleaning up Docker images..."
-                    bat "docker system prune -f || exit 0"
+                    echo "Cleaning up Docker images and containers..."
+
+                    // Xóa các container dừng
+                    bat "docker container prune -f || echo No stopped containers"
+
+                    // Xóa các image dangling
+                    bat "docker image prune -f || echo No dangling images"
+
+                    // Thay vì 'system prune' để tránh xóa các image đang sử dụng
+                    echo "Docker cleanup completed"
                 } catch (Exception e) {
                     echo "Warning: Docker cleanup failed: ${e.message}"
-                    // Không làm failed pipeline nếu chỉ là cleanup không thành công
                 }
             }
         }

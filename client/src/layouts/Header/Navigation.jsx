@@ -32,21 +32,9 @@ const Navigation = () => {
     const token = localStorage.getItem("accessToken");
 
     const categories = [
-        "Laptops",
-        "Desktop PCs",
-        "PC Parts",
-        "All Other Products",
+        "Custome Builds", "MSI Laptops", "Desktops", "Gaming Monitors",
     ];
-    const fetchUserInfo = async () => {
-        try {
-            const res = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
-            setUser(res.data);
-            // Nếu là user thường, backend trả về 1 user; nếu là admin, trả về mảng user
-            console.log("User info:", res.data);
-        } catch (err) {
-            console.error("Lỗi lấy thông tin user:", err);
-        }
-    };
+
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
@@ -210,7 +198,7 @@ const Navigation = () => {
                         <div style={{ display: "flex", gap: 20, flexGrow: 1, justifyContent: "center" }}>
                             {categories.map((cat, idx) => (
                                 <Link
-                                    to="/catalog"
+                                    to={`/catalog?category=${cat}`}
                                     key={idx}
                                     style={{ fontSize: 14, fontWeight: 600, color: "#000" }}
                                     onMouseOver={(e) => (e.target.style.color = "#007bff")}

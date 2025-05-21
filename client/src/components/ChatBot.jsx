@@ -185,8 +185,11 @@ ${stock}
   return (
     <div className="chatbot-wrapper">
       {!isOpen && (
-        <button className="chatbot-toggle" onClick={() => setIsOpen(true)}>
+        <button className="chatbot-toggle" onClick={() => setIsOpen(true)} >
+          <span style={{ fontSize: 15 }}>
+
           💬 Chat với AI
+          </span>
         </button>
       )}
 

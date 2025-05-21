@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require('express');
 const cors = require('cors');
 const crypto = require('crypto');
@@ -14,6 +15,8 @@ const accessKey = 'F8BBA842ECF85';
 const secretKey = 'K951B6PE1waDMi640xX08PD3vg6EkVlz';
 const partnerCode = 'MOMO';
 
+
+const ORDER_API = process.env.ORDER_API || "http://localhost:3000/api/orders"
 // --- PAYMENT: từ POST body → GET query params ---
 app.get('/payment', async (req, res) => {
   const { amount, orderInfo, orderId, requestId, extraData } = req.query;
@@ -114,7 +117,7 @@ app.post('/callback', async (req, res) => {
     });
     try {
       const updateOrderResponse = await axios.put(
-        `https://kt-tkpm-project-api-getaway.onrender.com/api/orders/update/${extraData}/${encodeURIComponent(updateData)}`
+        `${ORDER_API}/update/${extraData}/${encodeURIComponent(updateData)}`
       );
       console.log('✅ Order updated:', updateOrderResponse.data);
       return res.status(200).json({ message: 'Payment successful and order updated' });
@@ -130,7 +133,7 @@ app.post('/callback', async (req, res) => {
     });
     try {
       await axios.put(
-        `https://kt-tkpm-project-api-getaway.onrender.com/api/orders/update/${extraData}/${encodeURIComponent(updateData)}`
+        ` ${ORDER_API}/update/${extraData}/${encodeURIComponent(updateData)}`
       );
       console.log('✅ Order set to failed');
     } catch (err) {
