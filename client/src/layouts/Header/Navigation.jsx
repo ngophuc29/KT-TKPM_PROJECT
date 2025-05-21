@@ -67,16 +67,6 @@ const Navigation = () => {
     // };
     const [user, setUser] = useState();
 
-    const fetchUserInfo = async () => {
-        try {
-            const response = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
-            setUser(response.data);
-        } catch (error) {
-            console.error('Error fetching user info:', error);
-            alert('Failed to fetch user information');
-        }
-    };
-
     // Xử lý click bên ngoài kết quả tìm kiếm
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -115,7 +105,7 @@ const Navigation = () => {
             params.set('limit', '5');
 
             const response = await axios.get(
-                `${import.meta.env.VITE_APP_PRODUCT_API}/products-filters?${params.toString()}`
+                `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products-filters?${params.toString()}`
             );
 
             // Lọc kết quả để chỉ hiển thị sản phẩm có tên chứa từ khóa tìm kiếm
@@ -333,13 +323,7 @@ const Navigation = () => {
                             <BiUser
                                 size={24}
                                 color="#007bff"
-                                onClick={() => {
-                                    if (!token) {
-                                        navigate("/login");
-                                    } else {
-                                        setShowUserMenu((m) => !m);
-                                    }
-                                }}
+                                onClick={() => setShowUserMenu((m) => !m)}
                                 style={{ cursor: "pointer" }}
                             />
                             {showUserMenu && (
