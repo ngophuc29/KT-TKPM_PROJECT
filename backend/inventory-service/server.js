@@ -18,9 +18,9 @@ app.use(
 );
 app.use(express.json());
 app.use(inventoryRoutes);
-cron.schedule('*/10 * * * *', async () => {
+cron.schedule('* * * * *', async () => {
   try {
-    console.log("🔄 Cron job: Đồng bộ Inventory với Product Service...");
+    console.log("🔄 Cron job: Đồng bộ Inventory với Product Service mỗi phút...");
     await inventoryController.syncInventory({}, { json: console.log, status: () => ({ json: console.log }) });
   } catch (error) {
     console.error("🚨 Cron job lỗi khi đồng bộ Inventory:", error.message);
