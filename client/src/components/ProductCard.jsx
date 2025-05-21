@@ -23,6 +23,8 @@ const ProductCard = ({ _id, stock, image, rating, name, price, discount }) => {
       }
       await axios.post(`${CART_API_URL}/${userId}/${productId}/1`);
       toast.success("🛒Thêm vào giỏ hàng thành công");
+      // Dispatch cart update event
+      window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng", error.response?.data || error.message);
       toast.error("Không thể thêm vào giỏ hàng: " + (error.response?.data?.message || error.message));
