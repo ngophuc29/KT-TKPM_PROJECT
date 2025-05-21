@@ -21,7 +21,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const fetchNewProducts = async () => {
       try {
-        const URL = `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products-new`;
+        const URL = `${import.meta.env.VITE_APP_PRODUCT_API}/products-new`;
         const response = await axios.get(URL, { withCredentials: true });
 
         setNewProducts(response?.data?.data);
@@ -36,7 +36,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const fetchProductData = async (category, setState) => {
       try {
-        const URL = `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products-category/${category}`;
+        const URL = `${import.meta.env.VITE_APP_PRODUCT_API}/products-category/${category}`;
         const response = await axios.get(URL, { withCredentials: true });
         setState(response?.data?.data);
       } catch (error) {

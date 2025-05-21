@@ -9,7 +9,7 @@ export default function OrderDetailModal({ orderId, onClose }) {
     useEffect(() => {
         const fetchOrderDetail = async () => {
             try {
-                const response = await axios.get(`https://kt-tkpm-project-api-getaway.onrender.com/api/orders/${orderId}`);
+                const response = await axios.get(`${import.meta.env.VITE_APP_ORDER_API}/${orderId}`);
                 setOrderDetail(response.data);
             } catch (err) {
                 setError("Lỗi khi lấy chi tiết đơn hàng");

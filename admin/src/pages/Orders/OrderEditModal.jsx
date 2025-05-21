@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const ORDER_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/orders";
+const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
 
 export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const [order, setOrder] = useState(null);

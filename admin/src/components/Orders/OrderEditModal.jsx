@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Update the API URLs with correct endpoints
-const ORDER_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/orders";
-const PRODUCT_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/products/products";
-const INVENTORY_API_URL = "https://kt-tkpm-project-api-getaway.onrender.com/api/inventory"; // Add Inventory API URL
+const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
+const PRODUCT_API_URL = `${import.meta.env.VITE_APP_PRODUCT_API}/products`;
+const INVENTORY_API_URL = `${import.meta.env.VITE_APP_INVENTORY_API}`; // Add Inventory API URL
 
 export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
     const [order, setOrder] = useState(null);
@@ -780,7 +780,7 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
                 console.log("Trying alternate API endpoint...");
                 try {
                     // Try another common endpoint pattern
-                    const alternateResponse = await axios.get("https://kt-tkpm-project-api-getaway.onrender.com/api/products", {
+                    const alternateResponse = await axios.get(`${import.meta.env.VITE_APP_PRODUCT_API}`, {
                         timeout: 10000
                     });
                     
@@ -891,9 +891,9 @@ export default function OrderEditModal({ orderId, onClose, onOrderUpdated }) {
             // Start with a simple API check before full product load
             try {
                 const testEndpoints = [
-                    "https://kt-tkpm-project-api-getaway.onrender.com/api/products/products",
-                    "https://kt-tkpm-project-api-getaway.onrender.com/api/products",
-                    "https://kt-tkpm-project-api-getaway.onrender.com/api/products/product", // Some APIs use singular endpoint
+                    `${import.meta.env.VITE_APP_PRODUCT_API}/products`,
+                    `${import.meta.env.VITE_APP_PRODUCT_API}`,
+                    `${import.meta.env.VITE_APP_PRODUCT_API}/product`, // Some APIs use singular endpoint
                 ];
                 
                 let apiFound = false;

@@ -5,7 +5,7 @@ import { OrderEditModal } from "./OrderEditModal";
 import OrderDetailModal from "./OrderDetailModal";
 
 const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
-const ORDER_API_URL = `https://kt-tkpm-project-api-getaway.onrender.com/api/orders/user/${fakeUserId}`;
+const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}/user/${fakeUserId}`;
 
 const tabs = [
     { key: "all", label: "Tất cả đơn hàng" },
@@ -64,7 +64,7 @@ export default function OrderModal({ show, onHide }) {
         if (!window.confirm("Bạn có chắc chắn muốn hủy đơn này không?")) return;
         setCancelingId(orderId);
         try {
-            const res = await fetch(`https://kt-tkpm-project-api-getaway.onrender.com/api/orders/cancel/${orderId}`, {
+            const res = await fetch(`${import.meta.env.VITE_APP_ORDER_API}/cancel/${orderId}`, {
                 method: "POST",
             });
             if (!res.ok) throw new Error("Hủy đơn thất bại");
