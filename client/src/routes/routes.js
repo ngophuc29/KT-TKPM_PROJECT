@@ -8,10 +8,11 @@ import ProductDetailsAll from "../pages/Details/ProductDetailsAll";
 import ContactUs from "../pages/ContactUs/ContactUs";
 import UserAccount from "../pages/UserAccount/UserAccount";
 import AboutUs from "../pages/AboutUs/AboutUs";
+import Signup from "../pages/Signup/Signup";
 const publicRoutes = [
   { path: "/home", component: Home },
   { path: "/login", component: Login },
-//  { path: "/signup", component: Signup },
+  { path: "/signup", component: Signup },
   { path: "/cart", component: Cart },
   { path: "/checkout", component: CheckoutPage },
   { path: "/details/:id", component: ProductDetailsAll },
