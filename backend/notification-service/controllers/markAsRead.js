@@ -2,7 +2,7 @@ const NotificationModel = require("../models/NotificationModel");
 
 async function markAsRead(req, res) {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
 
     if (!userId) {
       return res.status(400).json({ error: "userId is required" });

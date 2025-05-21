@@ -1,17 +1,20 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Card from "./OverviewTabs/Card";
 import OverviewContent from "./OverviewTabs/OverviewContent";
 import NotificationContent from "./NotificationTabs/NotificationContent";
-import Order from "./OrdersTabs/Order";
-import TableOrders from "@/components/Orders/TableOrders";
- 
+
 import axios from "axios";
 import AnalyticsContent from "./AnalyticsTabs/AnalyticsContent";
+import { getUserId } from "@/utils/getUserId";
 
 const Main = ({ unreadCount, setUnreadCount, loadNotifications, setLoadNotifications }) => {
+  const adminId = getUserId();
   const markNotificationsAsRead = async () => {
     try {
-      const response = await axios.put(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/mark-as-read`);
+      if (!adminId) {
+        console.error("Admin ID is not available");
+        return;
+      }
+      const response = await axios.put(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/mark-as-read?userId=${adminId}`);
       console.log("Marked as read: ", response.data);
       setUnreadCount(0);
       setLoadNotifications(prev => !prev);
@@ -44,9 +47,9 @@ const Main = ({ unreadCount, setUnreadCount, loadNotifications, setLoadNotificat
           <NotificationContent loadNotifications={loadNotifications}/>
         </TabsContent>
         {/* <TabsContent value="order">
-      
+
           <TableOrders/>
-         
+
         </TabsContent> */}
         <TabsContent value="analytics">
           <AnalyticsContent />

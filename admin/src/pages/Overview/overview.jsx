@@ -4,26 +4,30 @@ import io from "socket.io-client";
 import { toast } from "sonner";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { getUserId } from "@/utils/getUserId";
 export default function Overview() {
   const [uriSocket, setUriSocket] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [loadNotifications, setLoadNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-
+  const adminId = getUserId();
+  console.log("Admin ID: ", adminId);
   useEffect(() => {
     const fetchUriSocket = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/base-url`);
         setUriSocket(response.data.baseUrl);
 
-        const responseUnread = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/unread-count`);
-        setUnreadCount(responseUnread.data.count);
+        if (adminId) {
+          const responseUnread = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/unread-count?userId=${adminId}`);
+          setUnreadCount(responseUnread.data.count);
+        }
       } catch (error) {
         console.log("Error fetching socket URL: ", error);
       }
     };
     fetchUriSocket();
-  }, []);
+  }, [ adminId]);
 
   const socket = io(uriSocket, {
     withCredentials: true,
