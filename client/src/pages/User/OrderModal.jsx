@@ -3,9 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, ListGroup, Badge, Spinner } from "react-bootstrap";
 import { OrderEditModal } from "./OrderEditModal";
 import OrderDetailModal from "./OrderDetailModal";
-
-const fakeUserId = "64e65e8d3d5e2b0c8a3e9f12";
-const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}/user/${fakeUserId}`;
+import { getUserId } from "../../utils/getUserId";
 
 const tabs = [
     { key: "all", label: "Tất cả đơn hàng" },
@@ -44,7 +42,12 @@ export default function OrderModal({ show, onHide }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch(ORDER_API_URL);
+            const userId = getUserId();
+            if (!userId) {
+                setError("Vui lòng đăng nhập để xem đơn hàng");
+                return;
+            }
+            const res = await fetch(`${import.meta.env.VITE_APP_ORDER_API}/user/${userId}`);
             if (!res.ok) throw new Error("Lỗi khi lấy dữ liệu đơn hàng");
             const data = await res.json();
             setOrders(data);

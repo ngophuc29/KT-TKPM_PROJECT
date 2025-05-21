@@ -19,7 +19,7 @@ const FilterSection = ({ initialCategory, setProducts, appliedFilters, setApplie
         setPrices(response.data.prices);
         if (initialCategory) {
           setSelectedCategory(initialCategory);
-          const priceResponse = await axios.get(`${import.meta.env.VITE_APP_ORDER_API}/price-counts`, {
+          const priceResponse = await axios.get(`${import.meta.env.VITE_APP_PRODUCT_API}/price-counts`, {
             params: { category: initialCategory },
           });
           setPrices(priceResponse.data.prices);
@@ -39,7 +39,7 @@ const FilterSection = ({ initialCategory, setProducts, appliedFilters, setApplie
     };
     const fetchProductsData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_APP_ORDER_API}/products-filters`, {
+        const response = await axios.get(`${import.meta.env.VITE_APP_PRODUCT_API}/products-filters`, {
           params: filters,
         });
         setProducts(response.data.data);
@@ -72,7 +72,7 @@ const FilterSection = ({ initialCategory, setProducts, appliedFilters, setApplie
       if (selectedCategory) {
         setAppliedFilters({ category: selectedCategory, price: "" });
         try {
-          const response = await axios.get(`${import.meta.env.VITE_APP_ORDER_API}/price-counts`, {
+          const response = await axios.get(`${import.meta.env.VITE_APP_PRODUCT_API}/price-counts`, {
             params: { category: selectedCategory },
           });
           setPrices(response.data.prices);
@@ -83,7 +83,7 @@ const FilterSection = ({ initialCategory, setProducts, appliedFilters, setApplie
         setAppliedFilters({ category: "", price: "" });
         setClearFilter((prev) => !prev);
         try {
-          const response = await axios.get(`${import.meta.env.VITE_APP_ORDER_API}/price-counts`);
+          const response = await axios.get(`${import.meta.env.VITE_APP_PRODUCT_API}/price-counts`);
           setPrices(response.data.prices);
         } catch (error) {
           console.error("Error fetching price counts:", error);

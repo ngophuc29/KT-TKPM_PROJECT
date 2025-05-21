@@ -1,7 +1,9 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getUserId } from "../../utils/getUserId";
+import authorizedAxiosInstance from '../../utils/authorizedAxios';
 
 const ORDER_API_URL = `${import.meta.env.VITE_APP_ORDER_API}`;
 const INVENTORY_API = `${import.meta.env.VITE_APP_INVENTORY_API}`;
@@ -17,6 +19,40 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
   const [email, setEmail] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [customerNote, setCustomerNote] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Load user info when component mounts
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userId = getUserId();
+        if (!userId) {
+          setLoading(false);
+          return;
+        }
+        const response = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
+        const userData = response.data;
+        
+        // Split fullName into firstName and lastName
+        const nameParts = userData.fullName?.split(' ') || [];
+        const lastName = nameParts.pop() || '';
+        const firstName = nameParts.join(' ') || '';
+        
+        setFirstName(firstName);
+        setLastName(lastName);
+        setEmail(userData.email || '');
+        setPhone(userData.phone || '');
+        setAddress(userData.address || '');
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        toast.error('Không thể tải thông tin người dùng');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const handleOrderSubmit = async () => {
     // Validate
@@ -29,7 +65,12 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
       return;
     }
 
-    const userId = "64e65e8d3d5e2b0c8a3e9f12";
+    const userId = getUserId();
+    if (!userId) {
+      toast.error("Vui lòng đăng nhập để đặt hàng");
+      return;
+    }
+
     const customer = { name: `${firstName} ${lastName}`, address, phone, email };
     const items = selectedItems.map(i => ({
       productId: i.productId, name: i.name, quantity: i.quantity, price: i.price
@@ -107,6 +148,13 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <p>Đang tải thông tin...</p>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -287,7 +335,6 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, subtot
           }}
         >
           <option value="cod">Cash on Delivery</option>
-          
           <option value="bank">Bank Transfer</option>
         </select>
       </div>

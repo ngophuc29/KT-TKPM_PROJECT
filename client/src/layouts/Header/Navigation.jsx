@@ -61,6 +61,16 @@ const Navigation = () => {
     // };
     const [user, setUser] = useState();
 
+    const fetchUserInfo = async () => {
+        try {
+            const response = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
+            setUser(response.data);
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+            alert('Failed to fetch user information');
+        }
+    };
+
     // Xử lý click bên ngoài kết quả tìm kiếm
     useEffect(() => {
         const handleClickOutside = (event) => {
