@@ -304,7 +304,7 @@ async function restoreInventoryWithRetry(items) {
             try {
                 // Shorter timeout (8s instead of 15s)
                 const response = await axios.post(
-                    `https://kt-tkpm-project-api-getaway.onrender.com/api/inventory/restore/${item.productId}/${item.quantity}`,
+                    `https://kt-tkpm-project-api-gateway-v1.onrender.com/api/inventory/restore/${item.productId}/${item.quantity}`,
                     {},
                     { timeout: 8000 }
                 );
