@@ -317,7 +317,13 @@ const Navigation = () => {
                             <BiUser
                                 size={24}
                                 color="#007bff"
-                                onClick={() => setShowUserMenu((m) => !m)}
+                                onClick={() => {
+                                    if (!token) {
+                                        navigate("/login");
+                                    } else {
+                                        setShowUserMenu((m) => !m);
+                                    }
+                                }}
                                 style={{ cursor: "pointer" }}
                             />
                             {showUserMenu && (
