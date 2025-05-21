@@ -9,7 +9,8 @@ app.use(cors({
     origin: [
         "http://localhost:2000",
         "http://localhost:5173",
-        "https://kt-tkpm-project.vercel.app"
+        "https://kt-tkpm-project.vercel.app",
+        "https://kt-tkpm-project-kmr6.vercel.app"
     ],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]

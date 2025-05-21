@@ -38,7 +38,7 @@ const Navigation = () => {
     ];
     const fetchUserInfo = async () => {
         try {
-            const res = await authorizedAxiosInstance.get('http://localhost:3000/api/auth/users');
+            const res = await authorizedAxiosInstance.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/users`);
             setUser(res.data);
         } catch (err) {
             console.error("Lỗi lấy thông tin user:", err);
@@ -199,7 +199,7 @@ const Navigation = () => {
     const handleSaveUser = async (form) => {
         try {
             const res = await authorizedAxiosInstance.put(
-                'http://localhost:3000/api/auth/user',
+                `${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/user`,
                 {
                     fullName: form.fullName,
                     email: form.email,

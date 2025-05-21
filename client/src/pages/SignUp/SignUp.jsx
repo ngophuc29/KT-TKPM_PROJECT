@@ -7,7 +7,7 @@ import { createRateLimiter } from "../../utils/rateLimiter";
 import { toast } from "react-toastify";
 import VerifyEmail from "../../components/VerifyEmail"; // Import component xác thực email
 
-const RegisterForm = () => {
+const SignUp = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState(""); // Thêm state phone
@@ -28,7 +28,7 @@ const RegisterForm = () => {
       return;
     }
     try {
-      await axios.post("http://localhost:3000/api/auth/register", {
+      await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/register`, {
         fullName,
         email,
         phone, // Gửi phone lên backend
@@ -187,4 +187,4 @@ const RegisterForm = () => {
   );
 };
 
-export default RegisterForm;
+export default SignUp;

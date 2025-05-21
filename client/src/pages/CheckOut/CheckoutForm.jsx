@@ -31,7 +31,7 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalT
           setLoading(false);
           return;
         }
-        const response = await authorizedAxiosInstance.get("http://localhost:3000/api/auth/users");
+        const response = await authorizedAxiosInstance.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/users`);
         const userData = response.data;
 
         // Split fullName into firstName and lastName
