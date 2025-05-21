@@ -136,7 +136,7 @@ const ProductDisplay = () => {
   useEffect(() => {
     const fetchUriSocket = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/base-url`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_API_GATEWAY_URL}api/notification/base-url`);
         setUriSocket(response.data.baseUrl);
       } catch (error) {
         console.log("Error fetching socket URL: ", error);
