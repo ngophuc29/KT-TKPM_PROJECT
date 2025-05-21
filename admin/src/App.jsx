@@ -53,7 +53,7 @@ function App() {
               </Routes>
             </div>
           </Router>
-          <Toaster position="top-right" />
+          <Toaster position="top-right" expand={true} richColors closeButton duration={5000} />
         </NotificationProvider>
       </ThemeProvider>
     </GlobalProvider>

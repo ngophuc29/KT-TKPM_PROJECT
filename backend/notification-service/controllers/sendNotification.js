@@ -79,14 +79,23 @@ async function sendNotification(req, res) {
 
     await adminNotification.save();
 
-    console.log(`Sending admin notification for order ${orderId} to admin rooms`);
+    console.log(`Sending admin notification for order ${orderId} to all admin channels`);
 
-    // Gửi thông báo đến admin cụ thể và phòng admin chung
-    global.io.to(ADMIN_ID).emit("admin_notification", adminNotification);
-    global.io.to("admin").emit("admin_notification", adminNotification);
+    try {
+      // 1. Send to specific admin
+      global.io.to(ADMIN_ID).emit("admin_notification", adminNotification);
+      console.log(`Emitted to admin ID: ${ADMIN_ID}`);
 
-    // Broadcast to everyone for testing
-    global.io.emit("admin_notification", adminNotification);
+      // 2. Send to admin room
+      global.io.to("admin").emit("admin_notification", adminNotification);
+      console.log("Emitted to 'admin' room");
+
+      // 3. Broadcast to everyone as fallback
+      global.io.emit("admin_notification", adminNotification);
+      console.log("Broadcast to all clients");
+    } catch (socketError) {
+      console.error("Error emitting socket notification:", socketError);
+    }
 
     res.status(201).json({ success: true, message: "Notifications sent successfully" });
   } catch (error) {
