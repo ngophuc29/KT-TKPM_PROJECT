@@ -57,15 +57,23 @@ const CheckoutForm = ({ selectedItems, shippingMethod, setShippingMethod, finalT
   const handleNotification = async (orderId) => {
     try {
       const userId = getUserId();
-      if (!userId || !orderId) return;
 
       // Gửi thông báo với dữ liệu thực từ đơn hàng
       const response = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`, {
-        userId: userId,
+        userId: userId, // User ID của khách hàng (nếu có)
         orderId: orderId,
         orderStatus: "pending",
       });
+
       console.log("Notification sent: ", response.data);
+
+      // Thêm yêu cầu đặc biệt để đảm bảo admin nhận được thông báo
+      // Gửi một thông báo riêng cho admin với ID cố định
+      await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/notification/send-notification`, {
+        userId: "admin-dashboard-123", // Fixed admin ID
+        orderId: orderId,
+        orderStatus: "pending",
+      });
     } catch (error) {
       console.log("Error sending notification: ", error);
     }

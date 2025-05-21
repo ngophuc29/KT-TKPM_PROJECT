@@ -2,14 +2,8 @@ const NotificationModel = require("../models/NotificationModel");
 
 async function getUnreadCount(req, res) {
   try {
-    const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
-    }
-
+    // Count all unread admin notifications without requiring userId
     const count = await NotificationModel.countDocuments({
-      userId,
       status: "unread",
     });
 
