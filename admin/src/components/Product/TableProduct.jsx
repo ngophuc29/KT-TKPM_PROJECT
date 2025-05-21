@@ -26,7 +26,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useGlobalContext } from "@/context/GlobalProvider";
 
 // API base URL (điều chỉnh theo dự án của bạn)
-const API_BASE = "http://localhost:4004";
+//const API_BASE = "http://localhost:4004";
+const API_BASE = "https://kt-tkpm-project-product-catalog-service-vuz3.onrender.com";
 
 // Định nghĩa các cột hiển thị
 // eslint-disable-next-line react-refresh/only-export-components
