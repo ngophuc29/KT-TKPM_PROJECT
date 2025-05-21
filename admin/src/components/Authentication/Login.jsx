@@ -35,7 +35,7 @@ function Login() {
 
     async function onSubmit(values) {
         try {
-            const res = await axios.post("http://localhost:3000/api/auth/login", values);
+            const res = await axios.post(`${import.meta.env.VITE_APP_API_GATEWAY_URL}/auth/login`, values);
 
             const { accessToken, refreshToken, payload } = res.data;
             if (payload.role !== "admin") {

@@ -21,7 +21,7 @@ const ORDER_API = process.env.ORDER_API || "http://localhost:3000/api/orders"
 app.get('/payment', async (req, res) => {
   const { amount, orderInfo, orderId, requestId, extraData } = req.query;
 
-  const redirectUrl = 'http://localhost:2000/home';
+  const redirectUrl = 'https://kt-tkpm-project.vercel.app/home';
   const ipnUrl = 'https://6002-116-110-41-130.ngrok-free.app/callback';
   const requestType = "payWithMethod";
   const autoCapture = true;
