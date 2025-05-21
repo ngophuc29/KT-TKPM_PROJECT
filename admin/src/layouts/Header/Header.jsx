@@ -14,10 +14,16 @@ import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { handleLogoutAPI } from "@/apis";
+import { useNotifications } from "@/context/NotificationContext";
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Get notification context
+  const notificationContext = useNotifications();
+  const unreadCount = notificationContext?.unreadCount || 0;
+  const markAsRead = notificationContext?.markAsRead;
 
   const getLinkClass = (path) => {
     return `${navigationMenuTriggerStyle()} ${location.pathname === path ? "text-white" : ""}`;
@@ -32,6 +38,13 @@ export default function Header() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       navigate("/login");
+    }
+  };
+
+  // Mark notifications as read when clicking on Orders
+  const handleOrdersClick = () => {
+    if (unreadCount > 0 && typeof markAsRead === "function") {
+      markAsRead();
     }
   };
 
@@ -51,10 +64,7 @@ export default function Header() {
               <DropdownMenuItem className="cursor-pointer">Team</DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">Subscription</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer hover:text-red-500"
-                onClick={handleLogout}
-              >
+              <DropdownMenuItem className="cursor-pointer hover:text-red-500" onClick={handleLogout}>
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -78,14 +88,14 @@ export default function Header() {
                 Products
               </Link>
             </NavigationMenuItem>
-            {/* <NavigationMenuItem>
-              <Link to="/settings" className={getLinkClass("/settings")}>
-                Settings
-              </Link>
-            </NavigationMenuItem> */}
             <NavigationMenuItem>
-              <Link to="/orders" className={getLinkClass("/orders")}>
+              <Link to="/orders" className={getLinkClass("/orders")} onClick={handleOrdersClick}>
                 Orders
+                {unreadCount > 0 && (
+                  <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </Link>
             </NavigationMenuItem>
           </NavigationMenuList>
