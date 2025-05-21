@@ -8,7 +8,7 @@ import ProductDetailsAll from "../pages/Details/ProductDetailsAll";
 import ContactUs from "../pages/ContactUs/ContactUs";
 import UserAccount from "../pages/UserAccount/UserAccount";
 import AboutUs from "../pages/AboutUs/AboutUs";
-import Signup from "../pages/Signup/Signup";
+import Signup from "@/pages/Signup/Signup";
 const publicRoutes = [
   { path: "/home", component: Home },
   { path: "/login", component: Login },
