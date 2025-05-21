@@ -13,7 +13,7 @@ import EditUserModal from "../../pages/User/EditUserModal";
 import OrderModal from "../../pages/User/OrderModal";
 import axios from "axios";
 import authorizedAxiosInstance from '../../utils/authorizedAxios';
-
+import { handleLogoutAPI } from "../../apis";
 const Navigation = () => {
     const [showSearch, setShowSearch] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -34,10 +34,16 @@ const Navigation = () => {
     const categories = [
         "Custome Builds", "MSI Laptops", "Desktops", "Gaming Monitors",
     ];
-
+    const fetchUserInfo = async () => {
+        try {
+            const res = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
+            setUser(res.data);
+        } catch (err) {
+            console.error("Lỗi lấy thông tin user:", err);
+        }
+    };
     const handleLogout = () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        handleLogoutAPI();
         setShowUserMenu(false);
         navigate("/login");
     };
@@ -60,16 +66,6 @@ const Navigation = () => {
     //     avatar: "https://i.pravatar.cc/150?img=1",
     // };
     const [user, setUser] = useState();
-
-    const fetchUserInfo = async () => {
-        try {
-            const response = await authorizedAxiosInstance.get('http://localhost:3000/auth/users');
-            setUser(response.data);
-        } catch (error) {
-            console.error('Error fetching user info:', error);
-            alert('Failed to fetch user information');
-        }
-    };
 
     // Xử lý click bên ngoài kết quả tìm kiếm
     useEffect(() => {
@@ -109,7 +105,7 @@ const Navigation = () => {
             params.set('limit', '5');
 
             const response = await axios.get(
-                `${import.meta.env.VITE_APP_PRODUCT_API}/products-filters?${params.toString()}`
+                `https://kt-tkpm-project-api-getaway.onrender.com/api/products/products-filters?${params.toString()}`
             );
 
             // Lọc kết quả để chỉ hiển thị sản phẩm có tên chứa từ khóa tìm kiếm
@@ -327,13 +323,7 @@ const Navigation = () => {
                             <BiUser
                                 size={24}
                                 color="#007bff"
-                                onClick={() => {
-                                    if (!token) {
-                                        navigate("/login");
-                                    } else {
-                                        setShowUserMenu((m) => !m);
-                                    }
-                                }}
+                                onClick={() => setShowUserMenu((m) => !m)}
                                 style={{ cursor: "pointer" }}
                             />
                             {showUserMenu && (
