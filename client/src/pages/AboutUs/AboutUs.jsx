@@ -12,7 +12,7 @@ const AboutUs = () => {
       <ContentSection
         isDark={true}
         title="A Family That Keeps On Growing"
-        description="We always aim to please the home market, supplying great computers and hardware at great prices to non-corporate customers, through our hrough ou hrough oularge Melbourne CBD showroom and our online store.
+        description="We always aim to please the home market, supplying great computers and hardware at great and hardware at greatand hardware at great  prices to non-corporate customers, through our hrough ou hrough oularge Melbourne CBD showroom and our online store.
 
 Shop management approach fosters a strong customer service focus in our staff. We prefer to cultivate long-term client relationships rather than achieve quick sales, demonstrated in the measure of our long-term success."
         imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/9d4fe751e2ad15ae258229f22d5a0ec3ebb44adac2c68155fa6f3d2c561efa9f?placeholderIfAbsent=true&apiKey=52b7549cc4dc41b1b490a6ca3e3b5e4d"
