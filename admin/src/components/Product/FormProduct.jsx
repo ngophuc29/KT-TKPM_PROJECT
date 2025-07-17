@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 // API endpoints
-const API_BASE = "http://localhost:4004";
+const API_BASE = "https://kt-tkpm-project-api-gateway-v1.onrender.com/api/products";
 const CLOUDINARY_UPLOAD_API = "http://localhost:4004/productsImage";
 
 // Schema dùng Zod (đã thêm field details và chuyển color thành mảng)
